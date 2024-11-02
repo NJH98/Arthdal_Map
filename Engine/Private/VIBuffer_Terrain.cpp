@@ -3,6 +3,35 @@
 
 #include "QuadTree.h"
 
+#include "wincodec.h"
+#include <fstream>
+#include <iostream>
+#include <cstdint>
+
+#pragma pack(push, 1)
+struct BMPHeader {
+	uint16_t bfType = 0x4D42; // 'BM'
+	uint32_t bfSize = 0;
+	uint16_t bfReserved1 = 0;
+	uint16_t bfReserved2 = 0;
+	uint32_t bfOffBits = 54;
+};
+
+struct BMPInfoHeader {
+	uint32_t biSize = 40;
+	int32_t biWidth = 0;
+	int32_t biHeight = 0;
+	uint16_t biPlanes = 1;
+	uint16_t biBitCount = 32;
+	uint32_t biCompression = 0;
+	uint32_t biSizeImage = 0;
+	int32_t biXPelsPerMeter = 0;
+	int32_t biYPelsPerMeter = 0;
+	uint32_t biClrUsed = 0;
+	uint32_t biClrImportant = 0;
+};
+#pragma pack(pop)
+
 CVIBuffer_Terrain::CVIBuffer_Terrain(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 	: CVIBuffer { pDevice, pContext }
 {
@@ -61,7 +90,7 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const _tchar* pHeightMapFilePath
 //		{
 //			_uint			iIndex = i * m_iNumVerticesX + j;
 //
-//			pVertices[iIndex].vPosition = m_pVertexPositions[iIndex] = _float3(_float(j), (pPixel[iIndex] & 0x000000ff) / 10.0f, _float(i));
+//			pVertices[iIndex].vPosition = m_pVertexPositions[iIndex] = _float3(_float(j), _float((pPixel[iIndex] & 0x000000ff)), _float(i));
 //			pVertices[iIndex].vNormal = _float3(0.f, 0.f, 0.f);
 //			pVertices[iIndex].vTexcoord = _float2(j / (m_iNumVerticesX - 1.f), i / (m_iNumVerticesZ - 1.f));
 //		}
@@ -211,7 +240,7 @@ HRESULT CVIBuffer_Terrain::Initialize(void * pArg)
 		{
 			_uint			iIndex = i * m_iNumVerticesX + j;
 
-			pVertices[iIndex].vPosition = m_pVertexPositions[iIndex] = _float3(_float(j*2), 0.f, _float(i*2));
+			pVertices[iIndex].vPosition = m_pVertexPositions[iIndex] = _float3(_float(j), 0.f, _float(i));
 			pVertices[iIndex].vNormal = _float3(0.f, 0.f, 0.f);
 			pVertices[iIndex].vTexcoord = _float2(j / (m_iNumVerticesX - 1.f), i / (m_iNumVerticesZ - 1.f));
 		}
@@ -412,6 +441,45 @@ void CVIBuffer_Terrain::Change_Height(_float Range, _float HowMuch)
 
 		m_pContext->Unmap(m_pVB, 0);
 	}
+}
+
+HRESULT CVIBuffer_Terrain::Save_HeightMap()
+{
+	BMPHeader bmpHeader;
+	BMPInfoHeader bmpInfoHeader;
+
+	bmpInfoHeader.biWidth = m_iNumVerticesX;
+	bmpInfoHeader.biHeight = m_iNumVerticesZ;
+	bmpInfoHeader.biSizeImage = m_iNumVerticesX * m_iNumVerticesZ * 4;
+
+	bmpHeader.bfSize = bmpHeader.bfOffBits + bmpInfoHeader.biSizeImage;
+
+	std::ofstream ofs(TEXT("../Bin/Resources/Textures/Terrain/SaveTest.bmp"), std::ios::binary);
+	if (!ofs) {
+		std::cerr << "Failed to open file for writing: " << TEXT("../Bin/Resources/Textures/Terrain/SaveTest.bmp") << std::endl;
+		return E_FAIL;
+	}
+
+	// Write headers
+	ofs.write(reinterpret_cast<char*>(&bmpHeader), sizeof(bmpHeader));
+	ofs.write(reinterpret_cast<char*>(&bmpInfoHeader), sizeof(bmpInfoHeader));
+
+	// Write image data
+	for (_uint z = 0; z < m_iNumVerticesZ; ++z) {
+		for (_uint x = 0; x < m_iNumVerticesX; ++x) {
+			int index = z * m_iNumVerticesX + x;
+			uint8_t height = static_cast<uint8_t>(m_pVertexPositions[index].y); // Scale height to [0, 255]
+			uint8_t color[4] = { height, height, height, 255 }; // Blue, Green, Red, Alpha
+			ofs.write(reinterpret_cast<char*>(color), 4);
+		}
+	}
+
+	ofs.close();
+	if (!ofs.good()) {
+		std::cerr << "Error occurred at writing time!" << std::endl;
+	}
+
+	return S_OK;
 }
 
 CVIBuffer_Terrain * CVIBuffer_Terrain::Create(ID3D11Device * pDevice, ID3D11DeviceContext * pContext, const _tchar* pHeightMapFilePath)

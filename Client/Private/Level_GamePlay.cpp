@@ -78,6 +78,10 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 		Terrain_Imgui(fTimeDelta);
 	}
 	ImGui::End();
+
+	if (m_pGameInstance->Get_DIKeyState_Once(DIK_T)) {
+		m_pTerrain->Get_VIBuffer()->Save_HeightMap();
+	}
 }
 
 #pragma region Imgui 함수 정리

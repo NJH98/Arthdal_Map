@@ -8,22 +8,7 @@
 CMainApp::CMainApp()
 	: m_pGameInstance { CGameInstance::Get_Instance() }
 {
-	
-	/* 내가 레퍼런스 카운트를 증가시키는 시점 : */
-	/* 원래 보관하기위한 포인터에 저장을 할때는 증가시키지 않는다. */
-	/* 원래 보관된 위치에 있던 주소를 다른 포인터형변수에 저장을 하게되면 이때는 증가시킨다. */
 	Safe_AddRef(m_pGameInstance);	
-
-	//D3D11_RASTERIZER_DESC		RSDesc;
-	//m_pContext->RSSetState(pRSState);
-
-	//D3D11_DEPTH_STENCIL_DESC	DSDesc;
-	//m_pContext->OMSetDepthStencilState();
-
-	//D3D11_BLEND_DESC			BSDesc;
-	//m_pContext->OMSetBlendState();
-
-
 }
 
 HRESULT CMainApp::Initialize()
