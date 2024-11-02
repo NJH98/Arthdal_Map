@@ -77,6 +77,10 @@ HRESULT CTerrain::Render()
 	if (FAILED(m_pTextureCom[TEXTURE_MASK]->Bind_ShadeResource(m_pShaderCom, "g_MaskTexture", 0)))
 		return E_FAIL;
 
+	/*_float3 MousePick = m_pGameInstance->Get_GlobalData()->Pick_Pos;
+	if (FAILED(m_pShaderCom->Bind_RawValue("g_MouseWorldPos", &MousePick, sizeof(_float3))))
+		return E_FAIL;*/
+
 	if (FAILED(m_pShaderCom->Begin(0)))
 		return E_FAIL;
 	if (FAILED(m_pVIBufferCom->Bind_Buffers()))

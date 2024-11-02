@@ -177,14 +177,14 @@ HRESULT CVIBuffer_Terrain::Initialize(void * pArg)
 		if (m_iNumVerticesX == 0 ||
 			m_iNumVerticesZ == 0) {
 		
-			m_iNumVerticesX = 100;
-			m_iNumVerticesZ = 100;
+			m_iNumVerticesX = 64;
+			m_iNumVerticesZ = 64;
 		}
 	}
 	else 
 	{
-		m_iNumVerticesX = 100;
-		m_iNumVerticesZ = 100;
+		m_iNumVerticesX = 64;
+		m_iNumVerticesZ = 64;
 	}
 
 	_uint* pPixel = new _uint[m_iNumVerticesX * m_iNumVerticesZ];
@@ -211,7 +211,7 @@ HRESULT CVIBuffer_Terrain::Initialize(void * pArg)
 		{
 			_uint			iIndex = i * m_iNumVerticesX + j;
 
-			pVertices[iIndex].vPosition = m_pVertexPositions[iIndex] = _float3(_float(j), 0.f, _float(i));
+			pVertices[iIndex].vPosition = m_pVertexPositions[iIndex] = _float3(_float(j*2), 0.f, _float(i*2));
 			pVertices[iIndex].vNormal = _float3(0.f, 0.f, 0.f);
 			pVertices[iIndex].vTexcoord = _float2(j / (m_iNumVerticesX - 1.f), i / (m_iNumVerticesZ - 1.f));
 		}
@@ -377,7 +377,7 @@ void CVIBuffer_Terrain::Culling(_fmatrix WorldMatrix)
 	m_iNumIndices = iNumIndices;
 }
 
-void CVIBuffer_Terrain::Change_Height(_float HowMuch)
+void CVIBuffer_Terrain::Change_Height(_float Range, _float HowMuch)
 {
 	D3D11_MAPPED_SUBRESOURCE		SubResource{};
 
@@ -387,9 +387,15 @@ void CVIBuffer_Terrain::Change_Height(_float HowMuch)
 		VTXNORTEX* pVertices = reinterpret_cast<VTXNORTEX*>(SubResource.pData);
 
 		// 예시: 정점의 위치나 노멀 값을 갱신하는 코드
-		for (_uint i = 0; i < m_iNumVertices/2; ++i)
+		for (_uint i = 0; i < m_iNumVertices; ++i)
 		{
-			m_pVertexPositions[i].y += HowMuch;
+			Vector3 VertexPos = m_pVertexPositions[i];
+			Vector3 MousePos = m_pGameInstance->Get_GlobalData()->Pick_Pos;
+
+			_float Length = (VertexPos - MousePos).Length();
+
+			if(Length < Range)
+				m_pVertexPositions[i].y += HowMuch;
 		}
 
 		for (_uint i = 0; i < m_iNumVerticesZ; i++)

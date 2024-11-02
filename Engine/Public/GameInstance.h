@@ -151,6 +151,9 @@ public:
 	HRESULT		Set_Listener(_float3 _vPos, _float3 vForward);
 #pragma endregion
 
+#pragma region GLOBAL_DATA
+	GLOBAL_DATA* Get_GlobalData();
+#pragma endregion
 private:
 	class CGraphic_Device*			m_pGraphic_Device = { nullptr };
 	class CInput_Device*			m_pInput_Device = { nullptr };
@@ -166,6 +169,8 @@ private:
 	class CTarget_Manager*			m_pTarget_Manager = { nullptr };
 	class CPicking*					m_pPicking = { nullptr };
 	class CFrustum*					m_pFrustum = { nullptr };
+
+	class CGlobalData*				m_pGlobalData = { nullptr };
 
 public:	
 	void Release_Engine();

@@ -185,6 +185,9 @@ void CQuadTree::Culling(CGameInstance* pGameInstance, const _float3* pVertexPosi
 
 void CQuadTree::Make_Neighbors()
 {
+	if (nullptr == m_pChildren[CORNER_LT])
+		return;
+
 	if (nullptr == m_pChildren[CORNER_LT]->m_pChildren[CORNER_LT])
 		return;
 

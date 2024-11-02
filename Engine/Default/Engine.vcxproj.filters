@@ -178,6 +178,9 @@
     <Filter Include="00.System\01.Device\Sound">
       <UniqueIdentifier>{94e7f5b2-a27c-4d8c-9450-33072a10e13a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\79.GlobalData">
+      <UniqueIdentifier>{465629fd-2dad-49d1-b254-49b7cdab09df}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Base.cpp">
@@ -344,6 +347,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\SoundManager.cpp">
       <Filter>00.System\01.Device\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\GlobalData.cpp">
+      <Filter>01.Utility\79.GlobalData</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -523,6 +529,9 @@
     </ClInclude>
     <ClInclude Include="..\Public\SoundManager.h">
       <Filter>00.System\01.Device\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\GlobalData.h">
+      <Filter>01.Utility\79.GlobalData</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

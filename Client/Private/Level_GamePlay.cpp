@@ -73,18 +73,9 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	if (m_pGameInstance->Get_DIMouseState_Once(DIMK_LBUTTON)) {
-		m_pGameInstance->Picking(&m_vPickPos);
-		cout << "Picking : " << m_vPickPos.x << "," << m_vPickPos.y << "," << m_vPickPos.z << endl;
-	}
-
-	if (m_pGameInstance->Get_DIKeyState_Once(DIK_T)) {
-		m_pTerrain->Get_VIBuffer()->Change_Height(0.2f);
-	}
-
 	ImGui::Begin("MainImgui");
 	{
-		Terrain_Imgui();
+		Terrain_Imgui(fTimeDelta);
 	}
 	ImGui::End();
 }
@@ -93,18 +84,23 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 
 #pragma region Terrain 작동 코드
 
-HRESULT CLevel_GamePlay::Terrain_Imgui()
+HRESULT CLevel_GamePlay::Terrain_Imgui(_float fTimeDelta)
 {
 	if (ImGui::CollapsingHeader("Terrain"))
 	{
-		if (FAILED(Create_Terrain_Input()))  // x,y 값을 입력받고 지형 생성
+		// x,y 값을 입력받고 지형 생성
+		if (FAILED(Create_Terrain_Input(fTimeDelta)))
+			return E_FAIL;
+
+		// 지형의 높이를 조정하는 코드
+		if (FAILED(Terrain_HeightChange(fTimeDelta)))
 			return E_FAIL;
 	}
 
 	return S_OK;
 }
 
-HRESULT CLevel_GamePlay::Create_Terrain_Input()
+HRESULT CLevel_GamePlay::Create_Terrain_Input(_float fTimeDelta)
 {
 	ImGui::PushItemWidth(50); // 크기조정
 	static int TerrainX = 0;
@@ -136,6 +132,51 @@ HRESULT CLevel_GamePlay::Create_Terrain_Input()
 	}
 
 	ImGui::PopItemWidth();
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Terrain_HeightChange(_float fTimeDelta)
+{
+	ImGui::SeparatorText("Height_Change");
+
+	ImGui::PushItemWidth(150); // 크기조정
+	static float TerrainRange = 0.f;
+	ImGui::InputFloat("Range", &TerrainRange, 0.5f);
+	static float TerrainHeightValue = 0.f;
+	ImGui::InputFloat("Value", &TerrainHeightValue, 0.5f);
+
+	static bool bHeight_Picking;
+	ImGui::Checkbox("Height Picking", &bHeight_Picking);
+
+	ImGui::PopItemWidth();
+	
+	if (bHeight_Picking) 
+	{
+		if (m_pGameInstance->Get_DIMouseState(DIMK_LBUTTON) && m_fTerrainTimeCheck > 0.2f) {
+			// 피킹하고
+			m_pGameInstance->Picking(&m_vPickPos);
+			// 피킹정보 저장하고
+			m_pGameInstance->Get_GlobalData()->Pick_Pos = m_vPickPos;
+			
+			if (m_pGameInstance->Get_DIKeyState(DIK_Q)) {
+				// 값을 올린다
+				m_pTerrain->Get_VIBuffer()->Change_Height(TerrainRange, TerrainHeightValue);
+				m_fTerrainTimeCheck = 0.f;
+			}
+
+			if (m_pGameInstance->Get_DIKeyState(DIK_E)) {
+				// 값을 내린다
+				m_pTerrain->Get_VIBuffer()->Change_Height(TerrainRange, -TerrainHeightValue);
+				m_fTerrainTimeCheck = 0.f;
+			}
+			
+		}
+
+		if (m_fTerrainTimeCheck < 0.2f)
+			m_fTerrainTimeCheck += fTimeDelta;
+	}
+	
 
 	return S_OK;
 }

@@ -87,6 +87,12 @@ namespace Engine
         aiTextureType_TRANSMISSION = 21,
 
     };
+
+    typedef struct
+    {
+        _float3     Pick_Pos;
+
+    }GLOBAL_DATA;
 }
 
 using namespace Engine;

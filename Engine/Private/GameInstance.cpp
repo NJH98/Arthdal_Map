@@ -9,6 +9,7 @@
 #include "Target_Manager.h"
 #include "Picking.h"
 #include "Frustum.h"
+#include "GlobalData.h"
 
 IMPLEMENT_SINGLETON(CGameInstance)
 
@@ -85,6 +86,10 @@ HRESULT CGameInstance::Initialize_Engine(HINSTANCE hInst, _uint iNumLevels, cons
 
 	m_pFont_Manager = CFont_Manager::Create(*ppDevice, *ppContext);
 	if (nullptr == m_pFont_Manager)
+		return E_FAIL;
+
+	m_pGlobalData = CGlobalData::Create();
+	if (nullptr == m_pGlobalData)
 		return E_FAIL;
 
 	return S_OK;
@@ -493,6 +498,11 @@ HRESULT CGameInstance::Set_Listener(_float3 _vPos, _float3 vForward)
 }
 #pragma endregion
 
+GLOBAL_DATA* CGameInstance::Get_GlobalData()
+{
+	return m_pGlobalData->Get_GlobalData();
+}
+
 void CGameInstance::Release_Engine()
 {	
 	Safe_Release(m_pFrustum);
@@ -509,6 +519,7 @@ void CGameInstance::Release_Engine()
 	Safe_Release(m_pSound_Manager);
 	Safe_Release(m_pInput_Device);
 	Safe_Release(m_pGraphic_Device);
+	Safe_Release(m_pGlobalData);
 
 	CGameInstance::Get_Instance()->Destroy_Instance();	
 }

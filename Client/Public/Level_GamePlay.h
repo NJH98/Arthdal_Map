@@ -39,9 +39,13 @@ private:
 
 private:
 	// imgui ÇÔ¼ö
+
+	// Terrain ¿ë
 	class CTerrain* m_pTerrain = { nullptr };
-	HRESULT Terrain_Imgui();
-	HRESULT	Create_Terrain_Input();
+	_float			m_fTerrainTimeCheck = 0.f;
+	HRESULT Terrain_Imgui(_float fTimeDelta);
+	HRESULT	Create_Terrain_Input(_float fTimeDelta);
+	HRESULT Terrain_HeightChange(_float fTimeDelta);
 
 };
 

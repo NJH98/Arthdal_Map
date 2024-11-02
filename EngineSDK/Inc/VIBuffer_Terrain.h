@@ -18,7 +18,7 @@ public:
 public:
 	void Culling(_fmatrix WorldMatrix);
 
-	void Change_Height(_float HowMuch);
+	void Change_Height(_float Range, _float HowMuch);
 
 private:
 	_uint			m_iNumVerticesX = {};

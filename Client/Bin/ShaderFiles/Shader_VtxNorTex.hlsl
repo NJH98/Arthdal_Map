@@ -9,6 +9,7 @@ texture2D		g_DiffuseTexture[2]; /* 지형 픽셀이 빛을 받으면 반사해야할 재질정보를
 texture2D		g_BrushTexture;
 texture2D		g_MaskTexture;
 
+float3			g_MouseWorldPos;
 
 struct VS_IN
 {
@@ -87,15 +88,13 @@ PS_OUT PS_MAIN(PS_IN In)
 		vBrush = g_BrushTexture.Sample(LinearSampler, vBrushTexcoord);
 	}
 
+	// 최종 색상
 	vMtrlDiffuse = vMtrlDiffuse + vBrush;
-
 	Out.vDiffuse = vector(vMtrlDiffuse.rgb, 1.f);
-	// Out.vDiffuse = 1.f;
 
-	// -1.f ~ 1.f -> 0.f ~ 1.f
+	// -1.f ~ 1.f -> 0.f ~ 1.f 
 	Out.vNormal = vector(In.vNormal.xyz * 0.5f + 0.5f, 0.f);
-
-	
+	// 픽셀피킹을 위한 깊이값
 	Out.vDepth = vector(In.vProjPos.z / In.vProjPos.w, In.vProjPos.w / 1000.f, 0.f, 0.f);
 	Out.vPickDepth = vector(In.vProjPos.z / In.vProjPos.w, 0.f, 0.f, 1.f);
 
