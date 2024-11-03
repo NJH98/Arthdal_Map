@@ -30,7 +30,7 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 void CLevel_Loading::Update(_float fTimeDelta)
 {
 	
-	if (m_pGameInstance->Get_DIKeyState_Once(DIK_SPACE) &&
+	if (/*m_pGameInstance->Get_DIKeyState_Once(DIK_SPACE) &&*/
 		true == m_pLoader->isFinished())
 	{
 		CLevel*			pNewLevel = { nullptr };

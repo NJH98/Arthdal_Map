@@ -6,6 +6,13 @@ BEGIN(Engine)
 
 class ENGINE_DLL CVIBuffer_Terrain final : public CVIBuffer
 {
+public:
+	typedef struct
+	{
+		_float2 TerrainXZ = _float2(64.f,64.f);
+		_tchar* pHeightMapFilePath = nullptr;
+	}TERRAIN_BUFFER_DESC;
+
 private:
 	CVIBuffer_Terrain(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CVIBuffer_Terrain(const CVIBuffer_Terrain& Prototype);

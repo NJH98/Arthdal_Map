@@ -46,7 +46,7 @@ private:
 	HRESULT Terrain_Imgui(_float fTimeDelta);
 	HRESULT	Create_Terrain_Input(_float fTimeDelta);
 	HRESULT Terrain_HeightChange(_float fTimeDelta);
-
+	HRESULT Terrain_HeightSaveLoad(_float fTimeDelta);
 };
 
 END

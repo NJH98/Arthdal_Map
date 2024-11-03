@@ -26,7 +26,7 @@ HRESULT CMainApp::Initialize()
 	if (FAILED(Ready_Prototype_Component_Static()))
 		return E_FAIL;
 
-	if (FAILED(Open_Level(LEVEL_LOGO)))
+	if (FAILED(Open_Level(LEVEL_GAMEPLAY)))
 		return E_FAIL;
 
 	return S_OK;

@@ -196,27 +196,56 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const _tchar* pHeightMapFilePath
 
 HRESULT CVIBuffer_Terrain::Initialize(void * pArg)
 {
+	_uint* pPixel{};
+	TERRAIN_BUFFER_DESC* Desc = nullptr;
+
 	if (pArg != nullptr) 
 	{
-		_float2 TerrainXZ = *(_float2*)(pArg);
+		Desc = static_cast<TERRAIN_BUFFER_DESC*>(pArg);
 
-		m_iNumVerticesX = _uint(TerrainXZ.x);
-		m_iNumVerticesZ = _uint(TerrainXZ.y);
+		if (Desc->pHeightMapFilePath == nullptr) 
+		{
+			m_iNumVerticesX = _uint(Desc->TerrainXZ.x);
+			m_iNumVerticesZ = _uint(Desc->TerrainXZ.y);
 
-		if (m_iNumVerticesX == 0 ||
-			m_iNumVerticesZ == 0) {
-		
-			m_iNumVerticesX = 64;
-			m_iNumVerticesZ = 64;
+			if (m_iNumVerticesX == 0 ||
+				m_iNumVerticesZ == 0) {
+
+				m_iNumVerticesX = 64;
+				m_iNumVerticesZ = 64;
+			}
+
+			pPixel = new _uint[m_iNumVerticesX * m_iNumVerticesZ];
+		}
+		else
+		{
+			_ulong			dwByte = {};
+			
+			HANDLE			hFile = CreateFile(Desc->pHeightMapFilePath, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+			if (0 == hFile)
+				return E_FAIL;
+			
+			BITMAPFILEHEADER			fh{};
+			BITMAPINFOHEADER			ih{};
+			
+			ReadFile(hFile, &fh, sizeof fh, &dwByte, nullptr);
+			ReadFile(hFile, &ih, sizeof ih, &dwByte, nullptr);
+			m_iNumVerticesX = ih.biWidth;
+			m_iNumVerticesZ = ih.biHeight;
+			
+			pPixel = new _uint[m_iNumVerticesX * m_iNumVerticesZ];
+			ReadFile(hFile, pPixel, sizeof(_uint) * m_iNumVerticesX * m_iNumVerticesZ, &dwByte, nullptr);
+			
+			CloseHandle(hFile);
 		}
 	}
 	else 
 	{
 		m_iNumVerticesX = 64;
 		m_iNumVerticesZ = 64;
+	
+		pPixel = new _uint[m_iNumVerticesX * m_iNumVerticesZ];
 	}
-
-	_uint* pPixel = new _uint[m_iNumVerticesX * m_iNumVerticesZ];
 
 	m_iNumVertexBuffers = 1;
 	m_iNumVertices = m_iNumVerticesX * m_iNumVerticesZ;
@@ -240,7 +269,12 @@ HRESULT CVIBuffer_Terrain::Initialize(void * pArg)
 		{
 			_uint			iIndex = i * m_iNumVerticesX + j;
 
-			pVertices[iIndex].vPosition = m_pVertexPositions[iIndex] = _float3(_float(j), 0.f, _float(i));
+			if (Desc != nullptr && Desc->pHeightMapFilePath != nullptr){
+				pVertices[iIndex].vPosition = m_pVertexPositions[iIndex] = _float3(_float(j), _float((pPixel[iIndex] & 0x000000ff)), _float(i));
+			}
+			else {
+				pVertices[iIndex].vPosition = m_pVertexPositions[iIndex] = _float3(_float(j), 0.f, _float(i));
+			}
 			pVertices[iIndex].vNormal = _float3(0.f, 0.f, 0.f);
 			pVertices[iIndex].vTexcoord = _float2(j / (m_iNumVerticesX - 1.f), i / (m_iNumVerticesZ - 1.f));
 		}

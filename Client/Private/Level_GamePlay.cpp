@@ -1,6 +1,11 @@
 #include "stdafx.h"
 #include "..\Public\Level_GamePlay.h"
 
+#include <codecvt>
+#include <commdlg.h>
+#include <fstream>
+#include <iostream>
+
 #include "FreeCamera.h"
 #include "GameInstance.h"
 
@@ -86,6 +91,13 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 
 #pragma region Imgui 함수 정리
 
+string WideCharToMultiByte(const wstring& wstr) {
+	int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
+	string strTo(size_needed, 0);
+	WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
+	return strTo;
+}
+
 #pragma region Terrain 작동 코드
 
 HRESULT CLevel_GamePlay::Terrain_Imgui(_float fTimeDelta)
@@ -98,6 +110,10 @@ HRESULT CLevel_GamePlay::Terrain_Imgui(_float fTimeDelta)
 
 		// 지형의 높이를 조정하는 코드
 		if (FAILED(Terrain_HeightChange(fTimeDelta)))
+			return E_FAIL;
+
+		// 지형의 높이를 저장, 불러오기 코드
+		if (FAILED(Terrain_HeightSaveLoad(fTimeDelta)))
 			return E_FAIL;
 	}
 
@@ -122,15 +138,21 @@ HRESULT CLevel_GamePlay::Create_Terrain_Input(_float fTimeDelta)
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("  Create Terrain  ")) {
+
+		// 기존의 지형 삭제
+		m_pTerrain->Set_Dead(true);
+		Safe_Release(m_pTerrain);
+
+		// 신규 지형 생성 ( 지형은 언제나 1개로 기준잡는다 )
 		CGameObject*	pTerrain = {};
-		_float2			TerrainXZ{};
+		CVIBuffer_Terrain::TERRAIN_BUFFER_DESC Desc{};
+		Desc.TerrainXZ.x = _float(TerrainX);
+		Desc.TerrainXZ.y = _float(TerrainZ);
 
-		TerrainXZ.x = _float(TerrainX);
-		TerrainXZ.y = _float(TerrainZ);
-
-		if (FAILED(m_pGameInstance->Add_GameObject_Out(TEXT("Prototype_GameObject_Terrain"), LEVEL_GAMEPLAY, TEXT("Layer_Terrain"), pTerrain, &TerrainXZ)))
+		if (FAILED(m_pGameInstance->Add_GameObject_Out(TEXT("Prototype_GameObject_Terrain"), LEVEL_GAMEPLAY, TEXT("Layer_Terrain"), pTerrain, &Desc)))
 			return E_FAIL;
 
+		// 현제 지형으로 변경
 		m_pTerrain = static_cast<CTerrain*>(pTerrain);
 		Safe_AddRef(m_pTerrain);
 	}
@@ -181,6 +203,63 @@ HRESULT CLevel_GamePlay::Terrain_HeightChange(_float fTimeDelta)
 			m_fTerrainTimeCheck += fTimeDelta;
 	}
 	
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Terrain_HeightSaveLoad(_float fTimeDelta)
+{
+	ImGui::SeparatorText("Save/Load_Height.bmp");
+
+	ImGui::PushItemWidth(300); // 크기조정
+	if (ImGui::Button("  Save_Terrain_Height.bmp  ")) {
+		if (FAILED(m_pTerrain->Get_VIBuffer()->Save_HeightMap()))
+		{
+			MSG_BOX(TEXT("Failed to Save"));
+		}
+	}
+
+	if (ImGui::Button("  Load_Terrain_Height.bmp  ")) {
+	
+		OPENFILENAMEW ofn;				// 유니코드 구조체 초기화
+		wchar_t szFile[260] = { 0 };	// 유니코드 파일 이름을 저장할 버퍼
+
+		// OPENFILENAME 구조체를 초기화
+		ZeroMemory(&ofn, sizeof(ofn));
+		ofn.lStructSize = sizeof(ofn);
+		ofn.hwndOwner = NULL;
+		ofn.lpstrFile = szFile;
+		ofn.lpstrFile[0] = '\0';
+		ofn.nMaxFile = sizeof(szFile) / sizeof(szFile[0]);
+		ofn.lpstrFilter = L"All\0*.*\0DAT Files\0*.dat\0";
+		ofn.nFilterIndex = 1;  // .dat 필터를 기본으로 선택
+		ofn.lpstrFileTitle = NULL;
+		ofn.nMaxFileTitle = 0;
+
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+		// 파일 열기 대화 상자를 표시
+		if (GetOpenFileNameW(&ofn) == TRUE) {
+
+			// 기존의 지형 삭제
+			m_pTerrain->Set_Dead(true);
+			Safe_Release(m_pTerrain);
+
+			// 새로운 객체 생성/받아오기
+			CGameObject* pTerrain = {};
+			CVIBuffer_Terrain::TERRAIN_BUFFER_DESC Desc{};
+			Desc.pHeightMapFilePath = ofn.lpstrFile;
+
+			if (FAILED(m_pGameInstance->Add_GameObject_Out(TEXT("Prototype_GameObject_Terrain"), LEVEL_GAMEPLAY, TEXT("Layer_Terrain"), pTerrain, &Desc)))
+				return E_FAIL;
+
+			m_pTerrain = static_cast<CTerrain*>(pTerrain);
+			Safe_AddRef(m_pTerrain);
+			
+		}
+	}
+
+	ImGui::PopItemWidth();
 
 	return S_OK;
 }
