@@ -6,6 +6,7 @@ vector			g_vBrushPos = vector(30.f, 0.f, 10.f, 1.f);
 float			g_fBrushRange = 7.f;
 
 texture2D		g_DiffuseTexture[2]; /* 지형 픽셀이 빛을 받으면 반사해야할 재질정보를 담은것이다. */
+texture2D		g_NomalTexture[2];
 texture2D		g_BrushTexture;
 texture2D		g_MaskTexture;
 
@@ -67,33 +68,30 @@ struct PS_OUT
 PS_OUT PS_MAIN(PS_IN In)
 {
 	PS_OUT			Out = (PS_OUT)0;
+	
+	// 마스크 이미지
+    vector vMask = g_MaskTexture.Sample(LinearSampler, In.vTexcoord);
 
+	// 디퓨즈 이미지
 	vector		vSourDiffuse = g_DiffuseTexture[0].Sample(LinearSampler, In.vTexcoord * 30.f);
 	vector		vDestDiffuse = g_DiffuseTexture[1].Sample(LinearSampler, In.vTexcoord * 30.f);
 
-	vector		vMask = g_MaskTexture.Sample(LinearSampler, In.vTexcoord);
-
 	vector		vMtrlDiffuse = vSourDiffuse * vMask.r + vDestDiffuse * (1.f - vMask.r) ;
 
-	vector		vBrush = vector(0.f, 0.f, 0.f, 0.f);
-
-	if (g_vBrushPos.x - g_fBrushRange < In.vWorldPos.x && In.vWorldPos.x <= g_vBrushPos.x + g_fBrushRange && 
-		g_vBrushPos.z - g_fBrushRange < In.vWorldPos.z && In.vWorldPos.z <= g_vBrushPos.z + g_fBrushRange)
-	{
-		float2	vBrushTexcoord;
-
-		vBrushTexcoord.x = (In.vWorldPos.x - (g_vBrushPos.x - g_fBrushRange)) / (2.f * g_fBrushRange);
-		vBrushTexcoord.y = ((g_vBrushPos.z + g_fBrushRange) - In.vWorldPos.z) / (2.f * g_fBrushRange);
-
-		vBrush = g_BrushTexture.Sample(LinearSampler, vBrushTexcoord);
-	}
-
 	// 최종 색상
-	vMtrlDiffuse = vMtrlDiffuse + vBrush;
 	Out.vDiffuse = vector(vMtrlDiffuse.rgb, 1.f);
+	
+	// 노말 이미지
+    vector vSourNomal = g_NomalTexture[0].Sample(LinearSampler, In.vTexcoord * 30.f);
+    vector vDestNomal = g_NomalTexture[1].Sample(LinearSampler, In.vTexcoord * 30.f);
 
-	// -1.f ~ 1.f -> 0.f ~ 1.f 
-	Out.vNormal = vector(In.vNormal.xyz * 0.5f + 0.5f, 0.f);
+    vector vMtrlNomal = vSourNomal * vMask.r + vDestNomal * (1.f - vMask.r);
+
+	// 최종 노말값..?
+    Out.vNormal = vector(vMtrlNomal.rgb, 1.f);
+	// -1.f ~ 1.f -> 0.f ~ 1.f
+    //Out.vNormal = vector(In.vNormal.xyz * 0.5f + 0.5f, 0.f);
+	
 	// 픽셀피킹을 위한 깊이값
 	Out.vDepth = vector(In.vProjPos.z / In.vProjPos.w, In.vProjPos.w / 1000.f, 0.f, 0.f);
 	Out.vPickDepth = vector(In.vProjPos.z / In.vProjPos.w, 0.f, 0.f, 1.f);

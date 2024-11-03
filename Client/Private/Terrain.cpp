@@ -72,6 +72,8 @@ HRESULT CTerrain::Render()
 
 	if (FAILED(m_pTextureCom[TEXTURE_DIFFUSE]->Bind_ShadeResources(m_pShaderCom, "g_DiffuseTexture")))
 		return E_FAIL;
+	if (FAILED(m_pTextureCom[TEXTURE_NORMAL]->Bind_ShadeResources(m_pShaderCom, "g_NomalTexture")))
+		return E_FAIL;
 	if (FAILED(m_pTextureCom[TEXTURE_BRUSH]->Bind_ShadeResource(m_pShaderCom, "g_BrushTexture", 0)))
 		return E_FAIL;
 	if (FAILED(m_pTextureCom[TEXTURE_MASK]->Bind_ShadeResource(m_pShaderCom, "g_MaskTexture", 0)))
@@ -103,6 +105,10 @@ HRESULT CTerrain::Ready_Components(void* pArg)
 	/* FOR.Com_Texture */
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Terrain"),
 		TEXT("Com_Texture"), reinterpret_cast<CComponent**>(&m_pTextureCom[TEXTURE_DIFFUSE]))))
+		return E_FAIL;
+	/* FOR.Com_Nomal */
+	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Terrain_Normal"),
+		TEXT("Com_Nomal"), reinterpret_cast<CComponent**>(&m_pTextureCom[TEXTURE_NORMAL]))))
 		return E_FAIL;
 
 	/* FOR.Com_Brush */
