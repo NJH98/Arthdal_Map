@@ -26,7 +26,7 @@ public:
 	void Culling(_fmatrix WorldMatrix);
 
 	void Change_Height(_float Range, _float HowMuch);
-	HRESULT Save_HeightMap();
+	HRESULT Save_HeightMap(const _tchar* pHeightMapFilePath);
 
 private:
 	_uint			m_iNumVerticesX = {};

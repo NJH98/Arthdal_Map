@@ -78,6 +78,8 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
+	ShowFileDialog();
+
 	ImGui::Begin("MainImgui");
 	{
 		Terrain_Imgui(fTimeDelta);
@@ -85,17 +87,51 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 	ImGui::End();
 
 	if (m_pGameInstance->Get_DIKeyState_Once(DIK_T)) {
-		m_pTerrain->Get_VIBuffer()->Save_HeightMap();
+		
 	}
 }
 
 #pragma region Imgui 함수 정리
 
-string WideCharToMultiByte(const wstring& wstr) {
+static string WideCharToMultiByte(const wstring& wstr) {
 	int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
 	string strTo(size_needed, 0);
 	WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
 	return strTo;
+}
+
+static wchar_t* stringToWchar(const std::string& str) {
+	int size_needed = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), static_cast<int>(str.size()), NULL, 0);
+	wchar_t* wcharStr = new wchar_t[size_needed + 1];
+	MultiByteToWideChar(CP_UTF8, 0, str.c_str(), static_cast<int>(str.size()), wcharStr, size_needed);
+	wcharStr[size_needed] = L'\0';
+
+	return wcharStr; // 호출자가 delete[]로 해제 필요
+}
+
+void CLevel_GamePlay::ShowFileDialog()
+{
+	// 파일 대화 상자 초기화
+	ImGuiFileDialog::Instance()->OpenDialog(
+		"OpenFileDialog",           // vKey
+		"Select a File",           // vTitle
+		".bmp",					   // vFilters
+		IGFD::FileDialogConfig()   // vConfig (기본 설정)
+	);
+
+	// 대화 상자가 열릴 때
+	if (ImGuiFileDialog::Instance()->Display("OpenFileDialog"))
+	{
+		// 사용자가 파일을 선택한 경우
+		if (ImGuiFileDialog::Instance()->IsOk())
+		{
+			// 선택된 파일 경로 가져오기
+			filePath = ImGuiFileDialog::Instance()->GetFilePathName();
+		}
+
+		// 대화 상자 닫기
+		ImGuiFileDialog::Instance()->Close();
+	}
 }
 
 #pragma region Terrain 작동 코드
@@ -211,52 +247,56 @@ HRESULT CLevel_GamePlay::Terrain_HeightSaveLoad(_float fTimeDelta)
 {
 	ImGui::SeparatorText("Save/Load_Height.bmp");
 
+	string substring;
+	if (filePath.length() > 55) {
+		substring = filePath.substr(56);
+	}
+	ImGui::Text("%s", substring.c_str());
+
 	ImGui::PushItemWidth(300); // 크기조정
 	if (ImGui::Button("  Save_Terrain_Height.bmp  ")) {
-		if (FAILED(m_pTerrain->Get_VIBuffer()->Save_HeightMap()))
+		if (filePath.length() < 55) {
+			MSG_BOX(TEXT("Chocie FilePath"));
+			return E_FAIL;
+		}
+
+		_tchar* wstrFilePath = stringToWchar(filePath);
+
+		if (FAILED(m_pTerrain->Get_VIBuffer()->Save_HeightMap(wstrFilePath)))
 		{
 			MSG_BOX(TEXT("Failed to Save"));
 		}
+
+		delete[] wstrFilePath;
 	}
 
 	if (ImGui::Button("  Load_Terrain_Height.bmp  ")) {
-	
-		OPENFILENAMEW ofn;				// 유니코드 구조체 초기화
-		wchar_t szFile[260] = { 0 };	// 유니코드 파일 이름을 저장할 버퍼
-
-		// OPENFILENAME 구조체를 초기화
-		ZeroMemory(&ofn, sizeof(ofn));
-		ofn.lStructSize = sizeof(ofn);
-		ofn.hwndOwner = NULL;
-		ofn.lpstrFile = szFile;
-		ofn.lpstrFile[0] = '\0';
-		ofn.nMaxFile = sizeof(szFile) / sizeof(szFile[0]);
-		ofn.lpstrFilter = L"All\0*.*\0DAT Files\0*.dat\0";
-		ofn.nFilterIndex = 1;  // .dat 필터를 기본으로 선택
-		ofn.lpstrFileTitle = NULL;
-		ofn.nMaxFileTitle = 0;
-
-		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-		// 파일 열기 대화 상자를 표시
-		if (GetOpenFileNameW(&ofn) == TRUE) {
-
-			// 기존의 지형 삭제
-			m_pTerrain->Set_Dead(true);
-			Safe_Release(m_pTerrain);
-
-			// 새로운 객체 생성/받아오기
-			CGameObject* pTerrain = {};
-			CVIBuffer_Terrain::TERRAIN_BUFFER_DESC Desc{};
-			Desc.pHeightMapFilePath = ofn.lpstrFile;
-
-			if (FAILED(m_pGameInstance->Add_GameObject_Out(TEXT("Prototype_GameObject_Terrain"), LEVEL_GAMEPLAY, TEXT("Layer_Terrain"), pTerrain, &Desc)))
-				return E_FAIL;
-
-			m_pTerrain = static_cast<CTerrain*>(pTerrain);
-			Safe_AddRef(m_pTerrain);
-			
+		if (filePath.length() < 55) {
+			MSG_BOX(TEXT("Chocie FilePath"));
+			return E_FAIL;
 		}
+
+		// 기존의 지형 삭제
+		m_pTerrain->Set_Dead(true);
+		Safe_Release(m_pTerrain);
+
+		// 새로운 객체 생성/받아오기
+		CGameObject* pTerrain = {};
+		CVIBuffer_Terrain::TERRAIN_BUFFER_DESC Desc{};
+
+		_tchar* wstrFilePath = stringToWchar(filePath);
+
+		Desc.pHeightMapFilePath = wstrFilePath;
+
+		if (FAILED(m_pGameInstance->Add_GameObject_Out(TEXT("Prototype_GameObject_Terrain"), LEVEL_GAMEPLAY, TEXT("Layer_Terrain"), pTerrain, &Desc))) 
+		{
+			MSG_BOX(TEXT("Failed to Load"));
+		}
+
+		delete[] wstrFilePath;
+
+		m_pTerrain = static_cast<CTerrain*>(pTerrain);
+		Safe_AddRef(m_pTerrain);
 	}
 
 	ImGui::PopItemWidth();

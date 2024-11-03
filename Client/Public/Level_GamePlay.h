@@ -40,6 +40,10 @@ private:
 private:
 	// imgui 함수
 
+	// 파일경로 
+	void ShowFileDialog();
+	string filePath{};
+
 	// Terrain 용
 	class CTerrain* m_pTerrain = { nullptr };
 	_float			m_fTerrainTimeCheck = 0.f;

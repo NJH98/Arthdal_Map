@@ -221,7 +221,13 @@ HRESULT CVIBuffer_Terrain::Initialize(void * pArg)
 		{
 			_ulong			dwByte = {};
 			
-			HANDLE			hFile = CreateFile(Desc->pHeightMapFilePath, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+			HANDLE			hFile = CreateFile(
+										Desc->pHeightMapFilePath, 
+										GENERIC_READ | GENERIC_WRITE,
+										FILE_SHARE_READ | FILE_SHARE_WRITE, 
+										nullptr, 
+										OPEN_EXISTING, 
+										FILE_ATTRIBUTE_NORMAL, 0);
 			if (0 == hFile)
 				return E_FAIL;
 			
@@ -477,7 +483,7 @@ void CVIBuffer_Terrain::Change_Height(_float Range, _float HowMuch)
 	}
 }
 
-HRESULT CVIBuffer_Terrain::Save_HeightMap()
+HRESULT CVIBuffer_Terrain::Save_HeightMap(const _tchar* pHeightMapFilePath)
 {
 	BMPHeader bmpHeader;
 	BMPInfoHeader bmpInfoHeader;
@@ -488,9 +494,9 @@ HRESULT CVIBuffer_Terrain::Save_HeightMap()
 
 	bmpHeader.bfSize = bmpHeader.bfOffBits + bmpInfoHeader.biSizeImage;
 
-	std::ofstream ofs(TEXT("../Bin/Resources/Textures/Terrain/SaveTest.bmp"), std::ios::binary);
+	ofstream ofs(pHeightMapFilePath, ios::binary | ios::out);
 	if (!ofs) {
-		std::cerr << "Failed to open file for writing: " << TEXT("../Bin/Resources/Textures/Terrain/SaveTest.bmp") << std::endl;
+		cout << "Failed to open file for writing: " << pHeightMapFilePath << endl;
 		return E_FAIL;
 	}
 
@@ -510,7 +516,7 @@ HRESULT CVIBuffer_Terrain::Save_HeightMap()
 
 	ofs.close();
 	if (!ofs.good()) {
-		std::cerr << "Error occurred at writing time!" << std::endl;
+		cout << "Error occurred at writing time!" << endl;
 	}
 
 	return S_OK;
