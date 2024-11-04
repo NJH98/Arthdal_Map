@@ -86,11 +86,10 @@ PS_OUT PS_MAIN(PS_IN In)
     vector vDestNomal = g_NomalTexture[1].Sample(LinearSampler, In.vTexcoord * 30.f);
 
     vector vMtrlNomal = vSourNomal * vMask.r + vDestNomal * (1.f - vMask.r);
-
-	// 최종 노말값..?
-    Out.vNormal = vector(vMtrlNomal.rgb, 1.f);
-	// -1.f ~ 1.f -> 0.f ~ 1.f
-    //Out.vNormal = vector(In.vNormal.xyz * 0.5f + 0.5f, 0.f);
+	 
+	// 최종 노말값
+	// -1.f ~ 1.f -> 0.f ~ 1.f  최소값 0으로 최댓값 1로 조정
+    Out.vNormal = vector((In.vNormal.xyz + vMtrlNomal.rgb) * 0.5f + 0.5f, 0.f);
 	
 	// 픽셀피킹을 위한 깊이값
 	Out.vDepth = vector(In.vProjPos.z / In.vProjPos.w, In.vProjPos.w / 1000.f, 0.f, 0.f);

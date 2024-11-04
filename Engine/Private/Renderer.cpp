@@ -116,10 +116,10 @@ HRESULT CRenderer::Initialize()
 	if (FAILED(m_pGameInstance->Ready_RT_Debug(TEXT("Target_Final"), 600.f, 100.f, 200.f, 200.f)))
 		return E_FAIL;
 
-	if (FAILED(m_pGameInstance->Ready_RT_Debug(TEXT("Target_Blur_X"), 1280.f * 0.5f, 720.f * 0.5f, 1280.f, 720.f)))
+	if (FAILED(m_pGameInstance->Ready_RT_Debug(TEXT("Target_Blur_X"), 1600.f * 0.5f, 720.f * 0.5f, 1600.f, 900.f)))
 		return E_FAIL;
 
-	if (FAILED(m_pGameInstance->Ready_RT_Debug(TEXT("Target_Blur_Y"), 1280.f * 0.5f, 720.f * 0.5f, 1280.f, 720.f)))
+	if (FAILED(m_pGameInstance->Ready_RT_Debug(TEXT("Target_Blur_Y"), 1600.f * 0.5f, 720.f * 0.5f, 1600.f, 900.f)))
 		return E_FAIL;
 
 
@@ -224,8 +224,8 @@ HRESULT CRenderer::Render_ShadowObj()
 	ZeroMemory(&ViewPortDesc, sizeof(D3D11_VIEWPORT));
 	ViewPortDesc.TopLeftX = 0;
 	ViewPortDesc.TopLeftY = 0;
-	ViewPortDesc.Width = (_float)1280.f;
-	ViewPortDesc.Height = (_float)720.f;
+	ViewPortDesc.Width = (_float)1600.f;
+	ViewPortDesc.Height = (_float)900.f;
 	ViewPortDesc.MinDepth = 0.f;
 	ViewPortDesc.MaxDepth = 1.f;
 

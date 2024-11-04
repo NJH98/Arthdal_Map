@@ -258,7 +258,7 @@ PS_OUT PS_MAIN_BLUR_X(PS_IN In)
 
 	for (int i = -6; i < 7; i++)
 	{
-		vBlurUV = In.vTexcoord + float2(1.f / 1280.f * i, 0.f);
+		vBlurUV = In.vTexcoord + float2(1.f / 1600.f * i, 0.f);
 		Out.vColor += g_fWeights[i + 6] * g_FinalTexture.Sample(LinearSampler, vBlurUV);
 		
 	}
@@ -276,7 +276,7 @@ PS_OUT PS_MAIN_BLUR_Y(PS_IN In)
 
 	for (int i = -6; i < 7; i++)
 	{
-		vBlurUV = In.vTexcoord + float2(0.f, 1.f / 720.f * i);
+		vBlurUV = In.vTexcoord + float2(0.f, 1.f / 900.f * i);
 		Out.vColor += g_fWeights[i + 6] * g_BlurXTexture.Sample(LinearSampler, vBlurUV);
 
 	}
