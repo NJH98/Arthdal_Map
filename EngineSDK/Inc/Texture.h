@@ -22,10 +22,17 @@ public:
 	HRESULT Bind_ShadeResource(class CShader* pShader, const _char* pConstantName, _uint iTextureIndex);
 	HRESULT Bind_ShadeResources(class CShader* pShader, const _char* pConstantName);
 
+	HRESULT Add_MaskTexture();
+	HRESULT Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures);
 
 private:
 	vector<ID3D11ShaderResourceView*>		m_SRVs;
+	vector<ID3D11Resource*>					m_OriginTexture;
 	_uint									m_iNumTextures = { 0 };
+
+	vector<ID3D11Texture2D*>				m_StagingTexture;
+	vector<ID3D11Texture2D*>				m_ShaderTexture;
+
 
 public:
 	static CTexture* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _tchar* pTextureFilePath, _uint iNumTextures);

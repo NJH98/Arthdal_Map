@@ -2,12 +2,8 @@
 
 matrix			g_WorldMatrix, g_ViewMatrix, g_ProjMatrix;
 
-vector			g_vBrushPos = vector(30.f, 0.f, 10.f, 1.f);
-float			g_fBrushRange = 7.f;
-
 texture2D		g_DiffuseTexture[2]; /* 지형 픽셀이 빛을 받으면 반사해야할 재질정보를 담은것이다. */
 texture2D		g_NomalTexture[2];
-texture2D		g_BrushTexture;
 texture2D		g_MaskTexture;
 
 float3			g_MouseWorldPos;

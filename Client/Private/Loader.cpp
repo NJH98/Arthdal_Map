@@ -127,7 +127,7 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 
 	/* For. Prototype_Component_Texture_Mask */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Mask"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Mask.bmp"), 1))))
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Mask.bmp"), 0))))
 		return E_FAIL;
 
 	/* For. Prototype_Component_Texture_Sky */

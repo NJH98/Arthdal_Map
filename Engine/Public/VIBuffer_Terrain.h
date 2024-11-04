@@ -28,6 +28,9 @@ public:
 	void Change_Height(_float Range, _float HowMuch);
 	HRESULT Save_HeightMap(const _tchar* pHeightMapFilePath);
 
+	_uint Get_VerticesX() { return m_iNumVerticesX - 1; }
+	_uint Get_VerticesZ() { return m_iNumVerticesZ - 1; }
+
 private:
 	_uint			m_iNumVerticesX = {};
 	_uint			m_iNumVerticesZ = {};

@@ -11,6 +11,7 @@ CTexture::CTexture(const CTexture & Prototype)
 	: CComponent { Prototype }
 	, m_iNumTextures { Prototype.m_iNumTextures }
 	, m_SRVs { Prototype.m_SRVs }
+	, m_OriginTexture{ Prototype.m_OriginTexture }
 {
 	for (auto& pSRV : m_SRVs)
 		Safe_AddRef(pSRV);
@@ -25,8 +26,6 @@ HRESULT CTexture::Initialize_Prototype(const _tchar * pTextureFilePath, _uint iN
 	_tchar			szFullPath[MAX_PATH] = TEXT("");
 	_tchar			szExt[MAX_PATH] = TEXT("");
 
-	/* D:\정의훈\145\3D\Framework\Client\Bin\Resources\Textures\11.dds */
-	/* ..\Bin\Resources\Textures\11.dds */
 	_wsplitpath_s(pTextureFilePath, nullptr, 0, nullptr, 0, nullptr, 0, szExt, MAX_PATH);
 
 	for (size_t i = 0; i < m_iNumTextures; i++)
@@ -34,33 +33,26 @@ HRESULT CTexture::Initialize_Prototype(const _tchar * pTextureFilePath, _uint iN
 		wsprintf(szFullPath, pTextureFilePath, i);
 
 		ID3D11ShaderResourceView* pSRV = { nullptr };
-
+		ID3D11Resource* pTextureResource = nullptr;
 		HRESULT		hr = { 0 };
-
-		/* 나는 텍스쳐를 로드할 때 ID3D11Texture2D를 받아오지 않는다?! */
-		/* ID3D11Texture2D로 할 수 있는 일?  */
-		/* 1. : 실제 사용할 수 있는 텍스쳐(View)를 만들어낸다. */
-		/* 2. : 텍스쳐의 정보를 직접 수정하기위해서 Lock, unLock(Map, unmap)을 수행한다. */
-		/* 3. : 실제 파일로 저장한다. */
-
-		/* 쉐이더에 올리고 샘플링하기위한 텍스쳐들!!! */
 
 		if (false == lstrcmp(TEXT(".dds"), szExt))			
 		{
-			hr = CreateDDSTextureFromFile(m_pDevice, szFullPath, nullptr, &pSRV);
+			hr = CreateDDSTextureFromFile(m_pDevice, szFullPath, &pTextureResource, &pSRV);
 		}
 		else if (false == lstrcmp(TEXT(".tga"), szExt))
 			return E_FAIL;
 
 		else
 		{
-			hr = CreateWICTextureFromFile(m_pDevice, szFullPath, nullptr, &pSRV);
+			hr = CreateWICTextureFromFile(m_pDevice, szFullPath, &pTextureResource, &pSRV);
 		}
 
 		if (FAILED(hr))
 			return E_FAIL;
 
 		m_SRVs.emplace_back(pSRV);
+		m_OriginTexture.emplace_back(pTextureResource);
 	}
 
 	return S_OK;
@@ -83,6 +75,102 @@ HRESULT CTexture::Bind_ShadeResources(CShader * pShader, const _char * pConstant
 {
 	return pShader->Bind_SRVs(pConstantName, &m_SRVs.front(), m_iNumTextures);
 }
+
+HRESULT CTexture::Add_MaskTexture()
+{
+	// 텍스쳐 색상 입히는 용도의 subresource_data ( 흰색 불투명 )
+	vector<UINT8> initData(256 * 256 * 4, 255); 
+	D3D11_SUBRESOURCE_DATA SubresourceData = {};
+	SubresourceData.pSysMem = initData.data();
+	SubresourceData.SysMemPitch = 256 * 4;
+
+	// CPU 접근용 Staging 텍스쳐
+	D3D11_TEXTURE2D_DESC stagingDesc = {};
+	stagingDesc.Width = 256;
+	stagingDesc.Height = 256;
+	stagingDesc.MipLevels = 1;
+	stagingDesc.ArraySize = 1;
+	stagingDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	stagingDesc.Usage = D3D11_USAGE_STAGING;
+	stagingDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+	stagingDesc.BindFlags = 0;
+	stagingDesc.MiscFlags = 0;
+	stagingDesc.SampleDesc.Count = 1;
+	stagingDesc.SampleDesc.Quality = 0;
+
+	// 텍스처 생성
+	ID3D11Texture2D* pStagingTexture = nullptr;
+	if (FAILED(m_pDevice->CreateTexture2D(&stagingDesc, &SubresourceData, &pStagingTexture))) {
+		MSG_BOX(TEXT("Failed to Mask Texture Stageing"));
+		return E_FAIL;
+	}
+	m_StagingTexture.push_back(pStagingTexture);
+
+	// GPU 접근용 텍스처 설명 설정 (셰이더 리소스로 사용)
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = 256;
+	textureDesc.Height = 256;
+	textureDesc.MipLevels = 1;
+	textureDesc.ArraySize = 1;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.MiscFlags = 0;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+
+	// 텍스처 생성
+	ID3D11Texture2D* pTexture = nullptr;
+	if (FAILED(m_pDevice->CreateTexture2D(&textureDesc, &SubresourceData, &pTexture))) {
+		MSG_BOX(TEXT("Failed to Mask Texture"));
+		return E_FAIL;
+	}
+	m_ShaderTexture.push_back(pTexture);
+
+	// ShaderResourceView 생성
+	ID3D11ShaderResourceView* pShaderResourceView = nullptr;
+	if (FAILED(m_pDevice->CreateShaderResourceView(pTexture, nullptr, &pShaderResourceView))) {
+		MSG_BOX(TEXT("Failed to create Shader Resource View"));
+		return E_FAIL;
+	}
+	m_SRVs.emplace_back(pShaderResourceView);
+
+	m_iNumTextures++;
+
+	return S_OK;
+}
+
+HRESULT CTexture::Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures)
+{
+	if (iChoiceTextures > m_iNumTextures)
+		return E_FAIL;
+
+	// CPU용 스테이징 텍스쳐를 맵핑
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	if (FAILED(m_pContext->Map(m_StagingTexture[iChoiceTextures], 0, D3D11_MAP_WRITE, 0, &mappedResource))) {
+		MSG_BOX(TEXT("Failed to map Staging Texture"));
+		return E_FAIL;
+	}
+
+	// 텍스처 데이터에 접근하여 R 값을 255로 설정
+	UINT8* pTexels = static_cast<UINT8*>(mappedResource.pData);
+
+	UINT8* pixel = pTexels + _uint(PickPos2d.y) * mappedResource.RowPitch + _uint(PickPos2d.x) * 4;
+	pixel[0] = 0; // R 값
+	pixel[1] = 0; // G 값(변경하지 않음)
+	pixel[2] = 0; // B 값(변경하지 않음)
+	//pixel[3] = 0; // A 값(변경하지 않음)
+
+	// 언맵하여 변경사항 반영
+	m_pContext->Unmap(m_StagingTexture[iChoiceTextures], 0);
+
+	// pStagingTexture의 데이터를 pTexture로 복사
+	m_pContext->CopyResource(m_ShaderTexture[iChoiceTextures], m_StagingTexture[iChoiceTextures]);
+
+	return S_OK;
+}
+
 
 CTexture * CTexture::Create(ID3D11Device * pDevice, ID3D11DeviceContext * pContext, const _tchar * pTextureFilePath, _uint iNumTextures)
 {
