@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Component.h"
+#include <VIBuffer_Terrain.h>
 
 /* DirectXTex Lib */ /* .dds, .tga, wic(.jpg, .png, .bmp etc) */
 /* DirectXTK Lib ToolKit */ /* .dds, wic(.jpg, .png, .bmp etc) */
@@ -22,8 +23,11 @@ public:
 	HRESULT Bind_ShadeResource(class CShader* pShader, const _char* pConstantName, _uint iTextureIndex);
 	HRESULT Bind_ShadeResources(class CShader* pShader, const _char* pConstantName);
 
+	_uint Get_TextureNum() const { return m_iNumTextures; }
+
 	HRESULT Add_MaskTexture();
-	HRESULT Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures);
+	HRESULT Delete_MaskTexture(_uint iChoiceTextures);
+	HRESULT Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures, _uint Range = 1);
 
 private:
 	vector<ID3D11ShaderResourceView*>		m_SRVs;

@@ -30,7 +30,8 @@ public:
 	virtual HRESULT Render() override;
 
 public:
-	CVIBuffer_Terrain* Get_VIBuffer() { return m_pVIBufferCom; }
+	CVIBuffer_Terrain*	Get_VIBuffer() { return m_pVIBufferCom; }
+	CTexture* Get_Texture(_uint Texture) { return m_pTextureCom[Texture]; }
 
 private:
 	CShader*				m_pShaderCom = { nullptr };

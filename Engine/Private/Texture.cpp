@@ -15,6 +15,9 @@ CTexture::CTexture(const CTexture & Prototype)
 {
 	for (auto& pSRV : m_SRVs)
 		Safe_AddRef(pSRV);
+
+	for (auto& pOriginTexture : m_OriginTexture)
+		Safe_AddRef(pOriginTexture);
 }
 
 HRESULT CTexture::Initialize_Prototype(const _tchar * pTextureFilePath, _uint iNumTextures)
@@ -141,7 +144,38 @@ HRESULT CTexture::Add_MaskTexture()
 	return S_OK;
 }
 
-HRESULT CTexture::Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures)
+HRESULT CTexture::Delete_MaskTexture(_uint iChoiceTextures)
+{
+	if (m_iNumTextures == 0)
+		return S_OK;
+
+	if (iChoiceTextures > m_iNumTextures)
+		return E_FAIL;
+
+	auto iterStaging = m_StagingTexture.begin();
+	auto iterShader = m_ShaderTexture.begin();
+	auto iterSRV = m_SRVs.begin();
+
+	for (_uint i = 0; i < iChoiceTextures; i++) {
+		iterStaging++;
+		iterShader++;
+		iterSRV++;
+	}
+
+	Safe_Release(*iterStaging);
+	m_StagingTexture.erase(iterStaging);
+
+	Safe_Release(*iterShader);
+	m_ShaderTexture.erase(iterShader);
+
+	Safe_Release(*iterSRV);
+	m_SRVs.erase(iterSRV);
+
+	m_iNumTextures--;
+	return S_OK;
+}
+
+HRESULT CTexture::Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures, _uint Range)
 {
 	if (iChoiceTextures > m_iNumTextures)
 		return E_FAIL;
@@ -158,9 +192,44 @@ HRESULT CTexture::Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures)
 
 	UINT8* pixel = pTexels + _uint(PickPos2d.y) * mappedResource.RowPitch + _uint(PickPos2d.x) * 4;
 	pixel[0] = 0; // R 값
-	pixel[1] = 0; // G 값(변경하지 않음)
-	pixel[2] = 0; // B 값(변경하지 않음)
+	pixel[1] = 0; // G 값
+	pixel[2] = 0; // B 값
 	//pixel[3] = 0; // A 값(변경하지 않음)
+
+	// 좌 하단
+	_uint LD_Pixely = {};
+	_uint LD_Pixelx = {};
+	if (_uint(PickPos2d.y) > Range)
+		LD_Pixely = _uint(PickPos2d.y) - Range;
+	else
+		LD_Pixely = 0;
+
+	if (_uint(PickPos2d.x) > Range)
+		LD_Pixelx = _uint(PickPos2d.x) - Range;
+	else
+		LD_Pixelx = 0;
+
+	pixel = pTexels + LD_Pixely * mappedResource.RowPitch + LD_Pixelx * 4;
+	pixel[0] = 0; // R 값
+	pixel[1] = 0; // G 값
+	pixel[2] = 0; // B 값
+	// 우 상단
+	_uint RT_Pixely = {};
+	_uint RT_Pixelx = {};
+	RT_Pixely = _uint(PickPos2d.y) + Range;
+	if (RT_Pixely > 255) {
+		RT_Pixely = 255;
+	}
+
+	RT_Pixelx = _uint(PickPos2d.x) + Range;
+	if (RT_Pixelx > 255) {
+		RT_Pixelx = 255;
+	}
+
+	pixel = pTexels + RT_Pixely * mappedResource.RowPitch + RT_Pixelx * 4;
+	pixel[0] = 0; // R 값
+	pixel[1] = 0; // G 값
+	pixel[2] = 0; // B 값
 
 	// 언맵하여 변경사항 반영
 	m_pContext->Unmap(m_StagingTexture[iChoiceTextures], 0);
@@ -206,6 +275,17 @@ void CTexture::Free()
 
 	for (auto& pSRV : m_SRVs)
 		Safe_Release(pSRV);
-
 	m_SRVs.clear();
+
+	for (auto& pOriginTexture : m_OriginTexture)
+		Safe_Release(pOriginTexture);
+	m_OriginTexture.clear();
+
+	for (auto& pStagingTexture : m_StagingTexture)
+		Safe_Release(pStagingTexture);
+	m_StagingTexture.clear();
+
+	for (auto& pShaderTexture : m_ShaderTexture)
+		Safe_Release(pShaderTexture);
+	m_ShaderTexture.clear();
 }

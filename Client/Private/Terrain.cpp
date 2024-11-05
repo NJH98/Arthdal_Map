@@ -44,30 +44,6 @@ _int CTerrain::Update(_float fTimeDelta)
 	}
 
 	if (m_pGameInstance->Get_DIKeyState_Once(DIK_Y)) {
-		if (FAILED(m_pTextureCom[TEXTURE_MASK]->Add_MaskTexture())) 
-		{
-			cout << "Fail" << endl;
-		}
-	}
-
-	if (m_pGameInstance->Get_DIMouseState(DIMK_LBUTTON)) {
-		_float2 test{};
-		_float3 PickPos{};
-		m_pGameInstance->Picking(&PickPos);
-
-		test.x = (PickPos.x / _float(m_pVIBufferCom->Get_VerticesX())) * 256.f;
-		test.y = (PickPos.z / _float(m_pVIBufferCom->Get_VerticesZ())) * 256.f;
-
-		/*cout << PickPos.x << "," << PickPos.z << endl;
-		cout << _uint(test.x) << "," << _uint(test.y) << endl;*/
-
-		if (test.x + test.y > 1.f) 
-		{
-			if (FAILED(m_pTextureCom[TEXTURE_MASK]->Pick_ChangeMask(test, 0)))
-			{
-				cout << "Fail" << endl;
-			}
-		}
 	}
 
 	return OBJ_NOEVENT;

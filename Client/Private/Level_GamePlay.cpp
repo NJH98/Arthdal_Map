@@ -86,12 +86,24 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 	}
 	ImGui::End();
 
+	VectorClear();
+
 	if (m_pGameInstance->Get_DIKeyState_Once(DIK_T)) {
 		
 	}
+
 }
 
 #pragma region Imgui 함수 정리
+
+#pragma region 파일경로 관련 함수
+static string wstring_to_string(const wstring& wstr) {
+	wstring_convert<codecvt_utf8<wchar_t>> converter;
+	return converter.to_bytes(wstr);
+
+	// wstring 으로 작성된 이름을 string으로 변환 > 이후 .ctr 을 붙여서 
+	// char* 형으로 사용이 가능하다 imgui 에서는 char* 를 사용하기에 만든 함수
+}
 
 static string WideCharToMultiByte(const wstring& wstr) {
 	int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
@@ -133,6 +145,7 @@ void CLevel_GamePlay::ShowFileDialog()
 		ImGuiFileDialog::Instance()->Close();
 	}
 }
+#pragma endregion
 
 #pragma region Terrain 작동 코드
 
@@ -144,13 +157,25 @@ HRESULT CLevel_GamePlay::Terrain_Imgui(_float fTimeDelta)
 		if (FAILED(Create_Terrain_Input(fTimeDelta)))
 			return E_FAIL;
 
-		// 지형의 높이를 조정하는 코드
-		if (FAILED(Terrain_HeightChange(fTimeDelta)))
-			return E_FAIL;
+		if (ImGui::CollapsingHeader("Height")) 
+		{
+			// 지형의 높이를 조정하는 코드
+			if (FAILED(Terrain_HeightChange(fTimeDelta)))
+				return E_FAIL;
 
-		// 지형의 높이를 저장, 불러오기 코드
-		if (FAILED(Terrain_HeightSaveLoad(fTimeDelta)))
-			return E_FAIL;
+			// 지형의 높이를 저장, 불러오기 코드
+			if (FAILED(Terrain_HeightSaveLoad(fTimeDelta)))
+				return E_FAIL;
+		}
+
+		if (ImGui::CollapsingHeader("Mask"))
+		{
+			if (FAILED(Terrain_Mask_ListBox(fTimeDelta)))
+				return E_FAIL;
+
+			if (FAILED(Terrain_Masking(fTimeDelta)))
+				return E_FAIL;
+		}
 	}
 
 	return S_OK;
@@ -170,6 +195,7 @@ HRESULT CLevel_GamePlay::Create_Terrain_Input(_float fTimeDelta)
 		if (test) {
 			m_pTerrain->Set_Dead(true);
 			Safe_Release(m_pTerrain);
+			m_pTerrain = nullptr;
 		}
 	}
 	ImGui::SameLine();
@@ -178,6 +204,7 @@ HRESULT CLevel_GamePlay::Create_Terrain_Input(_float fTimeDelta)
 		// 기존의 지형 삭제
 		m_pTerrain->Set_Dead(true);
 		Safe_Release(m_pTerrain);
+		m_pTerrain = nullptr;
 
 		// 신규 지형 생성 ( 지형은 언제나 1개로 기준잡는다 )
 		CGameObject*	pTerrain = {};
@@ -204,9 +231,9 @@ HRESULT CLevel_GamePlay::Terrain_HeightChange(_float fTimeDelta)
 
 	ImGui::PushItemWidth(150); // 크기조정
 	static float TerrainRange = 0.f;
-	ImGui::InputFloat("Range", &TerrainRange, 0.5f);
+	ImGui::InputFloat("Height_Range", &TerrainRange, 0.5f);
 	static float TerrainHeightValue = 0.f;
-	ImGui::InputFloat("Value", &TerrainHeightValue, 0.5f);
+	ImGui::InputFloat("Height_Value", &TerrainHeightValue, 0.5f);
 
 	static bool bHeight_Picking;
 	ImGui::Checkbox("Height Picking", &bHeight_Picking);
@@ -279,6 +306,7 @@ HRESULT CLevel_GamePlay::Terrain_HeightSaveLoad(_float fTimeDelta)
 		// 기존의 지형 삭제
 		m_pTerrain->Set_Dead(true);
 		Safe_Release(m_pTerrain);
+		m_pTerrain = nullptr;
 
 		// 새로운 객체 생성/받아오기
 		CGameObject* pTerrain = {};
@@ -304,6 +332,118 @@ HRESULT CLevel_GamePlay::Terrain_HeightSaveLoad(_float fTimeDelta)
 	return S_OK;
 }
 
+HRESULT CLevel_GamePlay::Terrain_Mask_ListBox(_float fTimeDelta)
+{
+	CTexture* pMaskTexture = nullptr;
+
+	if (m_pTerrain != nullptr) {
+		pMaskTexture = m_pTerrain->Get_Texture(CTerrain::TEXTURE_MASK);
+
+		for (_uint i = 0; i < pMaskTexture->Get_TextureNum(); i++) {
+			_wstring MaskTexturename = L"MASK_" + to_wstring(i);
+			m_vecString_Mask.push_back(MaskTexturename);
+		}
+	}
+
+	ImGui::SeparatorText("Mask image List");
+	ImGui::PushItemWidth(200); // 크기조정
+	if (ImGui::BeginListBox("##Mask_List"))
+	{
+		if (m_pTerrain != nullptr) {
+			for (int n = 0; n < m_vecString_Mask.size(); n++)
+			{
+				bool is_selected = (m_iSelectTile == n);
+				string MapName = wstring_to_string(m_vecString_Mask[n]);
+				if (ImGui::Selectable(MapName.c_str(), is_selected))
+				{
+					m_iSelectTile = n;				// 현제 선택한 리스트 박스의 인덱스
+				}
+
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();
+				// 반복문으로 리스트박스의 선택된 객체 찾기
+			}
+		}
+
+		ImGui::EndListBox();
+	}
+	ImGui::PopItemWidth();
+
+	ImGui::PushItemWidth(100); // 크기조정
+	if (ImGui::Button("Add_Mask_Tex")) {
+		if (FAILED(pMaskTexture->Add_MaskTexture()))
+			return E_FAIL;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Del_Mask_Tex")) {
+		if (FAILED(pMaskTexture->Delete_MaskTexture(m_iSelectTile)))
+			return E_FAIL;
+	}
+
+	ImGui::PopItemWidth();
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Terrain_Masking(_float fTimeDelta)
+{
+	ImGui::SeparatorText("Masking_Change");
+
+	ImGui::PushItemWidth(150); // 크기조정
+	static _int MaskRange = 1.f;
+	ImGui::InputInt("Mask_Range", &MaskRange);
+
+	static bool bMask_Picking;
+	ImGui::Checkbox("Mask Picking", &bMask_Picking);
+
+	ImGui::PopItemWidth();
+
+	if (bMask_Picking)
+	{
+		if (m_pGameInstance->Get_DIMouseState_Once(DIMK_LBUTTON) && m_fTerrainTimeCheck > 0.2f) {
+			_float2 test{};
+			_float3 PickPos{};
+			m_pGameInstance->Picking(&PickPos);
+			
+			test.x = (PickPos.x / _float(m_pTerrain->Get_VIBuffer()->Get_VerticesX())) * 256.f;
+			test.y = (PickPos.z / _float(m_pTerrain->Get_VIBuffer()->Get_VerticesZ())) * 256.f;
+
+			if (m_pGameInstance->Get_DIKeyState(DIK_Q)) {
+				if (0.f <= test.x && 0.f <= test.y &&
+					test.x <= 256.f && test.y <= 256.f) 
+				{
+					CTexture* pMaskTexture = m_pTerrain->Get_Texture(CTerrain::TEXTURE_MASK);
+					pMaskTexture->Pick_ChangeMask(test, m_iSelectTile, MaskRange);
+				}
+			}
+
+			if (m_pGameInstance->Get_DIKeyState(DIK_E)) {
+				if (0.f <= test.x && 0.f <= test.y &&
+					test.x <= 256.f && test.y <= 256.f) 
+				{
+				
+				}
+			}
+
+		}
+
+		if (m_fTerrainTimeCheck < 0.2f)
+			m_fTerrainTimeCheck += fTimeDelta;
+	}
+
+
+	return S_OK;
+}
+
+#pragma endregion
+
+#pragma region 초기화 코드
+HRESULT CLevel_GamePlay::VectorClear()
+{
+	m_vecString_Mask.clear();
+
+	return S_OK;
+}
 #pragma endregion
 
 #pragma endregion

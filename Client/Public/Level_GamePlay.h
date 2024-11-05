@@ -45,12 +45,19 @@ private:
 	string filePath{};
 
 	// Terrain 용
-	class CTerrain* m_pTerrain = { nullptr };
-	_float			m_fTerrainTimeCheck = 0.f;
 	HRESULT Terrain_Imgui(_float fTimeDelta);
 	HRESULT	Create_Terrain_Input(_float fTimeDelta);
 	HRESULT Terrain_HeightChange(_float fTimeDelta);
 	HRESULT Terrain_HeightSaveLoad(_float fTimeDelta);
+	HRESULT Terrain_Mask_ListBox(_float fTimeDelta);
+	HRESULT Terrain_Masking(_float fTimeDelta);
+
+	class CTerrain*		m_pTerrain = { nullptr };
+	_float				m_fTerrainTimeCheck = 0.f;
+	vector<_wstring>	m_vecString_Mask;			// 마스크 리스트 박스 벡터
+	_uint				m_iSelectTile = 0;			// 현제 선택중인 마스크 번호
+
+	HRESULT VectorClear();
 };
 
 END
