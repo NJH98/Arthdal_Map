@@ -2,11 +2,11 @@
 
 matrix			g_WorldMatrix, g_ViewMatrix, g_ProjMatrix;
 
-texture2D		g_DiffuseTexture[2]; /* 지형 픽셀이 빛을 받으면 반사해야할 재질정보를 담은것이다. */
-texture2D		g_NomalTexture[2];
+texture2D		g_DiffuseTexture[21]; /* 지형 픽셀이 빛을 받으면 반사해야할 재질정보를 담은것이다. */
+texture2D		g_NomalTexture[21];
 texture2D		g_MaskTexture;
 
-float3			g_MouseWorldPos;
+int				g_BastTextureNum = 0;
 
 struct VS_IN
 {
@@ -69,19 +69,19 @@ PS_OUT PS_MAIN(PS_IN In)
     vector vMask = g_MaskTexture.Sample(LinearSampler, In.vTexcoord);
 
 	// 디퓨즈 이미지
-	vector		vSourDiffuse = g_DiffuseTexture[0].Sample(LinearSampler, In.vTexcoord * 30.f);
+    vector		vBaseDiffuse = g_DiffuseTexture[0].Sample(LinearSampler, In.vTexcoord * 30.f);
 	vector		vDestDiffuse = g_DiffuseTexture[1].Sample(LinearSampler, In.vTexcoord * 30.f);
 
-	vector		vMtrlDiffuse = vSourDiffuse * vMask.r + vDestDiffuse * (1.f - vMask.r) ;
+    vector		vMtrlDiffuse = vBaseDiffuse * vMask.r + vDestDiffuse * (1.f - vMask.r);
 
 	// 최종 색상
 	Out.vDiffuse = vector(vMtrlDiffuse.rgb, 1.f);
 	
 	// 노말 이미지
-    vector vSourNomal = g_NomalTexture[0].Sample(LinearSampler, In.vTexcoord * 30.f);
+    vector vBaseNomal = g_NomalTexture[0].Sample(LinearSampler, In.vTexcoord * 30.f);
     vector vDestNomal = g_NomalTexture[1].Sample(LinearSampler, In.vTexcoord * 30.f);
 
-    vector vMtrlNomal = vSourNomal * vMask.r + vDestNomal * (1.f - vMask.r);
+    vector vMtrlNomal = vBaseNomal * vMask.r + vDestNomal * (1.f - vMask.r);
 	 
 	// 최종 노말값
 	// -1.f ~ 1.f -> 0.f ~ 1.f  최소값 0으로 최댓값 1로 조정

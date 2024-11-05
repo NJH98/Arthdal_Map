@@ -33,11 +33,16 @@ public:
 	CVIBuffer_Terrain*	Get_VIBuffer() { return m_pVIBufferCom; }
 	CTexture* Get_Texture(_uint Texture) { return m_pTextureCom[Texture]; }
 
+	_uint Get_BaseTextureNum() { return m_iBaseTextureNum; }
+	void Set_BaseTextureNum(_uint TextureNum) { m_iBaseTextureNum = TextureNum; }
+
 private:
 	CShader*				m_pShaderCom = { nullptr };
 	CTexture*				m_pTextureCom[TEXTURE_END] = { nullptr };
 	//CNavigation*			m_pNavigationCom = { nullptr };
 	CVIBuffer_Terrain*		m_pVIBufferCom = { nullptr };
+
+	_uint					m_iBaseTextureNum = 0;
 
 private:
 	HRESULT Ready_Components(void* pArg);
