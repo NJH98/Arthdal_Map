@@ -175,26 +175,12 @@ HRESULT CTexture::Delete_MaskTexture(_uint iChoiceTextures)
 	return S_OK;
 }
 
-HRESULT CTexture::Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures, _uint Range)
+HRESULT CTexture::Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures, _uint Range, _uint RGB)
 {
 	if (iChoiceTextures > m_iNumTextures)
 		return E_FAIL;
 
-	// CPU용 스테이징 텍스쳐를 맵핑
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	if (FAILED(m_pContext->Map(m_StagingTexture[iChoiceTextures], 0, D3D11_MAP_WRITE, 0, &mappedResource))) {
-		MSG_BOX(TEXT("Failed to map Staging Texture"));
-		return E_FAIL;
-	}
-
-	// 텍스처 데이터에 접근하여 R 값을 255로 설정
-	UINT8* pTexels = static_cast<UINT8*>(mappedResource.pData);
-
-	UINT8* pixel = pTexels + _uint(PickPos2d.y) * mappedResource.RowPitch + _uint(PickPos2d.x) * 4;
-	pixel[0] = 0; // R 값
-	pixel[1] = 0; // G 값
-	pixel[2] = 0; // B 값
-	//pixel[3] = 0; // A 값(변경하지 않음)
+	vector<Point> Point{};
 
 	// 좌 하단
 	_uint LD_Pixely = {};
@@ -209,10 +195,6 @@ HRESULT CTexture::Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures, _uin
 	else
 		LD_Pixelx = 0;
 
-	pixel = pTexels + LD_Pixely * mappedResource.RowPitch + LD_Pixelx * 4;
-	pixel[0] = 0; // R 값
-	pixel[1] = 0; // G 값
-	pixel[2] = 0; // B 값
 	// 우 상단
 	_uint RT_Pixely = {};
 	_uint RT_Pixelx = {};
@@ -226,10 +208,31 @@ HRESULT CTexture::Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures, _uin
 		RT_Pixelx = 255;
 	}
 
-	pixel = pTexels + RT_Pixely * mappedResource.RowPitch + RT_Pixelx * 4;
-	pixel[0] = 0; // R 값
-	pixel[1] = 0; // G 값
-	pixel[2] = 0; // B 값
+	for (_uint x = LD_Pixelx; x <= RT_Pixelx; ++x) {
+		for (_uint y = LD_Pixely; y <= RT_Pixely; ++y) {
+			Point.push_back({ x, y});
+		}
+	}
+
+	// CPU용 스테이징 텍스쳐를 맵핑
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	if (FAILED(m_pContext->Map(m_StagingTexture[iChoiceTextures], 0, D3D11_MAP_WRITE, 0, &mappedResource))) {
+		MSG_BOX(TEXT("Failed to map Staging Texture"));
+		return E_FAIL;
+	}
+
+	// 텍스처 데이터에 접근하여 R 값을 255로 설정
+	UINT8* pTexels = static_cast<UINT8*>(mappedResource.pData);
+
+
+	for (auto& iter : Point)
+	{
+		UINT8* pixel = pTexels + iter.y * mappedResource.RowPitch + iter.x * 4;
+		pixel[0] = RGB; // R 값
+		pixel[1] = RGB; // G 값
+		pixel[2] = RGB; // B 값
+		//pixel[3] = 0; // A 값(변경하지 않음)
+	}
 
 	// 언맵하여 변경사항 반영
 	m_pContext->Unmap(m_StagingTexture[iChoiceTextures], 0);

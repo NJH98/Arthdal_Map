@@ -10,6 +10,11 @@ BEGIN(Engine)
 
 class ENGINE_DLL CTexture final : public CComponent
 {	
+public:
+	struct Point {
+		_uint x, y;
+	};
+
 private:
 	CTexture(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CTexture(const CTexture& Prototype);
@@ -27,7 +32,7 @@ public:
 
 	HRESULT Add_MaskTexture();
 	HRESULT Delete_MaskTexture(_uint iChoiceTextures);
-	HRESULT Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures, _uint Range = 1);
+	HRESULT Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures, _uint Range, _uint RGB);
 
 private:
 	vector<ID3D11ShaderResourceView*>		m_SRVs;

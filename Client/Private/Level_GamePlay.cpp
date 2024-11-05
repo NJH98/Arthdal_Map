@@ -390,9 +390,10 @@ HRESULT CLevel_GamePlay::Terrain_Masking(_float fTimeDelta)
 	ImGui::SeparatorText("Masking_Change");
 
 	ImGui::PushItemWidth(150); // 크기조정
-	static _int MaskRange = 1.f;
+	static _int MaskRange = 1;
 	ImGui::InputInt("Mask_Range", &MaskRange);
-
+	static _int MaskRGB = 0;
+	ImGui::SliderInt("Mask_RGB", &MaskRGB, 0, 255);
 	static bool bMask_Picking;
 	ImGui::Checkbox("Mask Picking", &bMask_Picking);
 
@@ -400,7 +401,7 @@ HRESULT CLevel_GamePlay::Terrain_Masking(_float fTimeDelta)
 
 	if (bMask_Picking)
 	{
-		if (m_pGameInstance->Get_DIMouseState_Once(DIMK_LBUTTON) && m_fTerrainTimeCheck > 0.2f) {
+		if (m_pGameInstance->Get_DIMouseState(DIMK_LBUTTON) && m_fTerrainTimeCheck > 0.1f) {
 			_float2 test{};
 			_float3 PickPos{};
 			m_pGameInstance->Picking(&PickPos);
@@ -413,7 +414,7 @@ HRESULT CLevel_GamePlay::Terrain_Masking(_float fTimeDelta)
 					test.x <= 256.f && test.y <= 256.f) 
 				{
 					CTexture* pMaskTexture = m_pTerrain->Get_Texture(CTerrain::TEXTURE_MASK);
-					pMaskTexture->Pick_ChangeMask(test, m_iSelectTile, MaskRange);
+					pMaskTexture->Pick_ChangeMask(test, m_iSelectTile, MaskRange, MaskRGB);
 				}
 			}
 
@@ -421,7 +422,8 @@ HRESULT CLevel_GamePlay::Terrain_Masking(_float fTimeDelta)
 				if (0.f <= test.x && 0.f <= test.y &&
 					test.x <= 256.f && test.y <= 256.f) 
 				{
-				
+					CTexture* pMaskTexture = m_pTerrain->Get_Texture(CTerrain::TEXTURE_MASK);
+					pMaskTexture->Pick_ChangeMask(test, m_iSelectTile, MaskRange, 255);
 				}
 			}
 
