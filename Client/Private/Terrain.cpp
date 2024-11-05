@@ -29,6 +29,10 @@ HRESULT CTerrain::Initialize(void * pArg)
 	if (FAILED(Ready_Components(pArg)))
 		return E_FAIL;
 
+	for (_uint i = 0; i < 2; i++) {
+		m_pTextureCom[TEXTURE_MASK]->Add_MaskTexture();
+	}
+
 	return S_OK;
 }
 
@@ -44,6 +48,8 @@ _int CTerrain::Update(_float fTimeDelta)
 	}
 
 	if (m_pGameInstance->Get_DIKeyState_Once(DIK_Y)) {
+		m_pTextureCom[TEXTURE_DIFFUSE]->Swap_SRVs(0,1);
+		m_pTextureCom[TEXTURE_NORMAL]->Swap_SRVs(0,1);
 	}
 
 	return OBJ_NOEVENT;
@@ -73,11 +79,11 @@ HRESULT CTerrain::Render()
 	if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", &m_pGameInstance->Get_Transform_Float4x4(CPipeLine::D3DTS_PROJ))))
 		return E_FAIL;
 
-	if (FAILED(m_pTextureCom[TEXTURE_DIFFUSE]->Bind_ShadeResources(m_pShaderCom, "g_DiffuseTexture")))
+	if (FAILED(m_pTextureCom[TEXTURE_DIFFUSE]->Bind_ShadeResourcesMask(m_pShaderCom, "g_DiffuseTexture", 7)))
 		return E_FAIL;
-	if (FAILED(m_pTextureCom[TEXTURE_NORMAL]->Bind_ShadeResources(m_pShaderCom, "g_NomalTexture")))
+	if (FAILED(m_pTextureCom[TEXTURE_NORMAL]->Bind_ShadeResourcesMask(m_pShaderCom, "g_NomalTexture", 7)))
 		return E_FAIL;
-	if (FAILED(m_pTextureCom[TEXTURE_MASK]->Bind_ShadeResource(m_pShaderCom, "g_MaskTexture", 0)))
+	if (FAILED(m_pTextureCom[TEXTURE_MASK]->Bind_ShadeResourcesMask(m_pShaderCom, "g_MaskTexture", 2)))
 		return E_FAIL;
 
 	/*_float3 MousePick = m_pGameInstance->Get_GlobalData()->Pick_Pos;

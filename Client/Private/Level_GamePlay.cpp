@@ -157,6 +157,12 @@ HRESULT CLevel_GamePlay::Terrain_Imgui(_float fTimeDelta)
 		if (FAILED(Create_Terrain_Input(fTimeDelta)))
 			return E_FAIL;
 
+		string substring;
+		if (filePath.length() > 55) {
+			substring = filePath.substr(56);
+		}
+		ImGui::Text("%s", substring.c_str());
+
 		if (ImGui::CollapsingHeader("Height")) 
 		{
 			// 지형의 높이를 조정하는 코드
@@ -174,6 +180,9 @@ HRESULT CLevel_GamePlay::Terrain_Imgui(_float fTimeDelta)
 				return E_FAIL;
 
 			if (FAILED(Terrain_Masking(fTimeDelta)))
+				return E_FAIL;
+
+			if (FAILED(Terrain_MaskSaveLoad(fTimeDelta)))
 				return E_FAIL;
 		}
 	}
@@ -273,12 +282,6 @@ HRESULT CLevel_GamePlay::Terrain_HeightChange(_float fTimeDelta)
 HRESULT CLevel_GamePlay::Terrain_HeightSaveLoad(_float fTimeDelta)
 {
 	ImGui::SeparatorText("Save/Load_Height.bmp");
-
-	string substring;
-	if (filePath.length() > 55) {
-		substring = filePath.substr(56);
-	}
-	ImGui::Text("%s", substring.c_str());
 
 	ImGui::PushItemWidth(300); // 크기조정
 	if (ImGui::Button("  Save_Terrain_Height.bmp  ")) {
@@ -392,8 +395,10 @@ HRESULT CLevel_GamePlay::Terrain_Masking(_float fTimeDelta)
 	ImGui::PushItemWidth(150); // 크기조정
 	static _int MaskRange = 1;
 	ImGui::InputInt("Mask_Range", &MaskRange);
+	static _int MaskValue = 0;
+	ImGui::SliderInt("Mask_Value", &MaskValue, 0, 255);
 	static _int MaskRGB = 0;
-	ImGui::SliderInt("Mask_RGB", &MaskRGB, 0, 255);
+	ImGui::SliderInt("Mask_RGB", &MaskRGB, 0, 2);
 	static bool bMask_Picking;
 	ImGui::Checkbox("Mask Picking", &bMask_Picking);
 
@@ -414,7 +419,7 @@ HRESULT CLevel_GamePlay::Terrain_Masking(_float fTimeDelta)
 					test.x <= 256.f && test.y <= 256.f) 
 				{
 					CTexture* pMaskTexture = m_pTerrain->Get_Texture(CTerrain::TEXTURE_MASK);
-					pMaskTexture->Pick_ChangeMask(test, m_iSelectTile, MaskRange, MaskRGB);
+					pMaskTexture->Pick_ChangeMask(test, m_iSelectTile, MaskRange, MaskValue, MaskRGB);
 				}
 			}
 
@@ -423,7 +428,7 @@ HRESULT CLevel_GamePlay::Terrain_Masking(_float fTimeDelta)
 					test.x <= 256.f && test.y <= 256.f) 
 				{
 					CTexture* pMaskTexture = m_pTerrain->Get_Texture(CTerrain::TEXTURE_MASK);
-					pMaskTexture->Pick_ChangeMask(test, m_iSelectTile, MaskRange, 255);
+					pMaskTexture->Pick_ChangeMask(test, m_iSelectTile, MaskRange, 255, 3);
 				}
 			}
 
@@ -433,6 +438,30 @@ HRESULT CLevel_GamePlay::Terrain_Masking(_float fTimeDelta)
 			m_fTerrainTimeCheck += fTimeDelta;
 	}
 
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Terrain_MaskSaveLoad(_float fTimeDelta)
+{
+	ImGui::SeparatorText("Save/Load_Mask.bmp");
+
+	ImGui::PushItemWidth(300); // 크기조정
+	if (ImGui::Button("  Save_Terrain_Height.bmp  ")) {
+		if (filePath.length() < 55) {
+			MSG_BOX(TEXT("Chocie FilePath"));
+			return E_FAIL;
+		}
+
+		_tchar* wstrFilePath = stringToWchar(filePath);
+
+		if (FAILED(m_pTerrain->Get_Texture(CTerrain::TEXTURE_MASK)->Save_MaskTexture(wstrFilePath, m_iSelectTile)))
+		{
+			MSG_BOX(TEXT("Failed to Save"));
+		}
+
+		delete[] wstrFilePath;
+	}
 
 	return S_OK;
 }

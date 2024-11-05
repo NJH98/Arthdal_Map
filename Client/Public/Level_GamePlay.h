@@ -51,6 +51,7 @@ private:
 	HRESULT Terrain_HeightSaveLoad(_float fTimeDelta);
 	HRESULT Terrain_Mask_ListBox(_float fTimeDelta);
 	HRESULT Terrain_Masking(_float fTimeDelta);
+	HRESULT Terrain_MaskSaveLoad(_float fTimeDelta);
 
 	class CTerrain*		m_pTerrain = { nullptr };
 	_float				m_fTerrainTimeCheck = 0.f;

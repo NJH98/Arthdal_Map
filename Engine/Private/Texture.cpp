@@ -1,6 +1,35 @@
 #include "..\Public\Texture.h"
 #include "Shader.h"
 
+#include "wincodec.h"
+#include <fstream>
+#include <iostream>
+#include <cstdint>
+
+#pragma pack(push, 1)
+struct BMPHeaderTexture {
+	uint16_t bfType = 0x4D42; // 'BM'
+	uint32_t bfSize = 0;
+	uint16_t bfReserved1 = 0;
+	uint16_t bfReserved2 = 0;
+	uint32_t bfOffBits = 54;
+};
+
+struct BMPInfoHeaderTexture {
+	uint32_t biSize = 40;
+	int32_t biWidth = 0;
+	int32_t biHeight = 0;
+	uint16_t biPlanes = 1;
+	uint16_t biBitCount = 32;
+	uint32_t biCompression = 0;
+	uint32_t biSizeImage = 0;
+	int32_t biXPelsPerMeter = 0;
+	int32_t biYPelsPerMeter = 0;
+	uint32_t biClrUsed = 0;
+	uint32_t biClrImportant = 0;
+};
+#pragma pack(pop)
+
 CTexture::CTexture(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 	: CComponent { pDevice, pContext }
 {
@@ -77,6 +106,11 @@ HRESULT CTexture::Bind_ShadeResource(CShader * pShader, const _char * pConstantN
 HRESULT CTexture::Bind_ShadeResources(CShader * pShader, const _char * pConstantName)
 {
 	return pShader->Bind_SRVs(pConstantName, &m_SRVs.front(), m_iNumTextures);
+}
+
+HRESULT CTexture::Bind_ShadeResourcesMask(CShader* pShader, const _char* pConstantName, _uint iTextureNum)
+{
+	return pShader->Bind_SRVs(pConstantName, &m_SRVs.front(), iTextureNum);
 }
 
 HRESULT CTexture::Add_MaskTexture()
@@ -175,7 +209,7 @@ HRESULT CTexture::Delete_MaskTexture(_uint iChoiceTextures)
 	return S_OK;
 }
 
-HRESULT CTexture::Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures, _uint Range, _uint RGB)
+HRESULT CTexture::Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures, _uint Range, _uint Value, _uint RGB)
 {
 	if (iChoiceTextures > m_iNumTextures)
 		return E_FAIL;
@@ -221,16 +255,25 @@ HRESULT CTexture::Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures, _uin
 		return E_FAIL;
 	}
 
-	// 텍스처 데이터에 접근하여 R 값을 255로 설정
+	// 텍스처 데이터에 접근
 	UINT8* pTexels = static_cast<UINT8*>(mappedResource.pData);
 
 
 	for (auto& iter : Point)
 	{
 		UINT8* pixel = pTexels + iter.y * mappedResource.RowPitch + iter.x * 4;
-		pixel[0] = RGB; // R 값
-		pixel[1] = RGB; // G 값
-		pixel[2] = RGB; // B 값
+		switch (RGB)
+		{
+		case 0: pixel[0] = Value; break;
+		case 1: pixel[1] = Value; break;
+		case 2: pixel[2] = Value; break;
+		case 3: pixel[0] = Value; pixel[1] = Value; pixel[2] = Value; break;
+		default:
+			break;
+		}
+		//pixel[0] = Value; // R 값
+		//pixel[1] = Value; // G 값
+		//pixel[2] = Value; // B 값
 		//pixel[3] = 0; // A 값(변경하지 않음)
 	}
 
@@ -243,6 +286,71 @@ HRESULT CTexture::Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures, _uin
 	return S_OK;
 }
 
+HRESULT CTexture::Swap_SRVs(_uint iFirst, _uint iSecond)
+{
+	ID3D11ShaderResourceView* pSave = nullptr;
+
+	pSave = m_SRVs[iFirst];
+	m_SRVs[iFirst] = nullptr;
+	m_SRVs[iFirst] = m_SRVs[iSecond];
+	m_SRVs[iSecond] = nullptr;
+	m_SRVs[iSecond] = pSave;
+
+	return S_OK;
+}
+
+HRESULT CTexture::Save_MaskTexture(const _tchar* pHeightMapFilePath, _uint iChoiceTextures)
+{
+	BMPHeaderTexture bmpHeader;
+	BMPInfoHeaderTexture bmpInfoHeader;
+
+	bmpInfoHeader.biWidth = 256;
+	bmpInfoHeader.biHeight = 256;
+	bmpInfoHeader.biSizeImage = 256 * 256 * 4;
+
+	bmpHeader.bfSize = bmpHeader.bfOffBits + bmpInfoHeader.biSizeImage;
+
+	ofstream ofs(pHeightMapFilePath, ios::binary | ios::out);
+	if (!ofs) {
+		cout << "Failed to open file for writing: " << pHeightMapFilePath << endl;
+		return E_FAIL;
+	}
+
+	// Write headers
+	ofs.write(reinterpret_cast<char*>(&bmpHeader), sizeof(bmpHeader));
+	ofs.write(reinterpret_cast<char*>(&bmpInfoHeader), sizeof(bmpInfoHeader));
+
+	// CPU용 스테이징 텍스쳐를 맵핑
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	if (FAILED(m_pContext->Map(m_StagingTexture[iChoiceTextures], 0, D3D11_MAP_WRITE, 0, &mappedResource))) {
+		MSG_BOX(TEXT("Failed to map Staging Texture"));
+		return E_FAIL;
+	}
+
+	// 텍스처 데이터에 접근
+	UINT8* pTexels = static_cast<UINT8*>(mappedResource.pData);
+
+	// Write image data
+	for (_uint z = 0; z < 256; ++z) {
+		for (_uint x = 0; x < 256; ++x) {
+			_uint index = z * 256 + x;
+
+			UINT8* pixel = pTexels + z * mappedResource.RowPitch + x * 4;
+			uint8_t color[4] = { pixel[0], pixel[1], pixel[2], 255}; // Blue, Green, Red, Alpha
+			ofs.write(reinterpret_cast<char*>(color), 4);
+		}
+	}
+
+	ofs.close();
+	if (!ofs.good()) {
+		cout << "Error occurred at writing time!" << endl;
+	}
+
+	m_pContext->Unmap(m_StagingTexture[iChoiceTextures], 0);
+
+
+	return S_OK;
+}
 
 CTexture * CTexture::Create(ID3D11Device * pDevice, ID3D11DeviceContext * pContext, const _tchar * pTextureFilePath, _uint iNumTextures)
 {

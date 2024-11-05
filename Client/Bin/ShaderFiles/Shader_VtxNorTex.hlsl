@@ -2,9 +2,9 @@
 
 matrix			g_WorldMatrix, g_ViewMatrix, g_ProjMatrix;
 
-texture2D		g_DiffuseTexture[21]; /* 지형 픽셀이 빛을 받으면 반사해야할 재질정보를 담은것이다. */
-texture2D		g_NomalTexture[21];
-texture2D		g_MaskTexture;
+texture2D		g_DiffuseTexture[7];
+texture2D		g_NomalTexture[7];
+texture2D		g_MaskTexture[2];
 
 int				g_BastTextureNum = 0;
 
@@ -66,22 +66,37 @@ PS_OUT PS_MAIN(PS_IN In)
 	PS_OUT			Out = (PS_OUT)0;
 	
 	// 마스크 이미지
-    vector vMask = g_MaskTexture.Sample(LinearSampler, In.vTexcoord);
+    vector vMask0 = g_MaskTexture[0].Sample(LinearSampler, In.vTexcoord);
+    vector vMask1 = g_MaskTexture[1].Sample(LinearSampler, In.vTexcoord);
 
 	// 디퓨즈 이미지
     vector		vBaseDiffuse = g_DiffuseTexture[0].Sample(LinearSampler, In.vTexcoord * 30.f);
-	vector		vDestDiffuse = g_DiffuseTexture[1].Sample(LinearSampler, In.vTexcoord * 30.f);
+	vector		vDestDiffuse1 = g_DiffuseTexture[1].Sample(LinearSampler, In.vTexcoord * 30.f);
+    vector		vDestDiffuse2 = g_DiffuseTexture[2].Sample(LinearSampler, In.vTexcoord * 30.f);
+    vector		vDestDiffuse3 = g_DiffuseTexture[3].Sample(LinearSampler, In.vTexcoord * 30.f);
+    vector		vDestDiffuse4 = g_DiffuseTexture[4].Sample(LinearSampler, In.vTexcoord * 30.f);
+    vector		vDestDiffuse5 = g_DiffuseTexture[5].Sample(LinearSampler, In.vTexcoord * 30.f);
+    vector		vDestDiffuse6 = g_DiffuseTexture[6].Sample(LinearSampler, In.vTexcoord * 30.f);
 
-    vector		vMtrlDiffuse = vBaseDiffuse * vMask.r + vDestDiffuse * (1.f - vMask.r);
-
+    vector		vMtrlDiffuse = vBaseDiffuse * vMask0.r + vDestDiffuse1 * (1.f - vMask0.r);
+    vMtrlDiffuse = vMtrlDiffuse * vMask0.g + vDestDiffuse2 * (1.f - vMask0.g);
+    vMtrlDiffuse = vMtrlDiffuse * vMask0.b + vDestDiffuse3 * (1.f - vMask0.b);
+	
 	// 최종 색상
 	Out.vDiffuse = vector(vMtrlDiffuse.rgb, 1.f);
 	
 	// 노말 이미지
     vector vBaseNomal = g_NomalTexture[0].Sample(LinearSampler, In.vTexcoord * 30.f);
-    vector vDestNomal = g_NomalTexture[1].Sample(LinearSampler, In.vTexcoord * 30.f);
+    vector vDestNomal1 = g_NomalTexture[1].Sample(LinearSampler, In.vTexcoord * 30.f);
+    vector vDestNomal2 = g_NomalTexture[2].Sample(LinearSampler, In.vTexcoord * 30.f);
+    vector vDestNomal3 = g_NomalTexture[3].Sample(LinearSampler, In.vTexcoord * 30.f);
+    vector vDestNomal4 = g_NomalTexture[4].Sample(LinearSampler, In.vTexcoord * 30.f);
+    vector vDestNomal5 = g_NomalTexture[5].Sample(LinearSampler, In.vTexcoord * 30.f);
+    vector vDestNomal6 = g_NomalTexture[6].Sample(LinearSampler, In.vTexcoord * 30.f);
 
-    vector vMtrlNomal = vBaseNomal * vMask.r + vDestNomal * (1.f - vMask.r);
+    vector vMtrlNomal = vBaseNomal * vMask0.r + vDestNomal1 * (1.f - vMask0.r);
+    vMtrlNomal = vMtrlNomal * vMask0.g + vDestNomal2 * (1.f - vMask0.g);
+    vMtrlNomal = vMtrlNomal * vMask0.b + vDestNomal2 * (1.f - vMask0.b);
 	 
 	// 최종 노말값
 	// -1.f ~ 1.f -> 0.f ~ 1.f  최소값 0으로 최댓값 1로 조정

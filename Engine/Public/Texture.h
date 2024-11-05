@@ -27,18 +27,22 @@ public:
 public:
 	HRESULT Bind_ShadeResource(class CShader* pShader, const _char* pConstantName, _uint iTextureIndex);
 	HRESULT Bind_ShadeResources(class CShader* pShader, const _char* pConstantName);
+	HRESULT Bind_ShadeResourcesMask(class CShader* pShader, const _char* pConstantName, _uint iTextureNum);
 
 	_uint Get_TextureNum() const { return m_iNumTextures; }
 
 	HRESULT Add_MaskTexture();
 	HRESULT Delete_MaskTexture(_uint iChoiceTextures);
-	HRESULT Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures, _uint Range, _uint RGB);
+	HRESULT Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures, _uint Range, _uint Value, _uint RGB);
+	HRESULT Swap_SRVs(_uint iFirst, _uint iSecond);
+	HRESULT Save_MaskTexture(const _tchar* pHeightMapFilePath, _uint iChoiceTextures);
 
 private:
 	vector<ID3D11ShaderResourceView*>		m_SRVs;
 	vector<ID3D11Resource*>					m_OriginTexture;
 	_uint									m_iNumTextures = { 0 };
 
+	// Mask 텍스쳐 수정용
 	vector<ID3D11Texture2D*>				m_StagingTexture;
 	vector<ID3D11Texture2D*>				m_ShaderTexture;
 
