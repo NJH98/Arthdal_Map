@@ -299,7 +299,7 @@ HRESULT CTexture::Swap_SRVs(_uint iFirst, _uint iSecond)
 	return S_OK;
 }
 
-HRESULT CTexture::Save_MaskTexture(const _tchar* pHeightMapFilePath, _uint iChoiceTextures)
+HRESULT CTexture::Save_MaskTexture(const _tchar* pMaskFilePath, _uint iChoiceTextures)
 {
 	BMPHeaderTexture bmpHeader;
 	BMPInfoHeaderTexture bmpInfoHeader;
@@ -310,9 +310,9 @@ HRESULT CTexture::Save_MaskTexture(const _tchar* pHeightMapFilePath, _uint iChoi
 
 	bmpHeader.bfSize = bmpHeader.bfOffBits + bmpInfoHeader.biSizeImage;
 
-	ofstream ofs(pHeightMapFilePath, ios::binary | ios::out);
+	ofstream ofs(pMaskFilePath, ios::binary | ios::out);
 	if (!ofs) {
-		cout << "Failed to open file for writing: " << pHeightMapFilePath << endl;
+		MSG_BOX(TEXT("Failed to open file for writing"));
 		return E_FAIL;
 	}
 
@@ -343,11 +343,79 @@ HRESULT CTexture::Save_MaskTexture(const _tchar* pHeightMapFilePath, _uint iChoi
 
 	ofs.close();
 	if (!ofs.good()) {
-		cout << "Error occurred at writing time!" << endl;
+		MSG_BOX(TEXT("Failed to open file for writing"));
+		return E_FAIL;
 	}
 
 	m_pContext->Unmap(m_StagingTexture[iChoiceTextures], 0);
 
+
+	return S_OK;
+}
+
+HRESULT CTexture::Load_MaskTexture(const _tchar* pMaskFilePath, _uint iChoiceTextures)
+{
+#pragma region 파일경로 파일열기
+	_uint* pPixel{};
+	_ulong			dwByte = {};
+
+	HANDLE			hFile = CreateFile(
+		pMaskFilePath,
+		GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
+		nullptr,
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL, 0);
+
+	if (0 == hFile) {
+		MSG_BOX(TEXT("Failed to open file for writing"));
+		return E_FAIL;
+	}
+
+	BITMAPFILEHEADER			fh{};
+	BITMAPINFOHEADER			ih{};
+
+	ReadFile(hFile, &fh, sizeof fh, &dwByte, nullptr);
+	ReadFile(hFile, &ih, sizeof ih, &dwByte, nullptr);
+	_uint m_iNumVerticesX = ih.biWidth;
+	_uint m_iNumVerticesZ = ih.biHeight;
+
+	pPixel = new _uint[m_iNumVerticesX * m_iNumVerticesZ];
+	ReadFile(hFile, pPixel, sizeof(_uint) * m_iNumVerticesX * m_iNumVerticesZ, &dwByte, nullptr);
+
+	CloseHandle(hFile);
+#pragma endregion
+
+	// CPU용 스테이징 텍스쳐를 맵핑
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	if (FAILED(m_pContext->Map(m_StagingTexture[iChoiceTextures], 0, D3D11_MAP_WRITE, 0, &mappedResource))) {
+		MSG_BOX(TEXT("Failed to map Staging Texture"));
+		return E_FAIL;
+	}
+
+	// 텍스처 데이터에 접근
+	UINT8* pTexels = static_cast<UINT8*>(mappedResource.pData);
+
+	for (_uint z = 0; z < m_iNumVerticesZ; z++)
+	{
+		for (_uint x = 0; x < m_iNumVerticesX; x++)
+		{
+			_uint			iIndex = z * m_iNumVerticesX + x;
+
+			UINT8* pixel = pTexels + z * mappedResource.RowPitch + x * 4;
+			pixel[0] = (pPixel[iIndex] & 0x00ff0000) >> 16; // R 빨강
+			pixel[1] = (pPixel[iIndex] & 0x0000ff00) >> 8;	// G 초록
+			pixel[2] = (pPixel[iIndex] & 0x000000ff);		// B 파랑
+		}
+	}
+
+	// 언맵하여 변경사항 반영
+	m_pContext->Unmap(m_StagingTexture[iChoiceTextures], 0);
+
+	// pStagingTexture의 데이터를 pTexture로 복사
+	m_pContext->CopyResource(m_ShaderTexture[iChoiceTextures], m_StagingTexture[iChoiceTextures]);
+
+	Safe_Delete_Array(pPixel);
 
 	return S_OK;
 }

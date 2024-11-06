@@ -81,6 +81,9 @@ PS_OUT PS_MAIN(PS_IN In)
     vector		vMtrlDiffuse = vBaseDiffuse * vMask0.r + vDestDiffuse1 * (1.f - vMask0.r);
     vMtrlDiffuse = vMtrlDiffuse * vMask0.g + vDestDiffuse2 * (1.f - vMask0.g);
     vMtrlDiffuse = vMtrlDiffuse * vMask0.b + vDestDiffuse3 * (1.f - vMask0.b);
+    vMtrlDiffuse = vMtrlDiffuse * vMask1.r + vDestDiffuse4 * (1.f - vMask1.r);
+    vMtrlDiffuse = vMtrlDiffuse * vMask1.g + vDestDiffuse5 * (1.f - vMask1.g);
+    vMtrlDiffuse = vMtrlDiffuse * vMask1.b + vDestDiffuse6 * (1.f - vMask1.b);
 	
 	// 최종 색상
 	Out.vDiffuse = vector(vMtrlDiffuse.rgb, 1.f);
@@ -96,7 +99,10 @@ PS_OUT PS_MAIN(PS_IN In)
 
     vector vMtrlNomal = vBaseNomal * vMask0.r + vDestNomal1 * (1.f - vMask0.r);
     vMtrlNomal = vMtrlNomal * vMask0.g + vDestNomal2 * (1.f - vMask0.g);
-    vMtrlNomal = vMtrlNomal * vMask0.b + vDestNomal2 * (1.f - vMask0.b);
+    vMtrlNomal = vMtrlNomal * vMask0.b + vDestNomal3 * (1.f - vMask0.b);
+    vMtrlNomal = vMtrlNomal * vMask1.r + vDestNomal4 * (1.f - vMask1.r);
+    vMtrlNomal = vMtrlNomal * vMask1.g + vDestNomal5 * (1.f - vMask1.g);
+    vMtrlNomal = vMtrlNomal * vMask1.b + vDestNomal6 * (1.f - vMask1.b);
 	 
 	// 최종 노말값
 	// -1.f ~ 1.f -> 0.f ~ 1.f  최소값 0으로 최댓값 1로 조정

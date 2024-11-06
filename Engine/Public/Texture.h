@@ -35,7 +35,8 @@ public:
 	HRESULT Delete_MaskTexture(_uint iChoiceTextures);
 	HRESULT Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures, _uint Range, _uint Value, _uint RGB);
 	HRESULT Swap_SRVs(_uint iFirst, _uint iSecond);
-	HRESULT Save_MaskTexture(const _tchar* pHeightMapFilePath, _uint iChoiceTextures);
+	HRESULT Save_MaskTexture(const _tchar* pMaskFilePath, _uint iChoiceTextures);
+	HRESULT Load_MaskTexture(const _tchar* pMaskFilePath, _uint iChoiceTextures);
 
 private:
 	vector<ID3D11ShaderResourceView*>		m_SRVs;

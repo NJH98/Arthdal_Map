@@ -447,7 +447,7 @@ HRESULT CLevel_GamePlay::Terrain_MaskSaveLoad(_float fTimeDelta)
 	ImGui::SeparatorText("Save/Load_Mask.bmp");
 
 	ImGui::PushItemWidth(300); // 크기조정
-	if (ImGui::Button("  Save_Terrain_Height.bmp  ")) {
+	if (ImGui::Button("  Save_Mask_bmp  ")) {
 		if (filePath.length() < 55) {
 			MSG_BOX(TEXT("Chocie FilePath"));
 			return E_FAIL;
@@ -456,6 +456,22 @@ HRESULT CLevel_GamePlay::Terrain_MaskSaveLoad(_float fTimeDelta)
 		_tchar* wstrFilePath = stringToWchar(filePath);
 
 		if (FAILED(m_pTerrain->Get_Texture(CTerrain::TEXTURE_MASK)->Save_MaskTexture(wstrFilePath, m_iSelectTile)))
+		{
+			MSG_BOX(TEXT("Failed to Save"));
+		}
+
+		delete[] wstrFilePath;
+	}
+
+	if (ImGui::Button("  Load_Mask_bmp  ")) {
+		if (filePath.length() < 55) {
+			MSG_BOX(TEXT("Chocie FilePath"));
+			return E_FAIL;
+		}
+
+		_tchar* wstrFilePath = stringToWchar(filePath);
+
+		if (FAILED(m_pTerrain->Get_Texture(CTerrain::TEXTURE_MASK)->Load_MaskTexture(wstrFilePath, m_iSelectTile)))
 		{
 			MSG_BOX(TEXT("Failed to Save"));
 		}
