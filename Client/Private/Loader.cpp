@@ -14,6 +14,8 @@
 #include "Effect_Explosion.h"
 #include "Particle_Explosion.h"
 
+#include "MapObject_Default.h"
+
 #include "GameInstance.h"
 
 
@@ -148,6 +150,7 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 	
 
 	lstrcpy(m_szLoadingText, TEXT("모델을(를) 로딩중입니다."));
+
 	/* For. Prototype_Component_VIBuffer_Terrain*/
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_VIBuffer_Terrain"),
 		CVIBuffer_Terrain::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Height1.bmp")))))
@@ -207,6 +210,13 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/River/River"), PreTransformMatrix))))
 		return E_FAIL;
 
+	/* 맵 배치 오브젝트 모델들 */
+	/*PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_ForkLift"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/River/River"), PreTransformMatrix))))
+		return E_FAIL;*/
+
 	lstrcpy(m_szLoadingText, TEXT("네비게이션을(를) 로딩중입니다."));
 	/* For.Prototype_Component_Navigation */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Navigation"),
@@ -265,6 +275,11 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 	/* For. Prototype_GameObject_ForkLift */
 	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_ForkLift"),
 		CForkLift::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* 맵 배치 오브젝트 객체 원형 */
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_MapObject_Default"),
+		CMapObject_Default::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	/* For. Prototype_GameObject_Particle_Explosion */

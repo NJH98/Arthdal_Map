@@ -56,7 +56,7 @@ public:
 	void Turn(_bool isRotationX, _bool isRotationY, _bool isRotationZ, _float fTimeDelta);	
 	void Rotation(_fvector vAxis, _float fRadian);
 	void Rotation(_float fX, _float fY, _float fZ);
-
+	void All_Rotation(_float3 angles);
 	
 public:
 	HRESULT Bind_ShaderResource(class CShader* pShader, const _char* pConstantName);

@@ -73,6 +73,12 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{4a144fef-d424-4231-a85d-c854c2e4eb71}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObjects\98.MapObject">
+      <UniqueIdentifier>{41eb2605-b55d-438e-a1b5-7f1d19f6eb5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\98.MapObject\MapObject_Default">
+      <UniqueIdentifier>{33bf7e05-5de9-4295-b36f-5b15e1868f84}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -174,6 +180,12 @@
     <ClInclude Include="..\imgui\dirent.h">
       <Filter>imgui</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\MapObject.h">
+      <Filter>02.GameObjects\98.MapObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\MapObject_Default.h">
+      <Filter>02.GameObjects\98.MapObject\MapObject_Default</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -253,6 +265,12 @@
     </ClCompile>
     <ClCompile Include="..\imgui\ImGuiFileDialog.cpp">
       <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\MapObject.cpp">
+      <Filter>02.GameObjects\98.MapObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\MapObject_Default.cpp">
+      <Filter>02.GameObjects\98.MapObject\MapObject_Default</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

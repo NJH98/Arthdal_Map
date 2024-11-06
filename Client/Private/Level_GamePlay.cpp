@@ -81,7 +81,10 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 	ImGui::Begin("MainImgui");
 	{
 		Dialog_Imgui(fTimeDelta);
+		ImGui::Spacing();
 		Terrain_Imgui(fTimeDelta);
+		ImGui::Spacing();
+		GameObject_Imgui(fTimeDelta);
 	}
 	ImGui::End();
 
@@ -109,6 +112,13 @@ static string WideCharToMultiByte(const wstring& wstr) {
 	string strTo(size_needed, 0);
 	WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
 	return strTo;
+}
+
+static _wstring char_to_wstring(const char* _char)
+{
+	string str(_char);
+	wstring_convert<codecvt_utf8_utf16<wchar_t>> converter;
+	return converter.from_bytes(str);
 }
 
 static wchar_t* stringToWchar(const string& str) {
@@ -190,12 +200,15 @@ HRESULT CLevel_GamePlay::Terrain_Imgui(_float fTimeDelta)
 
 		if (ImGui::CollapsingHeader("Mask"))
 		{
+			// 마스크의 리스트 박스 && 마스크 이미지 변경
 			if (FAILED(Terrain_Mask_ListBox(fTimeDelta)))
 				return E_FAIL;
 
+			// 마스킹 피킹 함수
 			if (FAILED(Terrain_Masking(fTimeDelta)))
 				return E_FAIL;
 
+			// 마스크 저장/불러오기
 			if (FAILED(Terrain_MaskSaveLoad(fTimeDelta)))
 				return E_FAIL;
 		}
@@ -730,13 +743,382 @@ HRESULT CLevel_GamePlay::Change_Mask(_float fTimeDelta)
 
 #pragma endregion
 
-#pragma region 초기화 코드
-HRESULT CLevel_GamePlay::VectorClear()
+#pragma region GameObject 작동 코드
+
+HRESULT CLevel_GamePlay::GameObject_Imgui(_float fTimeDelta)
 {
-	m_vecString_Mask.clear();
+	if (ImGui::CollapsingHeader("GameObject"))
+	{
+		// 오브젝트 생성
+		ImGui::Spacing();
+		GameObject_Create_GameObject(fTimeDelta);
+
+		if (ImGui::CollapsingHeader("Layer List"))
+		{
+			// 레이어 리스트 박스
+			if (FAILED(GameObject_Layer_ListBox(fTimeDelta)))
+				return E_FAIL;
+
+			if (FAILED(GameObject_Save_Load(fTimeDelta)))
+				return E_FAIL;
+		}
+
+		if (m_pMap_Layers != nullptr) 
+		{
+			ImGui::Begin("Information Imgui"); 
+			{
+				if (ImGui::CollapsingHeader("GameObjct List"))
+				{
+					// 게임오브젝트 리스트 박스
+					if (FAILED(GameObject_Object_ListBox(fTimeDelta)))
+						return E_FAIL;
+
+					// 게임오브젝트 정보 컨트롤
+					if (FAILED(GameObject_Pos_Scal_Turn()))
+						return E_FAIL;
+				}
+			}
+			ImGui::End();
+		}
+	}
 
 	return S_OK;
 }
+
+HRESULT CLevel_GamePlay::GameObject_Create_GameObject(_float fTimeDelta)
+{
+	ImGui::PushItemWidth(150); // 크기조정
+
+	static char Layertag[256] = {};
+	ImGui::InputText("Layertag##Monster", Layertag, IM_ARRAYSIZE(Layertag));
+	
+	if (ImGui::Button("  Create Terrain  ")) {
+		CGameObject::GAMEOBJECT_DESC Desc{};
+		_wstring wLayertag{};
+		if (Layertag[0] == '\0')						// 입력받은 레이어 테그가 없을경우
+			wLayertag = TEXT("Layer_Defalt");		// Layer_Defalt 레이어로 넣어준다
+		else
+			wLayertag = char_to_wstring(Layertag);	// 입력받은 값이 있다면 해당값으로 레이어를 선언한다
+
+
+		if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, wLayertag, TEXT("Prototype_GameObject_MapObject_Default"), &Desc)))
+			return E_FAIL;
+	}
+
+	ImGui::PopItemWidth();
+
+	static bool bObjCreate_Picking;
+	ImGui::Spacing();
+	ImGui::Checkbox("Obj Picking", &bObjCreate_Picking);
+
+	if (bObjCreate_Picking) 
+	{
+		if (m_pGameInstance->Get_DIMouseState_Once(DIMK_LBUTTON)) {
+			_float3 PickPos{};
+			m_pGameInstance->Picking(&PickPos);
+
+			if (m_pGameInstance->Get_DIKeyState(DIK_Q)) {
+				CGameObject::GAMEOBJECT_DESC Desc{};
+				_wstring wLayertag{};
+				if (Layertag[0] == '\0')					// 입력받은 레이어 테그가 없을경우
+					wLayertag = TEXT("Layer_Defalt");		// Layer_Defalt 레이어로 넣어준다
+				else
+					wLayertag = char_to_wstring(Layertag);	// 입력받은 값이 있다면 해당값으로 레이어를 선언한다
+
+				Desc.Pos = PickPos;
+				if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, wLayertag, TEXT("Prototype_GameObject_MapObject_Default"), &Desc)))
+					return E_FAIL;
+			}
+		}
+	}
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::GameObject_Layer_ListBox(_float fTimeDelta)
+{
+	// 레이어 가져오기
+	m_pMap_Layers = m_pGameInstance->Get_Map_Layer();
+
+	// 리스트 박스용 String 값 넣기
+	for (auto& iter : m_pMap_Layers[LEVEL_GAMEPLAY]) {
+		m_vecString_Map_Layer.push_back(iter.first.c_str());
+	}
+
+	ImGui::SeparatorText("Layer List");
+	ImGui::PushItemWidth(200); // 크기조정
+	if (ImGui::BeginListBox("##Map_Layer_List")) 
+	{
+		for (int n = 0; n < m_vecString_Map_Layer.size(); n++)
+		{
+			bool is_selected = (m_iSelectMap == n);
+			string MapName = wstring_to_string(m_vecString_Map_Layer[n]);
+			if (ImGui::Selectable(MapName.c_str(), is_selected))
+			{
+				m_iSelectMap = n;		// 현제 레이어 리스트 박스의 인덱스
+				
+				// 선택되어지지 말아야하는 객체는 여기서 레이어를 예외처리
+				auto iter = m_pMap_Layers[LEVEL_GAMEPLAY].begin();
+				advance(iter, n);						// 이터레이터를 이동
+				m_pLayer = (*iter).second;				// 현제 선택중인 Layer 에 대입
+				m_StringLayerName = (*iter).first;		// 현제 선택중인 Layer 의 map 이름
+			
+				// 현제 선택중인 Layer 의 0번쨰 오브젝트를 현제 선택한 오브젝트로 지정
+				m_pGameObj = m_pGameInstance->Get_Object(LEVEL_GAMEPLAY, m_StringLayerName);
+			
+				// GameObject 리스트 박스 정보 갱신
+				GameObject_vecStringSet();
+			}
+
+			if (is_selected)
+				ImGui::SetItemDefaultFocus();
+		}
+
+		ImGui::EndListBox();
+	}
+	ImGui::PopItemWidth();
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::GameObject_Save_Load(_float fTimeDelta)
+{
+	ImVec2 buttonSize(100, 30);
+	if (ImGui::Button("Save_Obj", buttonSize)) {
+		if (m_pLayer != nullptr) {
+			/* 저장할 데이터 고민 */
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Load_Obj", buttonSize)) {
+		
+	}
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
+{
+	if (m_StringLayerName != L"\0") 
+	{
+		m_iGameObjListSize = _uint(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, m_StringLayerName)->size());
+		if (m_iGameObjListSize != m_iPreGameObjListSize) {
+			GameObject_vecStringSet();
+			m_iPreGameObjListSize = m_iGameObjListSize;
+		}
+	}
+	
+
+	ImGui::SeparatorText("GameObj List");
+	ImGui::PushItemWidth(200); // 크기조정
+	if (ImGui::BeginListBox("##GameObj_List"))
+	{
+		for (int n = 0; n < m_vecString_GameObj.size(); n++)
+		{
+			bool is_selected = (m_iSelectGameObj == n);
+			string MapName = wstring_to_string(m_vecString_GameObj[n]);
+			if (ImGui::Selectable(MapName.c_str(), is_selected))
+			{
+				// 현제 선택한 리스트 박스의 인덱스
+				m_iSelectGameObj = n;
+				// 현제 선택한 게임 오브젝트를 대입한다
+				m_pGameObj = m_pGameInstance->Get_Object(LEVEL_GAMEPLAY, m_StringLayerName, n);
+			}
+
+			if (is_selected)
+				ImGui::SetItemDefaultFocus();
+			// 반복문으로 리스트박스의 선택된 객체 찾기
+		}
+
+		if (m_pGameObj != nullptr)
+		{
+			// 현제 선택중인 오브젝트의 TransformCom 객체를 셋팅한다.
+			m_pTransformCom = m_pGameObj->Get_TranformCom();
+		}
+
+		ImGui::EndListBox();
+	}
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	if (ImGui::Button("DeleteObj")) {
+		if (m_pGameObj != nullptr) {
+			m_pGameObj->Set_Dead(true);
+
+			if (m_iSelectGameObj == (m_iGameObjListSize - 1))
+				m_iSelectGameObj--;
+
+			m_pGameObj = m_pGameInstance->Get_Object(LEVEL_GAMEPLAY, m_StringLayerName, m_iSelectGameObj);
+			
+			if (m_pGameObj != nullptr)
+			{
+				// 현제 선택중인 오브젝트의 TransformCom 객체를 셋팅한다.
+				m_pTransformCom = m_pGameObj->Get_TranformCom();
+			}
+			else
+			{
+				m_pTransformCom = nullptr;
+			}
+		}
+	}
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::GameObject_vecStringSet()
+{
+	// 현제 선택중인 Layer 의 GameObj 리스트 크기
+	m_iGameObjListSize = _uint(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, m_StringLayerName)->size());
+	// 기존에 사용중이던 정보 클리어
+	m_vecString_GameObj.clear();
+	// 갱신된 새로운 정보 대입
+	for (_uint i = 0; i < m_iGameObjListSize; i++) 
+	{
+		_wstring GameObjlistboxname = m_StringLayerName + L"_" + to_wstring(i);
+		m_vecString_GameObj.push_back(GameObjlistboxname);
+	}
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::GameObject_Pos_Scal_Turn()
+{
+	if (m_pTransformCom != nullptr) 
+	{
+		Vector3 Pos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+		Vector3 Scal = m_pTransformCom->Get_Scaled();
+		CGameObject::GAMEOBJECT_DESC Objdesc = m_pGameObj->Get_GameObjDesc();
+		Vector3 Turn = Objdesc.Angle;
+
+		static ImGuiSliderFlags flags = ImGuiSliderFlags_None;
+#pragma region 위치
+		ImGui::SeparatorText("Position");
+		ImGui::SameLine();
+		ImGui::Text(" ", Pos.x, Pos.y, Pos.z);
+
+		ImGui::PushItemWidth(200);
+		ImGui::DragFloat("PosX ", &Pos.x, 0.05f, -FLT_MAX, +FLT_MAX, "%.3f", flags);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PushItemWidth(100);
+		ImGui::InputFloat("##input PosX", &Pos.x, 0.01f, 1.0f, "%.3f");
+		ImGui::PopItemWidth();
+
+		ImGui::PushItemWidth(200);
+		ImGui::DragFloat("PosY ", &Pos.y, 0.05f, -FLT_MAX, +FLT_MAX, "%.3f", flags);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PushItemWidth(100);
+		ImGui::InputFloat("##input PosY", &Pos.y, 0.01f, 1.0f, "%.3f");
+		ImGui::PopItemWidth();
+
+		ImGui::PushItemWidth(200);
+		ImGui::DragFloat("PosZ ", &Pos.z, 0.05f, -FLT_MAX, +FLT_MAX, "%.3f", flags);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PushItemWidth(100);
+		ImGui::InputFloat("##input PosZ", &Pos.z, 0.01f, 1.0f, "%.3f");
+		ImGui::PopItemWidth();
+#pragma endregion
+
+#pragma region 크기
+		ImGui::SeparatorText("Scale");
+		ImGui::SameLine();
+		ImGui::Text(" ", Scal.x, Scal.y, Scal.z);
+
+		ImGui::PushItemWidth(200);
+		ImGui::DragFloat("ScalX", &Scal.x, 0.05f, 0.1f, +FLT_MAX, "%.3f", flags);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PushItemWidth(100);
+		ImGui::InputFloat("##input ScalX", &Scal.x, 0.01f, 1.0f, "%.3f");
+		ImGui::PopItemWidth();
+
+		ImGui::PushItemWidth(200);
+		ImGui::DragFloat("ScalY", &Scal.y, 0.05f, 0.1f, +FLT_MAX, "%.3f", flags);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PushItemWidth(100);
+		ImGui::InputFloat("##input ScalY", &Scal.y, 0.01f, 1.0f, "%.3f");
+		ImGui::PopItemWidth();
+
+		ImGui::PushItemWidth(200);
+		ImGui::DragFloat("ScalZ", &Scal.z, 0.05f, 0.1f, +FLT_MAX, "%.3f", flags);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PushItemWidth(100);
+		ImGui::InputFloat("##input ScalZ", &Scal.z, 0.01f, 1.0f, "%.3f");
+		ImGui::PopItemWidth();
+
+		static _float All_Scale = 0.f;
+		ImGui::PushItemWidth(50);
+		ImGui::InputFloat("##All_Scale", &All_Scale);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+
+		if (ImGui::Button("  Scale_Up  ")) {
+			Scal.x += All_Scale;
+			Scal.y += All_Scale;
+			Scal.z += All_Scale;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(" Scale_Down ")) {
+			Scal.x -= All_Scale;
+			Scal.y -= All_Scale;
+			Scal.z -= All_Scale;
+		}
+#pragma endregion
+
+#pragma region 회전/방향
+		ImGui::SeparatorText("Spin");
+		ImGui::Text(" ", Turn.x, Turn.y, Turn.z);
+		
+		ImGui::PushItemWidth(200);
+		ImGui::DragFloat("SpinX", &Turn.x, 0.05f, 0.f, 360.f, "%.3f", flags);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PushItemWidth(100);
+		ImGui::InputFloat("##input Angle X", &Turn.x, 0.01f, 1.0f, "%.3f");
+		ImGui::PopItemWidth();
+
+		ImGui::PushItemWidth(200);
+		ImGui::DragFloat("SpinY", &Turn.y, 0.05f, 0.f, 360.f, "%.3f", flags);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PushItemWidth(100);
+		ImGui::InputFloat("##input Angle Y", &Turn.y, 0.01f, 1.0f, "%.3f");
+		ImGui::PopItemWidth();
+
+		ImGui::PushItemWidth(200);
+		ImGui::DragFloat("SpinZ", &Turn.z, 0.05f, 0.f, 360.f, "%.3f", flags);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PushItemWidth(100);
+		ImGui::InputFloat("##input Angle Z", &Turn.z, 0.01f, 1.0f, "%.3f");
+		ImGui::PopItemWidth();
+
+		Objdesc.Angle = Turn;
+#pragma endregion
+
+		m_pTransformCom->Set_State(CTransform::STATE_POSITION, Pos);
+		m_pTransformCom->Set_Scaled(Scal.x, Scal.y, Scal.z);
+		m_pTransformCom->All_Rotation(Turn);
+		m_pGameObj->Set_GameObjDesc(Objdesc);
+	}
+
+	return S_OK;
+}
+
+#pragma endregion
+
+#pragma region 초기화 코드
+
+HRESULT CLevel_GamePlay::VectorClear()
+{
+	m_vecString_Mask.clear();
+	m_vecString_Map_Layer.clear();
+
+	return S_OK;
+}
+
 #pragma endregion
 
 #pragma endregion
@@ -826,6 +1208,9 @@ HRESULT CLevel_GamePlay::Ready_Layer_BackGround()
 		return E_FAIL;
 
 	if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Layer_BackGround"), TEXT("Prototype_GameObject_Sky"))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Layer_SampleGetObject"), TEXT("Prototype_GameObject_MapObject_Default"))))
 		return E_FAIL;
 
 	return S_OK;

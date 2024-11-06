@@ -243,6 +243,11 @@ list<CGameObject*>* CGameInstance::Get_ObjectList(_uint iLevelIndex, const _wstr
 	return m_pObject_Manager->Get_ObjectList(iLevelIndex, strLayerTag);
 }
 
+map<const _wstring, class CLayer*>* CGameInstance::Get_Map_Layer()
+{
+	return m_pObject_Manager->Get_Map_Layer();
+}
+
 
 #pragma endregion
 

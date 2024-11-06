@@ -129,9 +129,6 @@ PS_OUT PS_MAIN_NORMAL(PS_IN_NORMAL In)
 
 	vNormal = normalize(mul(vNormal, WorldMatrix));
 
-
-
-
 	if (0.3f >= vDiffuse.a)
 		discard;
 
@@ -151,7 +148,7 @@ PS_OUT PS_MAIN_NORMAL(PS_IN_NORMAL In)
 technique11	DefaultTechnique
 {
 	pass NonAnimModel
-	{
+	{// 0
 		SetRasterizerState(RS_Default);
 		SetDepthStencilState(DSS_Default, 0);
 		SetBlendState(BS_Default, vector(0.f, 0.f, 0.f, 0.f), 0xffffffff);
@@ -162,7 +159,7 @@ technique11	DefaultTechnique
 	}
 
 	pass NormalMapping
-	{
+	{// 1
 		SetRasterizerState(RS_Default);
 		SetDepthStencilState(DSS_Default, 0);
 		SetBlendState(BS_Default, vector(0.f, 0.f, 0.f, 0.f), 0xffffffff);

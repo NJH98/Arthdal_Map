@@ -61,6 +61,8 @@ public:
 	class CComponent* Find_Component(_uint iLevelIndex, const _wstring& strLayerTag, const _wstring& strComponentTag, _uint iIndex = 0, _uint iPartObjIndex = 0);
 	class CGameObject* Get_Object(_uint iLevelIndex, const _wstring& strLayerTag, _uint iIndex = 0);
 	list<CGameObject*>* Get_ObjectList(_uint iLevelIndex, const _wstring& strLayerTag);
+
+	map<const _wstring, class CLayer*>* Get_Map_Layer();
 #pragma endregion
 
 

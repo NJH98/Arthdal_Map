@@ -12,7 +12,10 @@ class ENGINE_DLL CGameObject abstract : public CBase
 public:
 	typedef struct : public CTransform::TRANSFORM_DESC
 	{
-		
+		_float3		Angle = { 0.f, 0.f, 0.f };
+		_float3		Scale = { 1.f, 1.f, 1.f };
+		_float3		Pos = { 0.f, 0.f, 0.f };
+
 	} GAMEOBJECT_DESC;
 
 protected:
@@ -35,6 +38,9 @@ public:
 
 public:
 	virtual class CComponent* Find_Component(const _wstring& strComponentTag, _uint iPartObjIndex = 0);
+	class CTransform* Get_TranformCom() { return m_pTransformCom; }
+	GAMEOBJECT_DESC Get_GameObjDesc() { return m_GameObjDesc; }
+	void Set_GameObjDesc(GAMEOBJECT_DESC desc) { m_GameObjDesc = desc; }
 
 protected:
 	ID3D11Device*				m_pDevice = { nullptr };
@@ -42,7 +48,7 @@ protected:
 
 	class CTransform*			m_pTransformCom = { nullptr };
 	class CGameInstance*		m_pGameInstance = { nullptr };
-
+	GAMEOBJECT_DESC				m_GameObjDesc;
 
 protected:
 	map<const _wstring, class CComponent*>			m_Components;
