@@ -48,8 +48,6 @@ _int CTerrain::Update(_float fTimeDelta)
 	}
 
 	if (m_pGameInstance->Get_DIKeyState_Once(DIK_Y)) {
-		m_pTextureCom[TEXTURE_DIFFUSE]->Swap_SRVs(0,1);
-		m_pTextureCom[TEXTURE_NORMAL]->Swap_SRVs(0,1);
 	}
 
 	return OBJ_NOEVENT;

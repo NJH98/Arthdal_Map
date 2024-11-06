@@ -37,6 +37,7 @@ public:
 	HRESULT Swap_SRVs(_uint iFirst, _uint iSecond);
 	HRESULT Save_MaskTexture(const _tchar* pMaskFilePath, _uint iChoiceTextures);
 	HRESULT Load_MaskTexture(const _tchar* pMaskFilePath, _uint iChoiceTextures);
+	ID3D11ShaderResourceView* Get_ShaderResourceView(_uint iChoiceTextures) { return m_SRVs[iChoiceTextures]; }
 
 private:
 	vector<ID3D11ShaderResourceView*>		m_SRVs;

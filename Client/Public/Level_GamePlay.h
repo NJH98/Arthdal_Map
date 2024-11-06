@@ -40,8 +40,10 @@ private:
 private:
 	// imgui 함수
 
-	// 파일경로 
+	// 파일경로
+	HRESULT Dialog_Imgui(_float fTimeDelta);
 	void ShowFileDialog();
+	
 	string filePath{};
 
 	// Terrain 용
@@ -52,6 +54,7 @@ private:
 	HRESULT Terrain_Mask_ListBox(_float fTimeDelta);
 	HRESULT Terrain_Masking(_float fTimeDelta);
 	HRESULT Terrain_MaskSaveLoad(_float fTimeDelta);
+	HRESULT Change_Mask(_float fTimeDelta);
 
 	class CTerrain*		m_pTerrain = { nullptr };
 	_float				m_fTerrainTimeCheck = 0.f;
