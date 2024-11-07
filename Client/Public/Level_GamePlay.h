@@ -97,7 +97,7 @@ private:
 	_uint m_iPreGameObjListSize = { 0 };		 // 레이어의 이전 게임오브젝트 리스트 크기
 	CGameObject* m_pGameObj = { nullptr };		 // 현제 선택중인 오브젝트
 	CTransform* m_pTransformCom = { nullptr };	 // 현제 선택중인 오브젝트의 TransformCom 객체
-	vector<_wstring>	m_vecString_GameObj;	 // 게임오브젝트 리스트박스 벡터
+	vector<string>	m_vecString_GameObj;		 // 게임오브젝트 리스트박스 벡터
 	_uint m_iSelectGameObj = { 0 };				 // 현제 선택중인 리스트박스 인덱스
 #pragma endregion
 

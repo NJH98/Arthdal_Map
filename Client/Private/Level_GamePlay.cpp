@@ -777,8 +777,8 @@ HRESULT CLevel_GamePlay::GameObject_Imgui(_float fTimeDelta)
 						return E_FAIL;
 
 					// 게임오브젝트 정보 컨트롤
-					/*if (FAILED(GameObject_Pos_Scal_Turn()))
-						return E_FAIL;*/
+					if (FAILED(GameObject_Pos_Scal_Turn()))
+						return E_FAIL;
 				}
 			}
 			ImGui::End();
@@ -945,10 +945,10 @@ HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 	ImGui::PushItemWidth(200); // 크기조정
 	if (ImGui::BeginListBox("##GameObj_List"))
 	{
-		for (int n = 0; n < m_vecString_GameObj.size(); n++)
+		for (int n = 0; n < m_iPreGameObjListSize; n++)
 		{
 			bool is_selected = (m_iSelectGameObj == n);
-			string MapName = wstring_to_string(m_vecString_GameObj[n]);
+			string MapName = m_vecString_GameObj[n];
 			if (ImGui::Selectable(MapName.c_str(), is_selected))
 			{
 				// 현제 선택한 리스트 박스의 인덱스
@@ -1005,7 +1005,7 @@ HRESULT CLevel_GamePlay::GameObject_vecStringSet()
 	for (_uint i = 0; i < m_iGameObjListSize; i++) 
 	{
 		_wstring GameObjlistboxname = m_StringLayerName + L"_" + to_wstring(i);
-		m_vecString_GameObj.push_back(GameObjlistboxname);
+		m_vecString_GameObj.push_back(wstring_to_string(GameObjlistboxname));
 	}
 
 	return S_OK;
