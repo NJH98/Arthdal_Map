@@ -16,6 +16,8 @@ public:
 		_float3		Scale = { 1.f, 1.f, 1.f };
 		_float3		Pos = { 0.f, 0.f, 0.f };
 
+		_uint		ModelNum = 0;
+
 	} GAMEOBJECT_DESC;
 
 protected:

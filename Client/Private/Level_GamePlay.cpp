@@ -91,7 +91,7 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 	VectorClear();
 
 	if (m_pGameInstance->Get_DIKeyState_Once(DIK_T)) {
-		
+	
 	}
 
 }
@@ -753,6 +753,9 @@ HRESULT CLevel_GamePlay::GameObject_Imgui(_float fTimeDelta)
 		ImGui::Spacing();
 		GameObject_Create_GameObject(fTimeDelta);
 
+		if (FAILED(GameObject_Model_ListBox(fTimeDelta)))
+			return E_FAIL;
+
 		if (ImGui::CollapsingHeader("Layer List"))
 		{
 			// 레이어 리스트 박스
@@ -800,7 +803,7 @@ HRESULT CLevel_GamePlay::GameObject_Create_GameObject(_float fTimeDelta)
 		else
 			wLayertag = char_to_wstring(Layertag);	// 입력받은 값이 있다면 해당값으로 레이어를 선언한다
 
-
+		Desc.ModelNum = m_iSelectModel;
 		if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, wLayertag, TEXT("Prototype_GameObject_MapObject_Default"), &Desc)))
 			return E_FAIL;
 	}
@@ -826,11 +829,40 @@ HRESULT CLevel_GamePlay::GameObject_Create_GameObject(_float fTimeDelta)
 					wLayertag = char_to_wstring(Layertag);	// 입력받은 값이 있다면 해당값으로 레이어를 선언한다
 
 				Desc.Pos = PickPos;
+				Desc.ModelNum = m_iSelectModel;
 				if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, wLayertag, TEXT("Prototype_GameObject_MapObject_Default"), &Desc)))
 					return E_FAIL;
 			}
 		}
 	}
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::GameObject_Model_ListBox(_float fTimeDelta)
+{
+	GLOBAL_DATA GDesc = *m_pGameInstance->Get_GlobalData();
+
+	ImGui::SeparatorText("Model List");
+	ImGui::PushItemWidth(300); // 크기조정
+	if (ImGui::BeginListBox("##Model_List"))
+	{
+		for (int n = 0; n < GDesc.ModelName.size(); n++)
+		{
+			bool is_selected = (m_iSelectModel == n);
+			string ModelName = GDesc.ModelName[n];
+			if (ImGui::Selectable(ModelName.c_str(), is_selected))
+			{
+				m_iSelectModel = n;		// 현제 레이어 리스트 박스의 인덱스
+			}
+
+			if (is_selected)
+				ImGui::SetItemDefaultFocus();
+		}
+
+		ImGui::EndListBox();
+	}
+	ImGui::PopItemWidth();
 
 	return S_OK;
 }

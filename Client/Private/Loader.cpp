@@ -122,6 +122,7 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Tile/Tile_Normal_%d.dds"), 21))))
 		return E_FAIL;
 
+#pragma region 기타
 	/* For. Prototype_Component_Texture_Brush*/
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Brush"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Brush.png"), 1))))
@@ -147,7 +148,7 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Explosion"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Explosion/Explosion%d.png"), 90))))
 		return E_FAIL;*/
-	
+#pragma endregion	
 
 	lstrcpy(m_szLoadingText, TEXT("모델을(를) 로딩중입니다."));
 
@@ -155,7 +156,7 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_VIBuffer_Terrain"),
 		CVIBuffer_Terrain::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Height1.bmp")))))
 		return E_FAIL;
-
+#pragma region 기타
 	/* For. Prototype_Component_VIBuffer_Cube */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_VIBuffer_Cube"),
 		CVIBuffer_Cube::Create(m_pDevice, m_pContext))))
@@ -203,19 +204,30 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, TEXT("../Bin/Resources/Models/Fiona/TestModel"), PreTransformMatrix))))
 		return E_FAIL;
 
-	/* For. Prototype_Component_Model_ForkLift*/
+#pragma endregion
+
+	/* 맵 배치 오브젝트 모델들 */
 	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
 
+	// 테스트 포크리프트
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_ForkLift"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/River/River"), PreTransformMatrix))))
 		return E_FAIL;
-
-	/* 맵 배치 오브젝트 모델들 */
-	/*PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
-
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_ForkLift"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/River/River"), PreTransformMatrix))))
-		return E_FAIL;*/
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_AgoVillage_Boss"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/MapModel/AGo_Village/AT_BGAgo_Boss"), PreTransformMatrix))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Berry"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/MapModel/Plant/AT_BGCom_Berry"), PreTransformMatrix))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Bush"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/MapModel/Plant/AT_BGCom_Bush"), PreTransformMatrix))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Weed"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/MapModel/Plant/AT_BGCom_Weed"), PreTransformMatrix))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Tree_Bamboo"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/MapModel/Tree/AT_BGCom_Tr_BamBoo"), PreTransformMatrix))))
+		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("네비게이션을(를) 로딩중입니다."));
 	/* For.Prototype_Component_Navigation */
@@ -236,6 +248,8 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
   	m_pGameInstance->Load_Sound("BGM");
 
 	lstrcpy(m_szLoadingText, TEXT("객체원형을(를) 로딩중입니다."));
+
+#pragma region 기타
 	/* For. Prototype_GameObject_Terrain */
 	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Terrain"),
 		CTerrain::Create(m_pDevice, m_pContext))))
@@ -277,11 +291,6 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 		CForkLift::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	/* 맵 배치 오브젝트 객체 원형 */
-	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_MapObject_Default"),
-		CMapObject_Default::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
 	/* For. Prototype_GameObject_Particle_Explosion */
 	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Particle_Explosion"),
 		CParticle_Explosion::Create(m_pDevice, m_pContext))))
@@ -295,6 +304,13 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 	/* For. Prototype_GameObject_Effect_Explosion */
 	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Effect_Explosion"),
 		CEffect_Explosion::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+#pragma endregion
+
+	/* 맵 배치 오브젝트 객체 원형 */
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_MapObject_Default"),
+		CMapObject_Default::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("로딩이 완료되었습니다."));

@@ -9,7 +9,12 @@ class CMapObject_Default final : public CMapObject
 {
 public:
     enum MAP_MODEL_LIST {
-        MAP_MODEL_TEST,
+        MAP_MODEL_ForkLift,
+        Map_MODEL_AgoVillage_Boss,
+        Map_MODEL_Plant_Berry,
+        Map_MODEL_Plant_Bush,
+        Map_MODEL_Plant_Weed,
+        Map_MODEL_Tree_Bamboo,
         MAP_MODEL_END
     };
 private:
@@ -31,7 +36,6 @@ private:
     _uint           m_iUseModel = 0;
     _uint           m_iUseShader = 0;
 
-    string          m_SModelName[MAP_MODEL_END] = {};
     CModel*         m_pModelCom[MAP_MODEL_END] = { nullptr };
     CShader*        m_pShaderCom = { nullptr };
 

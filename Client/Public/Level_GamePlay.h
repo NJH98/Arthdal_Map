@@ -75,11 +75,15 @@ private:
 
 	HRESULT GameObject_Imgui(_float fTimeDelta);
 	HRESULT GameObject_Create_GameObject(_float fTimeDelta);
+	HRESULT GameObject_Model_ListBox(_float fTimeDelta);
 	HRESULT GameObject_Layer_ListBox(_float fTimeDelta);
 	HRESULT GameObject_Save_Load(_float fTimeDelta);
 	HRESULT GameObject_Object_ListBox(_float fTimeDelta);
 	HRESULT GameObject_vecStringSet();
 	HRESULT GameObject_Pos_Scal_Turn();
+
+	// 생성할 객체 모델 관련
+	_uint m_iSelectModel = { 0 };				// 현제 선택중인 모델 번호
 
 	// 레이어 변수
 	map<const _wstring, class CLayer*>* m_pMap_Layers = { nullptr };	// 실제 레이어들

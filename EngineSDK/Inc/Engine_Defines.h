@@ -90,7 +90,8 @@ namespace Engine
 
     typedef struct
     {
-        _float3     Pick_Pos;
+        vector<string>  ModelName = {};
+        _float3         Pick_Pos;
 
     }GLOBAL_DATA;
 }
