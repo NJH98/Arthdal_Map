@@ -109,7 +109,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>../../EngineSDK/Inc/;../Public/;./</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <MinimalRebuild>true</MinimalRebuild>
+      <MinimalRebuild>false</MinimalRebuild>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>

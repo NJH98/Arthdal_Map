@@ -54,10 +54,6 @@ _int CMapObject_Default::Update(_float fTimeDelta)
 	if (m_bDead)
 		return OBJ_DEAD;
 
-	if (m_pGameInstance->Get_DIKeyState_Once(DIK_Y)) {
-		m_iUseModel++;
-	}
-
 	return OBJ_NOEVENT;
 }
 
@@ -81,8 +77,6 @@ HRESULT CMapObject_Default::Render()
 
 	for (_uint i = 0; i < iNumMeshes; i++)
 	{
-		m_pModelCom[m_iUseModel]->Bind_MeshBoneMatrices(m_pShaderCom, "g_BoneMatrices", i);
-
 		if (FAILED(m_pModelCom[m_iUseModel]->Bind_Material(m_pShaderCom, "g_DiffuseTexture", aiTextureType_DIFFUSE, i)))
 			return E_FAIL;
 
@@ -141,38 +135,26 @@ HRESULT CMapObject_Default::Ready_Components()
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_ForkLift"),
 		TEXT("Com_MODEL_ForkLift"), reinterpret_cast<CComponent**>(&m_pModelCom[MAP_MODEL_ForkLift]))))
 		return E_FAIL;
-	if(m_pGameInstance->Get_GlobalData()->ModelName.size() < MAP_MODEL_END)
-		m_pGameInstance->Get_GlobalData()->ModelName.push_back("Prototype_Component_Model_ForkLift");
-
+	
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_AgoVillage_Boss"),
 		TEXT("Com_MODEL_AgoVillage_Boss"), reinterpret_cast<CComponent**>(&m_pModelCom[Map_MODEL_AgoVillage_Boss]))))
 		return E_FAIL;
-	if (m_pGameInstance->Get_GlobalData()->ModelName.size() < MAP_MODEL_END)
-		m_pGameInstance->Get_GlobalData()->ModelName.push_back("Prototype_Component_Model_AgoVillage_Boss");
 
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Berry"),
 		TEXT("Com_MODEL_Plant_Berry"), reinterpret_cast<CComponent**>(&m_pModelCom[Map_MODEL_Plant_Berry]))))
 		return E_FAIL;
-	if (m_pGameInstance->Get_GlobalData()->ModelName.size() < MAP_MODEL_END)
-		m_pGameInstance->Get_GlobalData()->ModelName.push_back("Prototype_Component_Model_Plant_Berry");
 
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Bush"),
 		TEXT("Com_MODEL_Plant_Bush"), reinterpret_cast<CComponent**>(&m_pModelCom[Map_MODEL_Plant_Bush]))))
 		return E_FAIL;
-	if (m_pGameInstance->Get_GlobalData()->ModelName.size() < MAP_MODEL_END)
-		m_pGameInstance->Get_GlobalData()->ModelName.push_back("Prototype_Component_Model_Plant_Bush");
 
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Weed"),
 		TEXT("Com_MODEL_Plant_Weed"), reinterpret_cast<CComponent**>(&m_pModelCom[Map_MODEL_Plant_Weed]))))
 		return E_FAIL;
-	if (m_pGameInstance->Get_GlobalData()->ModelName.size() < MAP_MODEL_END)
-		m_pGameInstance->Get_GlobalData()->ModelName.push_back("Prototype_Component_Model_Plant_Weed");
 
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Tree_Bamboo"),
 		TEXT("Com_MODEL_Tree_Bamboo"), reinterpret_cast<CComponent**>(&m_pModelCom[Map_MODEL_Tree_Bamboo]))))
 		return E_FAIL;
-	if (m_pGameInstance->Get_GlobalData()->ModelName.size() < MAP_MODEL_END)
-		m_pGameInstance->Get_GlobalData()->ModelName.push_back("Prototype_Component_Model_Tree_Bamboo");
 
 #pragma endregion
 

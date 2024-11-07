@@ -34,8 +34,8 @@ HRESULT CLevel_GamePlay::Initialize()
 		return E_FAIL;*/
 
 	// 오브젝트 관련 테스트 용도
-	/*if (FAILED(OBJ_TEST()))
-		return E_FAIL;*/
+	if (FAILED(OBJ_TEST()))
+		return E_FAIL;
 	
 	//m_pGameInstance->PlayBGM(L"SD_BGM_Sual_Boss.ogg", 1.f, true);
 
@@ -777,8 +777,8 @@ HRESULT CLevel_GamePlay::GameObject_Imgui(_float fTimeDelta)
 						return E_FAIL;
 
 					// 게임오브젝트 정보 컨트롤
-					if (FAILED(GameObject_Pos_Scal_Turn()))
-						return E_FAIL;
+					/*if (FAILED(GameObject_Pos_Scal_Turn()))
+						return E_FAIL;*/
 				}
 			}
 			ImGui::End();
@@ -1242,9 +1242,6 @@ HRESULT CLevel_GamePlay::Ready_Layer_BackGround()
 	if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Layer_BackGround"), TEXT("Prototype_GameObject_Sky"))))
 		return E_FAIL;
 
-	if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Layer_SampleGetObject"), TEXT("Prototype_GameObject_MapObject_Default"))))
-		return E_FAIL;
-
 	return S_OK;
 }
 
@@ -1293,11 +1290,8 @@ HRESULT CLevel_GamePlay::Ready_Layer_Player()
 
 HRESULT CLevel_GamePlay::OBJ_TEST()
 {
-	if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Prototype_GameObject_Player"))))
-		return E_FAIL;
-
-	if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Layer_BackGround"), TEXT("Prototype_GameObject_ForkLift"))))
-		return E_FAIL;
+	/*if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Prototype_GameObject_Player"))))
+		return E_FAIL;*/
 
 	return S_OK;
 }

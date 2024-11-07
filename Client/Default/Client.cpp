@@ -95,7 +95,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		fTimeAcc += pGameInstance->Compute_TimeDelta(TEXT("Timer_Default"));
 
         // 프레임 제한 없엘떄 1 로 값 변경
-		if (fTimeAcc >= 1.f / 60.0f)
+		if (1 /*fTimeAcc >= 1.f / 60.0f*/)
 		{
 			fTimeAcc = 0.f;
 			pMainApp->Update(pGameInstance->Compute_TimeDelta(TEXT("Timer_60")));

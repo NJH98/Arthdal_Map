@@ -213,21 +213,32 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_ForkLift"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/River/River"), PreTransformMatrix))))
 		return E_FAIL;
+	m_pGameInstance->Get_GlobalData()->ModelName.push_back("Prototype_Component_Model_ForkLift");
+
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_AgoVillage_Boss"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/MapModel/AGo_Village/AT_BGAgo_Boss"), PreTransformMatrix))))
 		return E_FAIL;
+	m_pGameInstance->Get_GlobalData()->ModelName.push_back("Prototype_Component_Model_AgoVillage_Boss");
+
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Berry"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/MapModel/Plant/AT_BGCom_Berry"), PreTransformMatrix))))
 		return E_FAIL;
+	m_pGameInstance->Get_GlobalData()->ModelName.push_back("Prototype_Component_Model_Plant_Berry");
+
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Bush"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/MapModel/Plant/AT_BGCom_Bush"), PreTransformMatrix))))
 		return E_FAIL;
+	m_pGameInstance->Get_GlobalData()->ModelName.push_back("Prototype_Component_Model_Plant_Bush");
+
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Weed"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/MapModel/Plant/AT_BGCom_Weed"), PreTransformMatrix))))
 		return E_FAIL;
+	m_pGameInstance->Get_GlobalData()->ModelName.push_back("Prototype_Component_Model_Plant_Weed");
+
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Tree_Bamboo"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/MapModel/Tree/AT_BGCom_Tr_BamBoo"), PreTransformMatrix))))
 		return E_FAIL;
+	m_pGameInstance->Get_GlobalData()->ModelName.push_back("Prototype_Component_Model_Tree_Bamboo");
 
 	lstrcpy(m_szLoadingText, TEXT("네비게이션을(를) 로딩중입니다."));
 	/* For.Prototype_Component_Navigation */
