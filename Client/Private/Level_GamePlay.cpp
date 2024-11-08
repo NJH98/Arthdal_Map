@@ -839,6 +839,7 @@ HRESULT CLevel_GamePlay::GameObject_Create_GameObject(_float fTimeDelta)
 				Desc.Pos = PickPos;
 				Desc.ModelNum = m_iSelectModel;
 				Desc.LayerTag = wLayertag;
+
 				if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, wLayertag, TEXT("Prototype_GameObject_MapObject_Default"), &Desc)))
 					return E_FAIL;
 			}

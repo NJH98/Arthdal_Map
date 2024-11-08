@@ -68,8 +68,9 @@ _int CMapObject_Default::Update(_float fTimeDelta)
 
 void CMapObject_Default::Late_Update(_float fTimeDelta)
 {
-	m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
+	//m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
 	//m_pGameInstance->Add_RenderObject(CRenderer::RG_SHADOWOBJ, this);
+	m_pGameInstance->Push_Instance_Object(TEXT("Layer_Test"), this);
 }
 
 HRESULT CMapObject_Default::Render()
@@ -138,14 +139,14 @@ HRESULT CMapObject_Default::Render_LightDepth()
 HRESULT CMapObject_Default::Ready_Components()
 {
 	/* FOR.Com_Shader */
-	if (FAILED(__super::Add_Component(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxModel"),
+	if (FAILED(__super::Add_Component(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxMeshInstance"),
 		TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom))))
 		return E_FAIL;
 
 #pragma region Ãß°¡ ¸ðµ¨
 
 	/* FOR.Com_Model */
-	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_ForkLift"),
+	/*if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_ForkLift"),
 		TEXT("Com_MODEL_ForkLift"), reinterpret_cast<CComponent**>(&m_pModelCom[MAP_MODEL_ForkLift]))))
 		return E_FAIL;
 	
@@ -159,15 +160,15 @@ HRESULT CMapObject_Default::Ready_Components()
 
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Bush"),
 		TEXT("Com_MODEL_Plant_Bush"), reinterpret_cast<CComponent**>(&m_pModelCom[Map_MODEL_Plant_Bush]))))
-		return E_FAIL;
+		return E_FAIL;*/
 
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Weed"),
-		TEXT("Com_MODEL_Plant_Weed"), reinterpret_cast<CComponent**>(&m_pModelCom[Map_MODEL_Plant_Weed]))))
+		TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom[Map_MODEL_Plant_Weed]))))
 		return E_FAIL;
 
-	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Tree_Bamboo"),
+	/*if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Tree_Bamboo"),
 		TEXT("Com_MODEL_Tree_Bamboo"), reinterpret_cast<CComponent**>(&m_pModelCom[Map_MODEL_Tree_Bamboo]))))
-		return E_FAIL;
+		return E_FAIL;*/
 
 #pragma endregion
 

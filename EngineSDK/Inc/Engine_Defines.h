@@ -44,6 +44,12 @@ using DirectX::SimpleMath::Vector3;
 #include <algorithm>
 #include <string>
 #include <unordered_set>
+#include <utility> // std::pair가 정의된 헤더 파일을 포함합니다.
+#include <cstdint> // uint64_t를 사용하기 위해 필요합니다.
+#include <wrl/client.h>
+using Microsoft::WRL::ComPtr;
+#define CHECK(p)	assert(SUCCEEDED(p))
+
 
 using namespace std;
 #define AI_TEXTURE_TYPE_MAX 18
@@ -55,6 +61,9 @@ using namespace std;
 #define OBJ_POOL 2
 #define OBJ_DEAD 1
 #define OBJ_NOEVENT 0
+
+#define GET_DVC CGameInstance::Get_Instance()->GetDevice()
+#define GET_DC CGameInstance::Get_Instance()->GetDeviceContext()
 
 namespace Engine
 {

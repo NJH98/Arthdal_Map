@@ -35,6 +35,8 @@ public:
 #pragma region GRAPHIC_DEVICE
 public:
 	ID3D11ShaderResourceView* Get_BackBuffer_SRV() const;
+	ComPtr<ID3D11Device> GetDevice();
+	ComPtr<ID3D11DeviceContext> GetDeviceContext();
 	void Render_Begin();
 	void Render_End();
 #pragma endregion
@@ -156,6 +158,12 @@ public:
 #pragma region GLOBAL_DATA
 	GLOBAL_DATA* Get_GlobalData();
 #pragma endregion
+
+#pragma region INSTANCE_MANAGER
+	void Push_Instance_Object(const _wstring& strTag, CGameObject* pGameObject);
+	void Render_Instance();
+#pragma endregion
+
 private:
 	class CGraphic_Device*			m_pGraphic_Device = { nullptr };
 	class CInput_Device*			m_pInput_Device = { nullptr };
@@ -171,6 +179,7 @@ private:
 	class CTarget_Manager*			m_pTarget_Manager = { nullptr };
 	class CPicking*					m_pPicking = { nullptr };
 	class CFrustum*					m_pFrustum = { nullptr };
+	class CInstance_Manager*		m_pInstanceManager = { nullptr };
 
 	class CGlobalData*				m_pGlobalData = { nullptr };
 

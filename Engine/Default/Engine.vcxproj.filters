@@ -181,6 +181,9 @@
     <Filter Include="01.Utility\79.GlobalData">
       <UniqueIdentifier>{465629fd-2dad-49d1-b254-49b7cdab09df}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\02.GameObjects\Instance">
+      <UniqueIdentifier>{67ecbefa-57d8-4bcc-b79c-6b01f0881b2a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Base.cpp">
@@ -350,6 +353,15 @@
     </ClCompile>
     <ClCompile Include="..\Private\GlobalData.cpp">
       <Filter>01.Utility\79.GlobalData</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Instance_Manager.cpp">
+      <Filter>01.Utility\02.GameObjects\Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Instancing_Buffer.cpp">
+      <Filter>01.Utility\02.GameObjects\Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\VertexBuffer.cpp">
+      <Filter>01.Utility\02.GameObjects\Instance</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -532,6 +544,15 @@
     </ClInclude>
     <ClInclude Include="..\Public\GlobalData.h">
       <Filter>01.Utility\79.GlobalData</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Instance_Manager.h">
+      <Filter>01.Utility\02.GameObjects\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Instancing_Buffer.h">
+      <Filter>01.Utility\02.GameObjects\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\VertexBuffer.h">
+      <Filter>01.Utility\02.GameObjects\Instance</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

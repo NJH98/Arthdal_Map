@@ -10,6 +10,12 @@ namespace Engine
 		bool			isWindowsed;
 	}ENGINE_DESC;
 
+	struct InstancingData
+	{
+		Matrix world = Matrix::Identity;
+		//_uint iInstancID = 0;
+	};
+
 	typedef struct
 	{
 		enum TYPE { TYPE_DIRECTIONAL, TYPE_POINT, TYPE_END };
@@ -133,6 +139,18 @@ namespace Engine
 
 	}VTXPOINTINSTANCE;
 
+	typedef struct ENGINE_DLL
+	{
+		XMFLOAT4		vRight;
+		XMFLOAT4		vUp;
+		XMFLOAT4		vLook;
+		XMFLOAT4		vTranslation;
+		_uint			iID;
+
+		static const unsigned int	iNumElements = 9;
+		static const D3D11_INPUT_ELEMENT_DESC	Elements[iNumElements];
+
+	}VTXMESHINSTANCE;
 
 	//////////////////// For. Data////////////////////
 

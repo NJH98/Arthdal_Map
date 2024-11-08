@@ -84,6 +84,12 @@ HRESULT CVIBuffer::Render()
 	return S_OK;
 }
 
+HRESULT CVIBuffer::Render_Instancing(_uint iNumInstance)
+{
+	m_pContext->DrawIndexedInstanced(m_iNumIndices, iNumInstance, 0, 0, 0);
+	return S_OK;
+}
+
 HRESULT CVIBuffer::Create_Buffer(ID3D11Buffer ** ppOut)
 {
 	/* D3D11_BUFFER_DESC : 생성하고자하는 버퍼의 속성(크기를 몇바이트로?, 버퍼를 정적? 동적?) 을 설정한다. */

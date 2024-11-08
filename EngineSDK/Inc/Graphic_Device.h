@@ -19,6 +19,9 @@ public:
 	ID3D11ShaderResourceView* Get_BackBuffer_SRV() const {
 		return m_pBackBufferSRV;
 	}
+	ComPtr<ID3D11Device> GetDevice() { return m_pDevice; }
+	ComPtr<ID3D11DeviceContext> GetDeviceContext() { return m_pDeviceContext; }
+	ComPtr<IDXGISwapChain> GetSwapChain() { return m_pSwapChain; }
 
 public:
 

@@ -3,6 +3,7 @@
 #include "Component.h"
 #include "Bone.h"
 #include "Animation.h"
+#include "Instancing_Buffer.h"
 
 BEGIN(Engine)
 
@@ -67,6 +68,7 @@ public:
 	virtual HRESULT Initialize_Prototype(TYPE eType, const _tchar* pModelFilePath, _fmatrix PreTransformMatrix);
 	virtual HRESULT Initialize(void* pArg) override;
 	virtual HRESULT Render(_uint iMeshIndex);
+	HRESULT RenderInstancing(class CShader* pShader, CInstancing_Buffer* buffer);
 
 
 

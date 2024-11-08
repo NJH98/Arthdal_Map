@@ -249,6 +249,7 @@ HRESULT CRenderer::Render_NonBlend()
 	}
 	m_RenderObjects[RG_NONBLEND].clear();
 
+	m_pGameInstance->Render_Instance();
 	if (FAILED(m_pGameInstance->End_MRT()))
 		return E_FAIL;
 

@@ -10,6 +10,7 @@
 #include "Picking.h"
 #include "Frustum.h"
 #include "GlobalData.h"
+#include "Instance_Manager.h"
 
 IMPLEMENT_SINGLETON(CGameInstance)
 
@@ -92,6 +93,12 @@ HRESULT CGameInstance::Initialize_Engine(HINSTANCE hInst, _uint iNumLevels, cons
 	if (nullptr == m_pGlobalData)
 		return E_FAIL;
 
+	m_pInstanceManager = CInstance_Manager::Create(*ppDevice, *ppContext);
+	if (nullptr == m_pInstanceManager)
+		return E_FAIL;
+	m_pInstanceManager->Initialize();
+
+
 	return S_OK;
 }
 
@@ -137,6 +144,16 @@ HRESULT CGameInstance::Clear(_uint iLevelIndex)
 ID3D11ShaderResourceView * CGameInstance::Get_BackBuffer_SRV() const
 {
 	return m_pGraphic_Device->Get_BackBuffer_SRV();	
+}
+
+ComPtr<ID3D11Device> CGameInstance::GetDevice()
+{
+	return m_pGraphic_Device->GetDevice();
+}
+
+ComPtr<ID3D11DeviceContext> CGameInstance::GetDeviceContext()
+{
+	return m_pGraphic_Device->GetDeviceContext();
 }
 
 void CGameInstance::Render_Begin()
@@ -508,6 +525,16 @@ GLOBAL_DATA* CGameInstance::Get_GlobalData()
 	return m_pGlobalData->Get_GlobalData();
 }
 
+void CGameInstance::Push_Instance_Object(const _wstring& strTag, CGameObject* pGameObject)
+{
+	m_pInstanceManager->Push_Instance_Object(strTag, pGameObject);
+}
+
+void CGameInstance::Render_Instance()
+{
+	m_pInstanceManager->Render();
+}
+
 void CGameInstance::Release_Engine()
 {	
 	Safe_Release(m_pFrustum);
@@ -525,6 +552,7 @@ void CGameInstance::Release_Engine()
 	Safe_Release(m_pInput_Device);
 	Safe_Release(m_pGraphic_Device);
 	Safe_Release(m_pGlobalData);
+	Safe_Release(m_pInstanceManager);
 
 	CGameInstance::Get_Instance()->Destroy_Instance();	
 }

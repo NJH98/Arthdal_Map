@@ -3,6 +3,7 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "Animation.h"
+#include "GameInstance.h"
 
 
 CModel::CModel(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -144,6 +145,33 @@ HRESULT CModel::Render(_uint iMeshIndex)
 {
 	m_Meshes[iMeshIndex]->Bind_Buffers();
 	m_Meshes[iMeshIndex]->Render();
+
+	return S_OK;
+}
+
+HRESULT CModel::RenderInstancing(class CShader* pShader, CInstancing_Buffer* buffer)
+{
+	if (FAILED(pShader->Bind_Matrix("g_ViewMatrix", &m_pGameInstance->Get_Transform_Float4x4(CPipeLine::D3DTS_VIEW))))
+		return E_FAIL;
+	if (FAILED(pShader->Bind_Matrix("g_ProjMatrix", &m_pGameInstance->Get_Transform_Float4x4(CPipeLine::D3DTS_PROJ))))
+		return E_FAIL;
+
+	for (auto& mesh : m_Meshes)
+	{
+		_uint iMaterialIndex = mesh->Get_MaterialIndex();
+
+		if (FAILED(m_Materials[iMaterialIndex].pMaterialTextures[aiTextureType_DIFFUSE]->Bind_ShadeResource(pShader, "g_DiffuseTexture", 0)))
+			MSG_BOX(TEXT("FAIL_DIF"));
+		/*if (FAILED(m_Materials[iMaterialIndex].pMaterialTextures[aiTextureType_NORMALS]->Bind_ShadeResource(pShader, "g_NormalTexture", 0)))
+			MSG_BOX(TEXT("FAIL_NORM"));*/
+
+		pShader->Begin(0);
+
+		mesh->Bind_Buffers();
+		buffer->PushData();
+		mesh->Render_Instancing(buffer->Get_Count());
+	}
+
 
 	return S_OK;
 }

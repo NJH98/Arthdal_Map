@@ -36,6 +36,12 @@ public:
 	virtual HRESULT Render();
 	virtual HRESULT Render_LightDepth() { return S_OK; }
 
+	Matrix CGameObject::Get_WorldMatrix()
+	{
+		return Matrix(m_pTransformCom->Get_WorldMatrix());
+	}
+
+
 public:
 	_bool Get_Dead() { return m_bDead; }
 	void Set_Dead(_bool bDead) { m_bDead = bDead; }
