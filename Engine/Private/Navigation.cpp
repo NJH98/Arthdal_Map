@@ -124,6 +124,83 @@ _bool CNavigation::isMove(_fvector vPosition)
 	}		
 }
 
+void CNavigation::Clear_Cell()
+{
+	for (auto& pCell : m_Cells)
+		Safe_Release(pCell);
+	m_Cells.clear();
+}
+
+void CNavigation::Delete_Cell(_uint iter)
+{
+	auto iterator = m_Cells.begin();
+	for (_uint i = 0; i < iter; i++) {
+		iterator++;
+	}
+	Safe_Release(*iterator);
+	m_Cells.erase(iterator);
+}
+
+void CNavigation::Add_Cell(_float3 PointA, _float3 PointB, _float3 PointC)
+{
+	// 카메라 위치
+	Vector3 CamPos = m_pGameInstance->Get_CamPosition_Vector();
+	// 점들의 위치
+	Vector3 Pa = PointA;
+	Vector3 Pb = PointB;
+	Vector3 Pc = PointC;
+
+	// 벡터 AB와 AC를 계산
+	Vector3 AB = Pb - Pa;
+	Vector3 AC = Pc - Pa;
+
+	// 두 벡터의 외적을 계산하여 법선 벡터를 구한다
+	Vector3 crossProduct = XMVector3Cross(AB, AC);
+	_float dotProduct = XMVectorGetX(XMVector3Dot(crossProduct, CamPos));
+	/*
+	법선벡터 dotProduct
+	양수	: 카메라가 삼각형의 앞면을 보고 있음
+	0	: 카메라가 삼각형의 정확한 측면을 보고있음 ( 1 자로 보이거나 안보임 )
+	음수	: 카메라가 삼각형의 뒷면을 보고 있음 
+	*/
+
+	_float3			vPoints[3] = {};
+
+	if (dotProduct > 0) {
+		// 시계방향
+		vPoints[0] = PointA;
+		vPoints[1] = PointB;
+		vPoints[2] = PointC;
+	}
+	else if (dotProduct < 0) {
+		// 반시계방향
+		vPoints[0] = PointA;
+		vPoints[2] = PointB;
+		vPoints[1] = PointC;
+	}
+	else {
+		return;
+	}
+
+	CCell* pCell = CCell::Create(m_pDevice, m_pContext, vPoints, _int(m_Cells.size()));
+	if (nullptr == pCell)
+		return;
+
+	m_Cells.emplace_back(pCell);
+}
+
+void CNavigation::Add_Cell_NoneCheck(_float3 PointA, _float3 PointB, _float3 PointC)
+{
+	_float3			vPoints[3]{};
+	vPoints[0] = PointA;
+	vPoints[1] = PointB;
+	vPoints[2] = PointC;
+
+	CCell* pCell = CCell::Create(m_pDevice, m_pContext, vPoints, _int(m_Cells.size()));
+
+	m_Cells.emplace_back(pCell);
+}
+
 #ifdef _DEBUG
 
 HRESULT CNavigation::Render()

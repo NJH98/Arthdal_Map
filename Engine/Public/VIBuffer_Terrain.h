@@ -31,6 +31,9 @@ public:
 	_uint Get_VerticesX() { return m_iNumVerticesX - 1; }
 	_uint Get_VerticesZ() { return m_iNumVerticesZ - 1; }
 
+	_uint Get_VerticesNum() { return m_iNumVertices; }
+	_float3* Get_VertexPosition() { return m_pVertexPositions; }
+
 private:
 	_uint			m_iNumVerticesX = {};
 	_uint			m_iNumVerticesZ = {};

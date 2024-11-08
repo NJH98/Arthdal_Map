@@ -11,6 +11,8 @@
 #include "MapObject_Default.h"
 
 #include "Terrain.h"
+#include "Navigation.h"
+#include "Cell.h"
 
 CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CLevel{ pDevice, pContext }
@@ -86,6 +88,8 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 		Terrain_Imgui(fTimeDelta);
 		ImGui::Spacing();
 		GameObject_Imgui(fTimeDelta);
+		ImGui::Spacing();
+		Cell_Imgui(fTimeDelta);
 	}
 	ImGui::End();
 
@@ -977,7 +981,7 @@ HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 	
 	if (ImGui::BeginListBox("##GameObj_List"))
 	{
-		for (int n = 0; n < m_iPreGameObjListSize; n++)
+		for (_uint n = 0; n < m_iPreGameObjListSize; n++)
 		{
 			bool is_selected = (m_iSelectGameObj == n);
 			string MapName = m_vecString_GameObj[n];
@@ -1162,7 +1166,7 @@ HRESULT CLevel_GamePlay::GameObject_Pos_Scal_Turn()
 		ImGui::Text(" ", Turn.x, Turn.y, Turn.z);
 		
 		ImGui::PushItemWidth(200);
-		ImGui::DragFloat("SpinX", &Turn.x, 0.05f, 0.f, 360.f, "%.3f", flags);
+		ImGui::DragFloat("SpinX", &Turn.x, 0.2f, 0.f, 360.f, "%.3f", flags);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 		ImGui::PushItemWidth(100);
@@ -1170,7 +1174,7 @@ HRESULT CLevel_GamePlay::GameObject_Pos_Scal_Turn()
 		ImGui::PopItemWidth();
 
 		ImGui::PushItemWidth(200);
-		ImGui::DragFloat("SpinY", &Turn.y, 0.05f, 0.f, 360.f, "%.3f", flags);
+		ImGui::DragFloat("SpinY", &Turn.y, 0.2f, 0.f, 360.f, "%.3f", flags);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 		ImGui::PushItemWidth(100);
@@ -1178,7 +1182,7 @@ HRESULT CLevel_GamePlay::GameObject_Pos_Scal_Turn()
 		ImGui::PopItemWidth();
 
 		ImGui::PushItemWidth(200);
-		ImGui::DragFloat("SpinZ", &Turn.z, 0.05f, 0.f, 360.f, "%.3f", flags);
+		ImGui::DragFloat("SpinZ", &Turn.z, 0.2f, 0.f, 360.f, "%.3f", flags);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 		ImGui::PushItemWidth(100);
@@ -1196,6 +1200,222 @@ HRESULT CLevel_GamePlay::GameObject_Pos_Scal_Turn()
 
 	return S_OK;
 }
+
+#pragma endregion
+
+#pragma region Cell 작동 코드
+
+HRESULT CLevel_GamePlay::Cell_Imgui(_float fTimeDelta)
+{
+	if (ImGui::CollapsingHeader("Cell , Navi"))
+	{
+		if (m_pTerrain != nullptr)
+		{
+			m_pNavigationCom_Terrain = m_pTerrain->Get_NavigationCom();
+		
+			// 값을 입력받고 셀 추가
+			if (FAILED(Cell_Add(fTimeDelta)))
+				return E_FAIL;
+		}
+	}
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Cell_Add(_float fTimeDelta)
+{
+	ImGui::SeparatorText("Cell_Add");
+
+	static bool bCell_Picking{};
+	ImGui::Checkbox("Cell Picking", &bCell_Picking);
+
+	static ImGuiSliderFlags flags = ImGuiSliderFlags_None;
+
+	ImGui::SameLine();
+	ImGui::Text(" ", PickA, PickB, PickC, WhatPick);
+
+#pragma region 점들 정리
+	ImGui::PushItemWidth(45);
+	ImGui::InputFloat("##PickA_x", &PickA.x);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+
+	ImGui::PushItemWidth(45);
+	ImGui::InputFloat("##PickA_y", &PickA.y);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+
+	ImGui::PushItemWidth(45);
+	ImGui::InputFloat("##PickA_z", &PickA.z);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	ImGui::Text("PointA");
+	//-----------------------------------------------
+	ImGui::PushItemWidth(45);
+	ImGui::InputFloat("##PickB_x", &PickB.x);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+
+	ImGui::PushItemWidth(45);
+	ImGui::InputFloat("##PickB_y", &PickB.y);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+
+	ImGui::PushItemWidth(45);
+	ImGui::InputFloat("##PickB_z", &PickB.z);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	ImGui::Text("PointB");
+	//-----------------------------------------------
+	ImGui::PushItemWidth(45);
+	ImGui::InputFloat("##PickC_x", &PickC.x);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+
+	ImGui::PushItemWidth(45);
+	ImGui::InputFloat("##PickC_y", &PickC.y);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+
+	ImGui::PushItemWidth(45);
+	ImGui::InputFloat("##PickC_z", &PickC.z);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	ImGui::Text("PointC");
+#pragma endregion
+
+	ImGui::InputInt("Where_Pick", &WhatPick);
+
+	if ((ImGui::Button("   Cell Add   ") || m_pGameInstance->Get_DIKeyState_Once(DIK_RETURN)) && bCell_Picking) {
+		m_pNavigationCom_Terrain->Add_Cell(PickA, PickB, PickC);
+	}
+
+	if (bCell_Picking && m_pGameInstance->Get_DIKeyState(DIK_Q) &&
+		m_pGameInstance->Get_DIMouseState_Once_Up(DIMK_LBUTTON))
+	{
+		_float3 PickPos{};
+		if (m_pGameInstance->Picking(&PickPos)) 
+		{
+			switch (WhatPick)
+			{
+			case 0:
+				PickA = Cell_Point_Correction(PickPos);
+				break;
+			case 1:
+				PickB = Cell_Point_Correction(PickPos);
+				break;
+			case 2:
+				PickC = Cell_Point_Correction(PickPos);
+				break;
+			default:
+				break;
+			}
+
+			if (WhatPick >= 2)
+				WhatPick = 0;
+			else
+				WhatPick++;
+		}
+	}
+
+	if (bCell_Picking && m_pGameInstance->Get_DIKeyState(DIK_E) &&
+		m_pGameInstance->Get_DIMouseState_Once_Up(DIMK_LBUTTON)) 
+	{
+		_float3 PickPos{};
+		if (m_pGameInstance->Picking(&PickPos)) 
+		{
+			_uint iternum = 0;
+			for (auto& iterCell : m_pNavigationCom_Terrain->Get_vecCell())
+			{
+				_int Dumy{};
+				if (iterCell->isIn(XMLoadFloat3(&PickPos), &Dumy))
+				{
+					m_pNavigationCom_Terrain->Delete_Cell(iternum);
+				}
+
+				iternum++;
+			}
+		}
+	}
+
+
+	ImGui::Spacing();
+	ImGui::SeparatorText("Terrain Cell");
+	ImGui::Spacing();
+	ImVec2 buttonSize(200, 50);
+	if (ImGui::Button("Setting Terrain Cell FUCK", buttonSize)) {
+		// 기존의 셀을 지우고
+		m_pNavigationCom_Terrain->Clear_Cell();
+
+		// 터레인의 정보를 받아와서 셀을 생성한다
+		_uint NumVerticesX = m_pTerrain->Get_VIBuffer()->Get_VerticesX()+1;
+		_uint NumVerticesZ = m_pTerrain->Get_VIBuffer()->Get_VerticesZ()+1;
+
+		_uint		iNumIndices = { 0 };
+
+		for (_uint i = 0; i < NumVerticesZ-1; i++) {
+			for (_uint j = 0; j < NumVerticesX-1; j++) {
+				_uint			iIndex = i * NumVerticesX + j;
+
+				_uint			iIndices[] = {
+				iIndex + NumVerticesX,
+				iIndex + NumVerticesX + 1,
+				iIndex + 1,
+				iIndex
+				};
+
+				_float3 TerrainPointA = m_pTerrain->Get_VIBuffer()->Get_VertexPosition()[iIndices[0]];
+				_float3 TerrainPointB = m_pTerrain->Get_VIBuffer()->Get_VertexPosition()[iIndices[1]];
+				_float3 TerrainPointC = m_pTerrain->Get_VIBuffer()->Get_VertexPosition()[iIndices[2]];
+				m_pNavigationCom_Terrain->Add_Cell_NoneCheck(TerrainPointA, TerrainPointB, TerrainPointC);
+
+				TerrainPointA = m_pTerrain->Get_VIBuffer()->Get_VertexPosition()[iIndices[0]];
+				TerrainPointB = m_pTerrain->Get_VIBuffer()->Get_VertexPosition()[iIndices[2]];
+				TerrainPointC = m_pTerrain->Get_VIBuffer()->Get_VertexPosition()[iIndices[3]];
+				m_pNavigationCom_Terrain->Add_Cell_NoneCheck(TerrainPointA, TerrainPointB, TerrainPointC);
+			}
+		}
+	}
+
+	ImGui::Spacing();
+	ImGui::SeparatorText("Neighbor Setting");
+	ImGui::Spacing();
+	ImVec2 buttonSize2(200, 50);
+	if (ImGui::Button("Setting Neighbor", buttonSize2)) {
+		m_pNavigationCom_Terrain->SetUp_Neighbors();
+	}
+
+	return S_OK;
+}
+
+_float3 CLevel_GamePlay::Cell_Point_Correction(_float3 Point)
+{
+	Vector3 PointPos = Point;
+
+	// 보정 코드
+	_float Homing = 0.5f; // 보정 범위
+	for (auto& iterCell : m_pNavigationCom_Terrain->Get_vecCell()) 
+	{
+		// 셀 내부 판별 코드 ( 피킹지점에 이미 셀이 있는지 )
+		/*_int Dumy{};
+		if (iterCell->isIn(PointPos, &Dumy))
+			return _float3(-10.f, -10.f, -10.f);*/
+
+		Vector3 CellPointA = iterCell->Get_Point(CCell::POINT_A);
+		Vector3 CellPointB = iterCell->Get_Point(CCell::POINT_B);
+		Vector3 CellPointC = iterCell->Get_Point(CCell::POINT_C);
+
+		if (Vector3::Distance(PointPos, CellPointA) < Homing)
+			return CellPointA;
+		else if (Vector3::Distance(PointPos, CellPointB) < Homing)
+			return CellPointB;
+		else if (Vector3::Distance(PointPos, CellPointC) < Homing)
+			return CellPointC;
+	}
+
+	return Point;
+}
+
 
 #pragma endregion
 
@@ -1348,8 +1568,8 @@ HRESULT CLevel_GamePlay::Ready_Layer_Player()
 
 HRESULT CLevel_GamePlay::OBJ_TEST()
 {
-	/*if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Prototype_GameObject_Player"))))
-		return E_FAIL;*/
+	if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Prototype_GameObject_Player"))))
+		return E_FAIL;
 
 	return S_OK;
 }

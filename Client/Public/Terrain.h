@@ -36,10 +36,12 @@ public:
 	_uint Get_BaseTextureNum() { return m_iBaseTextureNum; }
 	void Set_BaseTextureNum(_uint TextureNum) { m_iBaseTextureNum = TextureNum; }
 
+	CNavigation* Get_NavigationCom() { return m_pNavigationCom; }
+
 private:
 	CShader*				m_pShaderCom = { nullptr };
 	CTexture*				m_pTextureCom[TEXTURE_END] = { nullptr };
-	//CNavigation*			m_pNavigationCom = { nullptr };
+	CNavigation*			m_pNavigationCom = { nullptr };
 	CVIBuffer_Terrain*		m_pVIBufferCom = { nullptr };
 
 	_uint					m_iBaseTextureNum = 0;

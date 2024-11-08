@@ -24,6 +24,13 @@ public:
 	void Update(_fmatrix TerrainWorldMatrix);
 	_bool isMove(_fvector vPosition);
 
+public:
+	void Clear_Cell();
+	void Delete_Cell(_uint iter);
+	void Add_Cell(_float3 PointA, _float3 PointB, _float3 PointC);
+	void Add_Cell_NoneCheck(_float3 PointA, _float3 PointB, _float3 PointC);
+	vector<class CCell*> Get_vecCell() { return m_Cells; }
+
 #ifdef _DEBUG
 public:
 	virtual HRESULT Render() override;
@@ -39,7 +46,7 @@ private:
 	class CShader*						m_pShader = { nullptr };
 #endif
 
-private:
+public:
 	HRESULT SetUp_Neighbors();
 
 public:

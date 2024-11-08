@@ -5,6 +5,8 @@
 #include "Particle_Explosion.h"
 #include "Body_Player.h"
 #include "Weapon.h"
+#include "Terrain.h"
+#include "Cell.h"
 
 CPlayer::CPlayer(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 	: CContainerObject { pDevice, pContext }
@@ -89,6 +91,23 @@ _int CPlayer::Update(_float fTimeDelta)
 	for (auto& pPartObject : m_Parts)
 		pPartObject->Update(fTimeDelta);
 
+
+	// 맵툴에서 업데이트된 네비게이션 셀을 적용하기위한 임시 코드
+	if (m_pGameInstance->Get_DIKeyState_Once(DIK_RETURN))
+	{
+		m_pNavigationCom->Clear_Cell();
+		CNavigation* pNavigation = static_cast<CTerrain*>(m_pGameInstance->Get_Object(LEVEL_GAMEPLAY, TEXT("Layer_Terrain")))->Get_NavigationCom();
+		
+		for (auto& iter : pNavigation->Get_vecCell()) 
+		{
+			Vector3 CellPointA = iter->Get_Point(CCell::POINT_A);
+			Vector3 CellPointB = iter->Get_Point(CCell::POINT_B);
+			Vector3 CellPointC = iter->Get_Point(CCell::POINT_C);
+
+			m_pNavigationCom->Add_Cell_NoneCheck(CellPointA, CellPointB, CellPointC);
+			m_pNavigationCom->SetUp_Neighbors();
+		}
+	}
 
 	return OBJ_NOEVENT;
 }

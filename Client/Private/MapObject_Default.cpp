@@ -46,7 +46,7 @@ HRESULT CMapObject_Default::Initialize(void* pArg)
 
 	list<CGameObject*>* GameObjectLayer = m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, m_GameObjDesc.LayerTag);
 	if (GameObjectLayer != nullptr) {
-		m_DepthNum = GameObjectLayer->size();
+		m_DepthNum = _float(GameObjectLayer->size());
 	}
 	else
 		m_DepthNum = 0;

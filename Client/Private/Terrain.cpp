@@ -58,10 +58,10 @@ void CTerrain::Late_Update(_float fTimeDelta)
 	__super::Late_Update(fTimeDelta);
 
 	//m_pVIBufferCom->Culling(m_pTransformCom->Get_WorldMatrix());
-	//m_pNavigationCom->Update(XMLoadFloat4x4(m_pTransformCom->Get_WorldMatrix_Ptr()));
+	m_pNavigationCom->Update(XMLoadFloat4x4(m_pTransformCom->Get_WorldMatrix_Ptr()));
 	
 #ifdef _DEBUG
-	//m_pGameInstance->Add_DebugObject(m_pNavigationCom);
+	m_pGameInstance->Add_DebugObject(m_pNavigationCom);
 #endif
 
 	m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
@@ -83,10 +83,6 @@ HRESULT CTerrain::Render()
 		return E_FAIL;
 	if (FAILED(m_pTextureCom[TEXTURE_MASK]->Bind_ShadeResourcesMask(m_pShaderCom, "g_MaskTexture", 2)))
 		return E_FAIL;
-
-	/*_float3 MousePick = m_pGameInstance->Get_GlobalData()->Pick_Pos;
-	if (FAILED(m_pShaderCom->Bind_RawValue("g_MouseWorldPos", &MousePick, sizeof(_float3))))
-		return E_FAIL;*/
 
 	if (FAILED(m_pShaderCom->Begin(0)))
 		return E_FAIL;
@@ -132,9 +128,9 @@ HRESULT CTerrain::Ready_Components(void* pArg)
 		return E_FAIL;
 
 	/* For.Com_Navigation */
-	/*if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Navigation"),
+	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Navigation"),
 		TEXT("Com_Navigation"), reinterpret_cast<CComponent**>(&m_pNavigationCom))))
-		return E_FAIL;*/
+		return E_FAIL;
 
 
 	return S_OK;
@@ -176,5 +172,5 @@ void CTerrain::Free()
 		Safe_Release(pTextureCom);
 
 	Safe_Release(m_pVIBufferCom);
-	//Safe_Release(m_pNavigationCom);
+	Safe_Release(m_pNavigationCom);
 }
