@@ -8,6 +8,7 @@
 
 #include "FreeCamera.h"
 #include "GameInstance.h"
+#include "MapObject_Default.h"
 
 #include "Terrain.h"
 
@@ -91,7 +92,9 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 	VectorClear();
 
 	if (m_pGameInstance->Get_DIKeyState_Once(DIK_T)) {
-	
+		_float3 testPos{};
+		_uint	testNum{};
+		m_pGameInstance->Picking(&testPos, &testNum);
 	}
 
 }
@@ -804,6 +807,7 @@ HRESULT CLevel_GamePlay::GameObject_Create_GameObject(_float fTimeDelta)
 			wLayertag = char_to_wstring(Layertag);	// 입력받은 값이 있다면 해당값으로 레이어를 선언한다
 
 		Desc.ModelNum = m_iSelectModel;
+		Desc.LayerTag = wLayertag;
 		if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, wLayertag, TEXT("Prototype_GameObject_MapObject_Default"), &Desc)))
 			return E_FAIL;
 	}
@@ -830,6 +834,7 @@ HRESULT CLevel_GamePlay::GameObject_Create_GameObject(_float fTimeDelta)
 
 				Desc.Pos = PickPos;
 				Desc.ModelNum = m_iSelectModel;
+				Desc.LayerTag = wLayertag;
 				if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, wLayertag, TEXT("Prototype_GameObject_MapObject_Default"), &Desc)))
 					return E_FAIL;
 			}
@@ -943,6 +948,33 @@ HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 
 	ImGui::SeparatorText("GameObj List");
 	ImGui::PushItemWidth(200); // 크기조정
+
+	static bool bFind_GameObject;
+	ImGui::Checkbox("Find Picking", &bFind_GameObject);
+	
+	_float3 FindPos{};
+	_uint	FindNum{};
+
+	if (bFind_GameObject) {
+		if (m_pGameInstance->Get_DIMouseState_Once(DIMK_LBUTTON) && m_pGameInstance->Get_DIKeyState(DIK_Q)) {
+			if (m_pGameInstance->Picking(&FindPos, &FindNum))
+			{
+				// 기존 객체 쉐이더 변경
+				static_cast<CMapObject_Default*>(m_pGameObj)->Set_UseShader(1);
+
+				// 현제 선택한 리스트 박스의 인덱스
+				m_iSelectGameObj = FindNum;
+				// 현제 선택한 게임 오브젝트를 대입한다
+				m_pGameObj = m_pGameInstance->Get_Object(LEVEL_GAMEPLAY, m_StringLayerName, FindNum);
+				// 현제 선택중인 오브젝트의 TransformCom 객체를 셋팅한다.
+				m_pTransformCom = m_pGameObj->Get_TranformCom();
+				// 피킹된 객체 쉐이더 변경
+				static_cast<CMapObject_Default*>(m_pGameObj)->Set_UseShader(3);
+			}
+		}
+	}
+	
+	
 	if (ImGui::BeginListBox("##GameObj_List"))
 	{
 		for (int n = 0; n < m_iPreGameObjListSize; n++)
@@ -976,9 +1008,7 @@ HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 		if (m_pGameObj != nullptr) {
 			m_pGameObj->Set_Dead(true);
 
-			if (m_iSelectGameObj == (m_iGameObjListSize - 1))
-				m_iSelectGameObj--;
-
+			m_iSelectGameObj--;
 			m_pGameObj = m_pGameInstance->Get_Object(LEVEL_GAMEPLAY, m_StringLayerName, m_iSelectGameObj);
 			
 			if (m_pGameObj != nullptr)
@@ -990,6 +1020,17 @@ HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 			{
 				m_pTransformCom = nullptr;
 			}
+
+			_uint SetDepthNum = 0;
+			for (auto& iter : *(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, m_StringLayerName))) 
+			{
+				if (iter->Get_Dead())
+					continue;
+
+				static_cast<CMapObject_Default*>(iter)->Set_DepthNum(_float(SetDepthNum));
+				SetDepthNum++;
+			}
+			
 		}
 	}
 	return S_OK;
@@ -1015,6 +1056,23 @@ HRESULT CLevel_GamePlay::GameObject_Pos_Scal_Turn()
 {
 	if (m_pTransformCom != nullptr) 
 	{
+		// 랜더링 방식
+		_uint GameObjectRenderChange = static_cast<CMapObject_Default*>(m_pGameObj)->Get_UseShader();
+		// 라디오 버튼
+		if (ImGui::RadioButton("Defalt", GameObjectRenderChange == 1)) {
+			GameObjectRenderChange = 1;
+		}
+		ImGui::SameLine(0.0f, 10.0f);
+		if (ImGui::RadioButton("Wire", GameObjectRenderChange == 2)) {
+			GameObjectRenderChange = 2;
+		}
+		ImGui::SameLine(0.0f, 10.0f);
+		if (ImGui::RadioButton("Pick", GameObjectRenderChange == 3)) {
+			GameObjectRenderChange = 3;
+		}
+		static_cast<CMapObject_Default*>(m_pGameObj)->Set_UseShader(GameObjectRenderChange);
+
+		// 회전,크기,위치
 		Vector3 Pos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
 		Vector3 Scal = m_pTransformCom->Get_Scaled();
 		CGameObject::GAMEOBJECT_DESC Objdesc = m_pGameObj->Get_GameObjDesc();

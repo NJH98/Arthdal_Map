@@ -6,8 +6,6 @@ texture2D		g_DiffuseTexture[7];
 texture2D		g_NomalTexture[7];
 texture2D		g_MaskTexture[2];
 
-int				g_BastTextureNum = 0;
-
 struct VS_IN
 {
 	float3 vPosition : POSITION;
@@ -110,7 +108,7 @@ PS_OUT PS_MAIN(PS_IN In)
 	
 	// ÇÈ¼¿ÇÇÅ·À» À§ÇÑ ±íÀÌ°ª
 	Out.vDepth = vector(In.vProjPos.z / In.vProjPos.w, In.vProjPos.w / 1000.f, 0.f, 0.f);
-	Out.vPickDepth = vector(In.vProjPos.z / In.vProjPos.w, 0.f, 0.f, 1.f);
+    Out.vPickDepth = vector(In.vProjPos.z / In.vProjPos.w, 0.f, 0.f, 1.f);
 
 	return Out;
 }

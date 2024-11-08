@@ -12,7 +12,7 @@ private:
 
 public:
 	HRESULT Initialize(HWND hWnd);
-	_bool Picking(_float3* pPickPos);
+	_bool Picking(_float3* pPickPos, _uint *pDepthNum = nullptr);
 	_vector Compute_Height(_fvector vWorldPos, _fmatrix ViewMatrix, _fmatrix ProjMatrix);
 
 private:

@@ -46,7 +46,7 @@ HRESULT CPicking::Initialize(HWND hWnd)
 	return S_OK;
 }
 
-_bool CPicking::Picking(_float3 * pPickPos)
+_bool CPicking::Picking(_float3 * pPickPos, _uint* pDepthNum)
 {
 	/*m_pContext->CopyResource(m_pPickDepthTexture, );*/
 
@@ -72,6 +72,11 @@ _bool CPicking::Picking(_float3 * pPickPos)
 
 	_float		fProjZ = ((_float4*)SubResource.pData)[iPixelIndex].x;
 	_bool		isPicked = static_cast<_bool>(((_float4*)SubResource.pData)[iPixelIndex].w);
+
+	if (pDepthNum != nullptr) {
+		// 뎁스 번호 받아오기
+		*pDepthNum = static_cast<_uint>(((_float4*)SubResource.pData)[iPixelIndex].z);
+	}
 
 	m_pContext->Unmap(m_pPickDepthTexture, 0);
 

@@ -35,13 +35,22 @@ HRESULT CMapObject_Default::Initialize(void* pArg)
 	// 이외 Components 셋팅
 	if (FAILED(Ready_Components()))
 		return E_FAIL;
-
+	
+	// 위치,회전,크기 조정
 	m_pTransformCom->Set_Scaled(m_GameObjDesc.Scale.x, m_GameObjDesc.Scale.y, m_GameObjDesc.Scale.z);
 	m_pTransformCom->All_Rotation(m_GameObjDesc.Angle);
 	m_pTransformCom->Set_State(CTransform::STATE_POSITION, XMLoadFloat3(&m_GameObjDesc.Pos));
 
+	// 사용모델 번호, 깊이번호 저장
 	m_iUseModel = m_GameObjDesc.ModelNum;
 
+	list<CGameObject*>* GameObjectLayer = m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, m_GameObjDesc.LayerTag);
+	if (GameObjectLayer != nullptr) {
+		m_DepthNum = GameObjectLayer->size();
+	}
+	else
+		m_DepthNum = 0;
+	
 	return S_OK;
 }
 
@@ -73,6 +82,10 @@ HRESULT CMapObject_Default::Render()
 	if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", &m_pGameInstance->Get_Transform_Float4x4(CPipeLine::D3DTS_PROJ))))
 		return E_FAIL;
 
+	// 깊이 번호 지정
+	if (FAILED(m_pShaderCom->Bind_RawValue("g_DepthNum", &m_DepthNum, sizeof(_float))))
+		return E_FAIL;
+
 	_uint		iNumMeshes = m_pModelCom[m_iUseModel]->Get_NumMeshes();
 
 	for (_uint i = 0; i < iNumMeshes; i++)
@@ -83,7 +96,7 @@ HRESULT CMapObject_Default::Render()
 		if (FAILED(m_pModelCom[m_iUseModel]->Bind_Material(m_pShaderCom, "g_NormalTexture", aiTextureType_NORMALS, i)))
 			return E_FAIL;
 
-		if (FAILED(m_pShaderCom->Begin(1)))
+		if (FAILED(m_pShaderCom->Begin(m_iUseShader)))
 			return E_FAIL;
 
 		if (FAILED(m_pModelCom[m_iUseModel]->Render(i)))

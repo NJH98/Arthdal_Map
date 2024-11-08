@@ -31,10 +31,16 @@ public:
     virtual HRESULT Render() override;
     virtual HRESULT Render_LightDepth() override;
 
+    _uint Get_UseShader() { return m_iUseShader; };
+    void Set_UseShader(_uint ShaderNum) { m_iUseShader = ShaderNum; }
+
+    void Set_DepthNum(_float DepthNum) { m_DepthNum = DepthNum; }
+
 private:
     HRESULT Ready_Components();
     _uint           m_iUseModel = 0;
-    _uint           m_iUseShader = 0;
+    _uint           m_iUseShader = 1;
+    _float          m_DepthNum = 0.f;
 
     CModel*         m_pModelCom[MAP_MODEL_END] = { nullptr };
     CShader*        m_pShaderCom = { nullptr };

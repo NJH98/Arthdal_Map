@@ -18,6 +18,8 @@ public:
 
 		_uint		ModelNum = 0;
 
+		_wstring	LayerTag = {};
+
 	} GAMEOBJECT_DESC;
 
 protected:

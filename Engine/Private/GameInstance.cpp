@@ -399,9 +399,9 @@ HRESULT CGameInstance::Render_MRT_Debug(const _wstring & strMRTTag, CShader * pS
 
 #pragma region PICKING
 
-_bool CGameInstance::Picking(_float3 * pPickPos)
+_bool CGameInstance::Picking(_float3 * pPickPos, _uint* pDepthNum)
 {
-	return m_pPicking->Picking(pPickPos);
+	return m_pPicking->Picking(pPickPos, pDepthNum);
 }
 
 _vector CGameInstance::Compute_Height(_fvector vWorldPos, _fmatrix ViewMatrix, _fmatrix ProjMatrix)
