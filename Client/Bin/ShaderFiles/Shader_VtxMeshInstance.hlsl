@@ -23,16 +23,9 @@ struct VS_IN
     float4 vUp : TEXCOORD2;
     float4 vLook : TEXCOORD3;
     float4 vTranslation : TEXCOORD4;
+    uint DepthNum : TEXCOORD5;
     uint InstanceID : SV_InstanceID;
     
-};
-
-struct VS_OUT
-{
-	/* SV_ : ShaderValue */
-	/* 내가 해야할 연산은 모두 마쳐놓은 것이므로 이후 dx가 추가적으로 해야할 이릉ㄹ 해라. */
-    float4 vPosition : SV_POSITION;
-    float2 vTexcoord : TEXCOORD0;
 };
 
 struct VS_OUT_NORMAL
@@ -43,6 +36,7 @@ struct VS_OUT_NORMAL
     float4 vProjPos : TEXCOORD1;
     float3 vTangent : TANGENT;
     float3 vBinormal : BINORMAL;
+    uint DepthNum : TEXCOORD5;
 };
 
 /* 1. 정점의 변환과정을 수행한다. */
@@ -66,27 +60,10 @@ VS_OUT_NORMAL VS_MAIN( /*정점*/VS_IN In)
     Out.vProjPos = Out.vPosition;
     Out.vTangent = normalize(mul(vector(In.vTangent, 0.f), g_WorldMatrix)).xyz;
     Out.vBinormal = normalize(cross(Out.vNormal, Out.vTangent));
-
+    Out.DepthNum = In.DepthNum;
+    
     return Out;
 }
-
-
-struct PS_IN
-{
-    float4 vPosition : SV_POSITION;
-    float4 vNormal : NORMAL;
-    float2 vTexcoord : TEXCOORD0;
-    float4 vProjPos : TEXCOORD1;
-};
-
-struct PS_OUT
-{
-    vector vDiffuse : SV_TARGET0;
-    vector vNormal : SV_TARGET1;
-    vector vDepth : SV_TARGET2;
-    vector vPickDepth : SV_TARGET3;
-};
-
 
 struct PS_IN_NORMAL
 {
@@ -96,6 +73,15 @@ struct PS_IN_NORMAL
     float4 vProjPos : TEXCOORD1;
     float3 vTangent : TANGENT;
     float3 vBinormal : BINORMAL;
+    uint DepthNum : TEXCOORD5;
+};
+
+struct PS_OUT
+{
+    vector vDiffuse : SV_TARGET0;
+    vector vNormal : SV_TARGET1;
+    vector vDepth : SV_TARGET2;
+    vector vPickDepth : SV_TARGET3;
 };
 
 PS_OUT PS_MAIN_NORMAL(PS_IN_NORMAL In)
@@ -124,7 +110,7 @@ PS_OUT PS_MAIN_NORMAL(PS_IN_NORMAL In)
 	
 	// 픽셀피킹을 위한 깊이값 , g_DepthNum = 피킹된 객체를 찾아내기위한 고유 번호
     Out.vDepth = vector(In.vProjPos.z / In.vProjPos.w, In.vProjPos.w / 1000.f, 0.f, 0.f);
-    Out.vPickDepth = vector(In.vProjPos.z / In.vProjPos.w, 0.f, 0.f, 1.f);
+    Out.vPickDepth = vector(In.vProjPos.z / In.vProjPos.w, 0.f, float(In.DepthNum), 1.f);
 	
     return Out;
 }

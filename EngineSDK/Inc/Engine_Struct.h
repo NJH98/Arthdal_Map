@@ -13,6 +13,7 @@ namespace Engine
 	struct InstancingData
 	{
 		Matrix world = Matrix::Identity;
+		_uint	iPickDepthNum = 0;
 		//_uint iInstancID = 0;
 	};
 
@@ -147,7 +148,7 @@ namespace Engine
 		XMFLOAT4		vTranslation;
 		_uint			iID;
 
-		static const unsigned int	iNumElements = 9;
+		static const unsigned int	iNumElements = 10;
 		static const D3D11_INPUT_ELEMENT_DESC	Elements[iNumElements];
 
 	}VTXMESHINSTANCE;

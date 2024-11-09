@@ -51,6 +51,8 @@ public:
 	class CTransform* Get_TranformCom() { return m_pTransformCom; }
 	GAMEOBJECT_DESC Get_GameObjDesc() { return m_GameObjDesc; }
 	void Set_GameObjDesc(GAMEOBJECT_DESC desc) { m_GameObjDesc = desc; }
+	_uint Get_DepthNum() { return m_iDepthNum; }
+	void Set_DepthNum(_uint DepthNum) { m_iDepthNum = DepthNum; }
 
 protected:
 	ID3D11Device*				m_pDevice = { nullptr };
@@ -64,7 +66,8 @@ protected:
 	map<const _wstring, class CComponent*>			m_Components;
 
 protected:
-	_bool m_bDead = { false };
+	_bool			m_bDead = { false };
+	_uint           m_iDepthNum = 0;
 
 protected:
 	

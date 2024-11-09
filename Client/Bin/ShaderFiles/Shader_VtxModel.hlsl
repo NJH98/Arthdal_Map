@@ -4,7 +4,7 @@ matrix			g_WorldMatrix, g_ViewMatrix, g_ProjMatrix;
 texture2D		g_DiffuseTexture;
 texture2D		g_NormalTexture;
 
-float g_DepthNum;
+uint g_DepthNum;
 
 struct VS_IN
 {
@@ -126,7 +126,8 @@ PS_OUT PS_MAIN_NORMAL(PS_IN_NORMAL In)
 	/* 로컬상의 변환되지 않은 노말벡터를 구했다. */
 	/* 로컬스페이스 => 정점의로컬스페이스(x), 노멀벡터당 하나씩 로컬스페이스를 독립적으로 구성했다. */
 	float3			vNormal = vNormalDesc.xyz * 2.f - 1.f;
-
+    //float3			vNormal = float3(vNormalDesc.b, vNormalDesc.g, vNormalDesc.r) * 2.f - 1.f;
+	
 	float3x3		WorldMatrix = float3x3(In.vTangent, In.vBinormal, In.vNormal);
 
 	vNormal = normalize(mul(vNormal, WorldMatrix));
@@ -142,7 +143,7 @@ PS_OUT PS_MAIN_NORMAL(PS_IN_NORMAL In)
 	
 	// 픽셀피킹을 위한 깊이값 , g_DepthNum = 피킹된 객체를 찾아내기위한 고유 번호
 	Out.vDepth = vector(In.vProjPos.z / In.vProjPos.w, In.vProjPos.w / 1000.f, 0.f, 0.f);
-    Out.vPickDepth = vector(In.vProjPos.z / In.vProjPos.w, 0.f, g_DepthNum, 1.f);
+    Out.vPickDepth = vector(In.vProjPos.z / In.vProjPos.w, 0.f, float(g_DepthNum), 1.f);
 	
 	return Out;
 }
@@ -174,7 +175,7 @@ PS_OUT PS_MAIN_NORMAL_PICK_RED(PS_IN_NORMAL In)
 	
 	// 픽셀피킹을 위한 깊이값 , g_DepthNum = 피킹된 객체를 찾아내기위한 고유 번호
     Out.vDepth = vector(In.vProjPos.z / In.vProjPos.w, In.vProjPos.w / 1000.f, 0.f, 0.f);
-    Out.vPickDepth = vector(In.vProjPos.z / In.vProjPos.w, 0.f, g_DepthNum, 1.f);
+    Out.vPickDepth = vector(In.vProjPos.z / In.vProjPos.w, 0.f, float(g_DepthNum), 1.f);
 	
     return Out;
 }

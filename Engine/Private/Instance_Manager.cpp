@@ -62,6 +62,7 @@ void CInstance_Manager::Render_InstanceModel()
 				CGameObject* gameObject = vec[i];
 				InstancingData data;
 				data.world = gameObject->Get_WorldMatrix();
+				data.iPickDepthNum = gameObject->Get_DepthNum();
 				AddData(instanceId, data);
 			}
 			CInstancing_Buffer* buffer = m_Buffers[instanceId];

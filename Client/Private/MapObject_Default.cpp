@@ -46,11 +46,11 @@ HRESULT CMapObject_Default::Initialize(void* pArg)
 
 	list<CGameObject*>* GameObjectLayer = m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, m_GameObjDesc.LayerTag);
 	if (GameObjectLayer != nullptr) {
-		m_DepthNum = _float(GameObjectLayer->size());
+		m_iDepthNum = GameObjectLayer->size();
 	}
 	else
-		m_DepthNum = 0;
-	
+		m_iDepthNum = 0;
+
 	return S_OK;
 }
 
@@ -63,6 +63,11 @@ _int CMapObject_Default::Update(_float fTimeDelta)
 	if (m_bDead)
 		return OBJ_DEAD;
 
+	if (m_pGameInstance->Get_DIKeyState_Once(DIK_T)) {
+		Matrix test = XMMatrixIdentity();
+		m_pTransformCom->Set_WorldMatrix(test);
+	}
+
 	return OBJ_NOEVENT;
 }
 
@@ -70,37 +75,41 @@ void CMapObject_Default::Late_Update(_float fTimeDelta)
 {
 	//m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
 	//m_pGameInstance->Add_RenderObject(CRenderer::RG_SHADOWOBJ, this);
-	m_pGameInstance->Push_Instance_Object(TEXT("Layer_Test"), this);
+
+	if(m_bIsRenderInstance)
+		m_pGameInstance->Push_Instance_Object(m_InstnaceLayer, this);
+	else
+		m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
 }
 
 HRESULT CMapObject_Default::Render()
 {
-	if (FAILED(m_pTransformCom->Bind_ShaderResource(m_pShaderCom, "g_WorldMatrix")))
+	if (FAILED(m_pTransformCom->Bind_ShaderResource(m_pSubShaderCom, "g_WorldMatrix")))
 		return E_FAIL;
 
-	if (FAILED(m_pShaderCom->Bind_Matrix("g_ViewMatrix", &m_pGameInstance->Get_Transform_Float4x4(CPipeLine::D3DTS_VIEW))))
+	if (FAILED(m_pSubShaderCom->Bind_Matrix("g_ViewMatrix", &m_pGameInstance->Get_Transform_Float4x4(CPipeLine::D3DTS_VIEW))))
 		return E_FAIL;
-	if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", &m_pGameInstance->Get_Transform_Float4x4(CPipeLine::D3DTS_PROJ))))
+	if (FAILED(m_pSubShaderCom->Bind_Matrix("g_ProjMatrix", &m_pGameInstance->Get_Transform_Float4x4(CPipeLine::D3DTS_PROJ))))
 		return E_FAIL;
 
 	// ±íÀÌ ¹øÈ£ ÁöÁ¤
-	if (FAILED(m_pShaderCom->Bind_RawValue("g_DepthNum", &m_DepthNum, sizeof(_float))))
+	if (FAILED(m_pSubShaderCom->Bind_RawValue("g_DepthNum", &m_iDepthNum, sizeof(_uint))))
 		return E_FAIL;
 
-	_uint		iNumMeshes = m_pModelCom[m_iUseModel]->Get_NumMeshes();
+	_uint		iNumMeshes = m_pModelCom->Get_NumMeshes();
 
 	for (_uint i = 0; i < iNumMeshes; i++)
 	{
-		if (FAILED(m_pModelCom[m_iUseModel]->Bind_Material(m_pShaderCom, "g_DiffuseTexture", aiTextureType_DIFFUSE, i)))
+		if (FAILED(m_pModelCom->Bind_Material(m_pSubShaderCom, "g_DiffuseTexture", aiTextureType_DIFFUSE, i)))
 			return E_FAIL;
 
-		if (FAILED(m_pModelCom[m_iUseModel]->Bind_Material(m_pShaderCom, "g_NormalTexture", aiTextureType_NORMALS, i)))
+		if (FAILED(m_pModelCom->Bind_Material(m_pSubShaderCom, "g_NormalTexture", aiTextureType_NORMALS, i)))
 			return E_FAIL;
 
-		if (FAILED(m_pShaderCom->Begin(m_iUseShader)))
+		if (FAILED(m_pSubShaderCom->Begin(m_iUseShader)))
 			return E_FAIL;
 
-		if (FAILED(m_pModelCom[m_iUseModel]->Render(i)))
+		if (FAILED(m_pModelCom->Render(i)))
 			return E_FAIL;
 	}
 	return S_OK;
@@ -119,17 +128,17 @@ HRESULT CMapObject_Default::Render_LightDepth()
 	if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", &m_pGameInstance->Get_Transform_Float4x4(CPipeLine::D3DTS_PROJ))))
 		return E_FAIL;
 
-	_uint		iNumMeshes = m_pModelCom[m_iUseModel]->Get_NumMeshes();
+	_uint		iNumMeshes = m_pModelCom->Get_NumMeshes();
 
 	for (_uint i = 0; i < iNumMeshes; i++)
 	{
-		m_pModelCom[m_iUseModel]->Bind_MeshBoneMatrices(m_pShaderCom, "g_BoneMatrices", i);
+		m_pModelCom->Bind_MeshBoneMatrices(m_pShaderCom, "g_BoneMatrices", i);
 
-		if (FAILED(m_pModelCom[m_iUseModel]->Bind_Material(m_pShaderCom, "g_DiffuseTexture", aiTextureType_DIFFUSE, i)))
+		if (FAILED(m_pModelCom->Bind_Material(m_pShaderCom, "g_DiffuseTexture", aiTextureType_DIFFUSE, i)))
 			return E_FAIL;
 		if (FAILED(m_pShaderCom->Begin(1)))
 			return E_FAIL;
-		if (FAILED(m_pModelCom[m_iUseModel]->Render(i)))
+		if (FAILED(m_pModelCom->Render(i)))
 			return E_FAIL;
 	}
 
@@ -142,33 +151,54 @@ HRESULT CMapObject_Default::Ready_Components()
 	if (FAILED(__super::Add_Component(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxMeshInstance"),
 		TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom))))
 		return E_FAIL;
+	if (FAILED(__super::Add_Component(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxModel"),
+		TEXT("Com_SubShader"), reinterpret_cast<CComponent**>(&m_pSubShaderCom))))
+		return E_FAIL;
 
 #pragma region Ãß°¡ ¸ðµ¨
 
 	/* FOR.Com_Model */
-	/*if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_ForkLift"),
-		TEXT("Com_MODEL_ForkLift"), reinterpret_cast<CComponent**>(&m_pModelCom[MAP_MODEL_ForkLift]))))
-		return E_FAIL;
-	
-	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_AgoVillage_Boss"),
-		TEXT("Com_MODEL_AgoVillage_Boss"), reinterpret_cast<CComponent**>(&m_pModelCom[Map_MODEL_AgoVillage_Boss]))))
-		return E_FAIL;
-
-	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Berry"),
-		TEXT("Com_MODEL_Plant_Berry"), reinterpret_cast<CComponent**>(&m_pModelCom[Map_MODEL_Plant_Berry]))))
-		return E_FAIL;
-
-	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Bush"),
-		TEXT("Com_MODEL_Plant_Bush"), reinterpret_cast<CComponent**>(&m_pModelCom[Map_MODEL_Plant_Bush]))))
-		return E_FAIL;*/
-
-	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Weed"),
-		TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom[Map_MODEL_Plant_Weed]))))
-		return E_FAIL;
-
-	/*if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Tree_Bamboo"),
-		TEXT("Com_MODEL_Tree_Bamboo"), reinterpret_cast<CComponent**>(&m_pModelCom[Map_MODEL_Tree_Bamboo]))))
-		return E_FAIL;*/
+	switch (m_GameObjDesc.ModelNum)
+	{
+	case MAP_MODEL_ForkLift:
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_ForkLift"),
+			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
+			return E_FAIL;
+		m_InstnaceLayer = TEXT("Prototype_Component_Model_ForkLift");
+		break;
+	case Map_MODEL_AgoVillage_Boss:
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_AgoVillage_Boss"),
+			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
+			return E_FAIL;
+		m_InstnaceLayer = TEXT("Prototype_Component_Model_AgoVillage_Boss");
+		break;
+	case Map_MODEL_Plant_Berry:
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Berry"),
+			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
+			return E_FAIL;
+		m_InstnaceLayer = TEXT("Prototype_Component_Model_Plant_Berry");
+		break;
+	case Map_MODEL_Plant_Bush:
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Bush"),
+			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
+			return E_FAIL;
+		m_InstnaceLayer = TEXT("Prototype_Component_Model_Plant_Bush");
+		break;
+	case Map_MODEL_Plant_Weed:
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Weed"),
+			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
+			return E_FAIL;
+		m_InstnaceLayer = TEXT("Prototype_Component_Model_Plant_Weed");
+		break;
+	case Map_MODEL_Tree_Bamboo:
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Tree_Bamboo"),
+			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
+			return E_FAIL;
+		m_InstnaceLayer = TEXT("Prototype_Component_Model_Tree_Bamboo");
+		break;
+	default:
+		break;
+	}
 
 #pragma endregion
 
@@ -203,9 +233,7 @@ void CMapObject_Default::Free()
 {
 	__super::Free();
 
-	for (_uint i = 0; i < MAP_MODEL_END; i++) {
-		Safe_Release(m_pModelCom[i]);
-	}
-
+	Safe_Release(m_pModelCom);
 	Safe_Release(m_pShaderCom);
+	Safe_Release(m_pSubShaderCom);
 }

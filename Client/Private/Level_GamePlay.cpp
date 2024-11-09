@@ -964,8 +964,10 @@ HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 		if (m_pGameInstance->Get_DIMouseState_Once(DIMK_LBUTTON) && m_pGameInstance->Get_DIKeyState(DIK_Q)) {
 			if (m_pGameInstance->Picking(&FindPos, &FindNum))
 			{
-				// 기존 객체 쉐이더 변경
+				// 기존 객체 변경 점
+				// 사용중인 쉐이더 , 인스턴싱 유무
 				static_cast<CMapObject_Default*>(m_pGameObj)->Set_UseShader(1);
+				static_cast<CMapObject_Default*>(m_pGameObj)->Set_InstanceRender(true);
 
 				// 현제 선택한 리스트 박스의 인덱스
 				m_iSelectGameObj = FindNum;
@@ -975,6 +977,8 @@ HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 				m_pTransformCom = m_pGameObj->Get_TranformCom();
 				// 피킹된 객체 쉐이더 변경
 				static_cast<CMapObject_Default*>(m_pGameObj)->Set_UseShader(3);
+				// 피킹된 객체 인스턴싱 랜더에서 기본 랜더로 교체
+				static_cast<CMapObject_Default*>(m_pGameObj)->Set_InstanceRender(false);
 			}
 		}
 	}
@@ -1032,7 +1036,7 @@ HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 				if (iter->Get_Dead())
 					continue;
 
-				static_cast<CMapObject_Default*>(iter)->Set_DepthNum(_float(SetDepthNum));
+				iter->Set_DepthNum(SetDepthNum);
 				SetDepthNum++;
 			}
 			
