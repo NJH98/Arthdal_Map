@@ -10,6 +10,7 @@ class CGameObject;
 class CTransform;
 class CNavigation;
 class CCell;
+class CLight;
 END
 
 BEGIN(Client)
@@ -106,11 +107,25 @@ private:
 	HRESULT Cell_Imgui(_float fTimeDelta);
 	HRESULT Cell_Add(_float fTimeDelta);
 		_float3 Cell_Point_Correction(_float3 Point);
-	HRESULT Cell_Delete(_float fTimeDelta);
 
 	class CNavigation* m_pNavigationCom_Terrain = { nullptr };		// 터레인으로 접근하는 NavigationCom 객체
 	_float3		PickA = {}, PickB = {}, PickC = {};	// Cell_Add 용 변수들
 	_int		WhatPick = { 0 };
+
+#pragma endregion
+
+#pragma region 광원
+
+	HRESULT Light_Imgui(_float fTimeDelta);
+	HRESULT Light_Create_Light(_float fTimeDelta);
+	HRESULT Light_ListBox(_float fTimeDelta);
+	HRESULT Light_Save_Load(_float fTimeDelta);
+	HRESULT Light_DescSet(_float fTimeDelta);
+
+	_uint	m_iLightListSize = { 0 };			// 전체 광원의 갯수
+	CLight* m_pLight = { nullptr };				// 현제 선택중인 광원
+	vector<string>	m_vecString_Light;			// 광원 리스트박스 벡터
+	_uint m_iSelectLight = { 0 };				// 현제 선택중인 리스트박스 인덱스
 
 #pragma endregion
 

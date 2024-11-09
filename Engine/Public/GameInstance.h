@@ -99,7 +99,10 @@ public:
 
 #pragma region LIGHT_MANAGER
 	HRESULT Add_Light(const LIGHT_DESC& LightDesc);
-	const LIGHT_DESC* Get_LightDesc(_uint iIndex) const;
+	class CLight* Get_Light(_uint iIndex);
+	LIGHT_DESC* Get_LightDesc(_uint iIndex);
+	list<class CLight*> Get_LightList();
+	void Delete_Light(_uint iIndex);
 	HRESULT Render_Lights(class CShader* pShader, class CVIBuffer_Rect* pVIBuffer);
 
 #pragma endregion

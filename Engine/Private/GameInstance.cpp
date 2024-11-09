@@ -345,9 +345,23 @@ HRESULT CGameInstance::Add_Light(const LIGHT_DESC & LightDesc)
 {
 	return m_pLight_Manager->Add_Light(LightDesc);
 }
-const LIGHT_DESC * CGameInstance::Get_LightDesc(_uint iIndex) const
+CLight* CGameInstance::Get_Light(_uint iIndex)
+{
+	return m_pLight_Manager->Get_Light(iIndex);
+}
+LIGHT_DESC * CGameInstance::Get_LightDesc(_uint iIndex)
 {
 	return m_pLight_Manager->Get_LightDesc(iIndex);
+}
+
+list<class CLight*> CGameInstance::Get_LightList()
+{
+	return m_pLight_Manager->Get_LightList();
+}
+
+void CGameInstance::Delete_Light(_uint iIndex)
+{
+	m_pLight_Manager->Delete_Light(iIndex);
 }
 
 HRESULT CGameInstance::Render_Lights(CShader * pShader, CVIBuffer_Rect * pVIBuffer)

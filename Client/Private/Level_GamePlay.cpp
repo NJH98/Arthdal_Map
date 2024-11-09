@@ -13,6 +13,7 @@
 #include "Terrain.h"
 #include "Navigation.h"
 #include "Cell.h"
+#include "Light.h"
 
 CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CLevel{ pDevice, pContext }
@@ -21,8 +22,8 @@ CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pCo
 
 HRESULT CLevel_GamePlay::Initialize()
 {
-	if (FAILED(Ready_Lights()))
-		return E_FAIL;
+	/*if (FAILED(Ready_Lights()))
+		return E_FAIL;*/
 	if (FAILED(Ready_Layer_Camera()))
 		return E_FAIL;
 	if (FAILED(Ready_Layer_BackGround()))
@@ -90,15 +91,15 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 		GameObject_Imgui(fTimeDelta);
 		ImGui::Spacing();
 		Cell_Imgui(fTimeDelta);
+		ImGui::Spacing();
+		Light_Imgui(fTimeDelta);
 	}
 	ImGui::End();
 
 	VectorClear();
 
 	if (m_pGameInstance->Get_DIKeyState_Once(DIK_T)) {
-		_float3 testPos{};
-		_uint	testNum{};
-		m_pGameInstance->Picking(&testPos, &testNum);
+		
 	}
 
 }
@@ -797,12 +798,13 @@ HRESULT CLevel_GamePlay::GameObject_Imgui(_float fTimeDelta)
 
 HRESULT CLevel_GamePlay::GameObject_Create_GameObject(_float fTimeDelta)
 {
+	ImGui::SeparatorText("GameObject_Add");
 	ImGui::PushItemWidth(150); // 크기조정
 
 	static char Layertag[256] = {};
 	ImGui::InputText("Layertag##Monster", Layertag, IM_ARRAYSIZE(Layertag));
 	
-	if (ImGui::Button("  Create Terrain  ")) {
+	if (ImGui::Button("  Create GameObject  ")) {
 		CGameObject::GAMEOBJECT_DESC Desc{};
 		_wstring wLayertag{};
 		if (Layertag[0] == '\0')						// 입력받은 레이어 테그가 없을경우
@@ -1348,7 +1350,9 @@ HRESULT CLevel_GamePlay::Cell_Add(_float fTimeDelta)
 	ImGui::SeparatorText("Terrain Cell");
 	ImGui::Spacing();
 	ImVec2 buttonSize(200, 50);
-	if (ImGui::Button("Setting Terrain Cell FUCK", buttonSize)) {
+	if (ImGui::Button("Setting Terrain Cell Don't Use", buttonSize)) {
+		// 터레인이 크면 컴퓨터의 램이 감당을 못한다
+		return S_OK;
 		// 기존의 셀을 지우고
 		m_pNavigationCom_Terrain->Clear_Cell();
 
@@ -1424,7 +1428,356 @@ _float3 CLevel_GamePlay::Cell_Point_Correction(_float3 Point)
 
 #pragma endregion
 
-#pragma region 초기화 코드
+#pragma region 광원 코드
+
+HRESULT CLevel_GamePlay::Light_Imgui(_float fTimeDelta)
+{
+	if (ImGui::CollapsingHeader("Light"))
+	{
+		// 광원 생성
+		ImGui::Spacing();
+		Light_Create_Light(fTimeDelta);
+
+		if (ImGui::CollapsingHeader("Light List")) 
+		{
+			if (FAILED(Light_ListBox(fTimeDelta)))
+				return E_FAIL;
+
+			if (FAILED(Light_Save_Load(fTimeDelta)))
+				return E_FAIL;
+		}
+		
+		if (m_pLight != nullptr)
+		{
+			ImGui::Begin("Information Light");
+			{
+				if (FAILED(Light_DescSet(fTimeDelta)))
+					return E_FAIL;
+			}
+			ImGui::End();
+		}
+	}
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Light_Create_Light(_float fTimeDelta)
+{
+	ImGui::SeparatorText("Light_Add");
+
+	ImGui::PushItemWidth(150); // 크기조정
+
+	if (ImGui::Button("  Create Light  ")) {
+		LIGHT_DESC			LightDesc{};
+
+		ZeroMemory(&LightDesc, sizeof LightDesc);
+		LightDesc.eType = LIGHT_DESC::TYPE_POINT;
+		LightDesc.vPosition = _float4(0.f, 1.f, 0.f, 1.f);
+		LightDesc.fRange = 10.f;
+		LightDesc.vDiffuse = _float4(1.f, 1.f, 1.f, 1.f);
+		LightDesc.vAmbient = _float4(1.f, 1.f, 1.f, 0.f);
+		LightDesc.vSpecular = _float4(1.f, 1.f, 1.f, 1.f);
+
+		if (FAILED(m_pGameInstance->Add_Light(LightDesc)))
+			return E_FAIL;
+	}
+
+	ImGui::PopItemWidth();
+
+	static bool bLight_Picking;
+	ImGui::Spacing();
+	ImGui::Checkbox("Light Picking", &bLight_Picking);
+
+	if (bLight_Picking)
+	{
+		if (m_pGameInstance->Get_DIMouseState_Once(DIMK_LBUTTON) && m_pGameInstance->Get_DIKeyState(DIK_Q)) {
+			_float3 PickPos{};
+			if (m_pGameInstance->Picking(&PickPos)) {
+				LIGHT_DESC			LightDesc{};
+
+				ZeroMemory(&LightDesc, sizeof LightDesc);
+				LightDesc.eType = LIGHT_DESC::TYPE_POINT;
+				LightDesc.vPosition = _float4(PickPos.x, PickPos.y + 1.f, PickPos.z, 1.f);
+				LightDesc.fRange = 10.f;
+				LightDesc.vDiffuse = _float4(1.f, 1.f, 1.f, 1.f);
+				LightDesc.vAmbient = _float4(1.f, 1.f, 1.f, 0.f);
+				LightDesc.vSpecular = _float4(1.f, 1.f, 1.f, 1.f);
+
+				if (FAILED(m_pGameInstance->Add_Light(LightDesc)))
+					return E_FAIL;
+			}
+		}
+	}
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Light_ListBox(_float fTimeDelta)
+{
+	// light list Box 에 있는 vecString 정리
+	m_iLightListSize = _uint(m_pGameInstance->Get_LightList().size());
+	m_vecString_Light.clear();
+	for (_uint i = 0; i < m_iLightListSize; i++)
+	{
+		_wstring Lightlistboxname = L"Light_" + to_wstring(i);
+		m_vecString_Light.push_back(wstring_to_string(Lightlistboxname));
+	}
+
+	ImGui::PushItemWidth(200); // 크기조정
+
+	if (ImGui::BeginListBox("##Light_List"))
+	{
+		for (_uint n = 0; n < m_iLightListSize; n++)
+		{
+			bool is_selected = (m_iSelectLight == n);
+			string MapName = m_vecString_Light[n];
+			if (ImGui::Selectable(MapName.c_str(), is_selected))
+			{
+				// 현제 선택한 리스트 박스의 인덱스
+				m_iSelectLight = n;
+				// 현제 선택한 광원를 대입한다
+				m_pLight = m_pGameInstance->Get_Light(m_iSelectLight);
+			}
+
+			if (is_selected)
+				ImGui::SetItemDefaultFocus();
+			// 반복문으로 리스트박스의 선택된 객체 찾기
+		}
+
+		ImGui::EndListBox();
+	}
+	ImGui::PopItemWidth();
+
+	ImGui::SameLine();
+	if (ImGui::Button("DeleteLight")) {
+		if (m_pLight != nullptr) {
+			m_pGameInstance->Delete_Light(m_iSelectLight);
+
+			m_iSelectLight--;
+			m_pLight = m_pGameInstance->Get_Light(m_iSelectLight);
+		}
+	}
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Light_Save_Load(_float fTimeDelta)
+{
+	ImVec2 buttonSize(100, 30);
+	if (ImGui::Button("Save_Light", buttonSize)) {
+		if (m_pLayer != nullptr) {
+			/* 저장할 데이터 고민 */
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Load_Light", buttonSize)) {
+
+	}
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Light_DescSet(_float fTimeDelta)
+{	
+	// 빛 정보 받아오기
+	LIGHT_DESC* LightDesc = m_pLight->Get_LightDesc();
+
+	// 라디오 버튼
+	if (ImGui::RadioButton("Direction", LightDesc->eType == 0)) {
+		LightDesc->eType = LIGHT_DESC::TYPE_DIRECTIONAL;
+	}
+	ImGui::SameLine(0.0f, 10.0f);
+	if (ImGui::RadioButton("Point", LightDesc->eType == 1)) {
+		LightDesc->eType = LIGHT_DESC::TYPE_POINT;
+	}
+
+	static ImGuiSliderFlags flags = ImGuiSliderFlags_None;
+
+#pragma region 빛 방향
+	ImGui::SeparatorText("Direction");
+	ImGui::SameLine();
+	ImGui::Text(" ", LightDesc->vDirection.x, LightDesc->vDirection.y, LightDesc->vDirection.z, LightDesc->vDirection.w);
+	
+	ImGui::PushItemWidth(200);
+	ImGui::DragFloat("DirX ", &LightDesc->vDirection.x, 0.05f, -FLT_MAX, +FLT_MAX, "%.3f", flags);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	ImGui::PushItemWidth(100);
+	ImGui::InputFloat("##input DirX", &LightDesc->vDirection.x, 0.01f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+	
+	ImGui::PushItemWidth(200);
+	ImGui::DragFloat("DirY ", &LightDesc->vDirection.y, 0.05f, -FLT_MAX, +FLT_MAX, "%.3f", flags);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	ImGui::PushItemWidth(100);
+	ImGui::InputFloat("##input DirY", &LightDesc->vDirection.y, 0.01f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+	
+	ImGui::PushItemWidth(200);
+	ImGui::DragFloat("DirZ ", &LightDesc->vDirection.z, 0.05f, -FLT_MAX, +FLT_MAX, "%.3f", flags);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	ImGui::PushItemWidth(100);
+	ImGui::InputFloat("##input DirZ", &LightDesc->vDirection.z, 0.01f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+
+	ImGui::PushItemWidth(200);
+	ImGui::DragFloat("DirW ", &LightDesc->vDirection.w, 0.05f, -FLT_MAX, +FLT_MAX, "%.3f", flags);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	ImGui::PushItemWidth(100);
+	ImGui::InputFloat("##input DirW", &LightDesc->vDirection.w, 0.01f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+
+#pragma endregion
+
+#pragma region 빛 위치
+	ImGui::SeparatorText("Position");
+	ImGui::SameLine();
+	ImGui::Text(" ", LightDesc->vPosition.x, LightDesc->vPosition.y, LightDesc->vPosition.z);
+
+	ImGui::PushItemWidth(200);
+	ImGui::DragFloat("PosX ", &LightDesc->vPosition.x, 0.05f, -FLT_MAX, +FLT_MAX, "%.3f", flags);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	ImGui::PushItemWidth(100);
+	ImGui::InputFloat("##input PosX", &LightDesc->vPosition.x, 0.01f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+
+	ImGui::PushItemWidth(200);
+	ImGui::DragFloat("PosY ", &LightDesc->vPosition.y, 0.05f, -FLT_MAX, +FLT_MAX, "%.3f", flags);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	ImGui::PushItemWidth(100);
+	ImGui::InputFloat("##input PosY", &LightDesc->vPosition.y, 0.01f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+
+	ImGui::PushItemWidth(200);
+	ImGui::DragFloat("PosZ ", &LightDesc->vPosition.z, 0.05f, -FLT_MAX, +FLT_MAX, "%.3f", flags);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	ImGui::PushItemWidth(100);
+	ImGui::InputFloat("##input PosZ", &LightDesc->vPosition.z, 0.01f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+
+#pragma endregion
+
+#pragma region 빛 범위
+	ImGui::SeparatorText("Range");
+	ImGui::SameLine();
+	ImGui::Text(" ", LightDesc->fRange);
+
+	ImGui::PushItemWidth(200);
+	ImGui::DragFloat("Range ", &LightDesc->fRange, 0.05f, 1.f, +FLT_MAX, "%.3f", flags);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	ImGui::PushItemWidth(100);
+	ImGui::InputFloat("##input Range", &LightDesc->fRange, 0.01f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+
+#pragma endregion
+
+#pragma region 빛 색상
+	ImGui::SeparatorText("Diffuse");
+	ImGui::SameLine();
+	ImGui::Text(" ", LightDesc->vDiffuse.x, LightDesc->vDiffuse.y, LightDesc->vDiffuse.z);
+
+	ImGui::PushItemWidth(200);
+	ImGui::SliderFloat("Lignt_R ", &LightDesc->vDiffuse.x, 0.f, 1.f);
+	ImGui::SameLine();
+	ImGui::PopItemWidth();
+	ImGui::PushItemWidth(100);
+	ImGui::InputFloat("##input Lignt_R", &LightDesc->vDiffuse.x, 0.01f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+
+	ImGui::PushItemWidth(200);
+	ImGui::SliderFloat("Lignt_G ", &LightDesc->vDiffuse.y, 0.f, 1.f);
+	ImGui::SameLine();
+	ImGui::PopItemWidth();
+	ImGui::PushItemWidth(100);
+	ImGui::InputFloat("##input Lignt_G", &LightDesc->vDiffuse.y, 0.01f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+
+	ImGui::PushItemWidth(200);
+	ImGui::SliderFloat("Lignt_B ", &LightDesc->vDiffuse.z, 0.f, 1.f);
+	ImGui::SameLine();
+	ImGui::PopItemWidth();
+	ImGui::PushItemWidth(100);
+	ImGui::InputFloat("##input Lignt_B", &LightDesc->vDiffuse.z, 0.01f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+
+#pragma endregion
+
+#pragma region 엠비언트
+	ImGui::SeparatorText("Ambient");
+	ImGui::SameLine();
+	ImGui::Text(" ", LightDesc->vAmbient.x, LightDesc->vAmbient.y, LightDesc->vAmbient.z);
+
+	ImGui::PushItemWidth(200);
+	ImGui::SliderFloat("Ambient_R ", &LightDesc->vAmbient.x, 0.f, 1.f);
+	ImGui::SameLine();
+	ImGui::PopItemWidth();
+	ImGui::PushItemWidth(100);
+	ImGui::InputFloat("##input Ambient_R", &LightDesc->vAmbient.x, 0.01f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+
+	ImGui::PushItemWidth(200);
+	ImGui::SliderFloat("Ambient_G ", &LightDesc->vAmbient.y, 0.f, 1.f);
+	ImGui::SameLine();
+	ImGui::PopItemWidth();
+	ImGui::PushItemWidth(100);
+	ImGui::InputFloat("##input Ambient_G", &LightDesc->vAmbient.y, 0.01f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+
+	ImGui::PushItemWidth(200);
+	ImGui::SliderFloat("Ambient_B ", &LightDesc->vAmbient.z, 0.f, 1.f);
+	ImGui::SameLine();
+	ImGui::PopItemWidth();
+	ImGui::PushItemWidth(100);
+	ImGui::InputFloat("##input Ambient_B", &LightDesc->vAmbient.z, 0.01f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+
+#pragma endregion
+
+#pragma region 스펙큘러
+	ImGui::SeparatorText("Specular");
+	ImGui::SameLine();
+	ImGui::Text(" ", LightDesc->vSpecular.x, LightDesc->vSpecular.y, LightDesc->vSpecular.z);
+
+	ImGui::PushItemWidth(200);
+	ImGui::DragFloat("Specular_R ", &LightDesc->vSpecular.x, 0.05f, -FLT_MAX, +FLT_MAX, "%.3f", flags);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	ImGui::PushItemWidth(100);
+	ImGui::InputFloat("##input Specular_R", &LightDesc->vSpecular.x, 0.01f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+
+	ImGui::PushItemWidth(200);
+	ImGui::DragFloat("Specular_G ", &LightDesc->vSpecular.y, 0.05f, -FLT_MAX, +FLT_MAX, "%.3f", flags);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	ImGui::PushItemWidth(100);
+	ImGui::InputFloat("##input Specular_G", &LightDesc->vSpecular.y, 0.01f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+
+	ImGui::PushItemWidth(200);
+	ImGui::DragFloat("Specular_B ", &LightDesc->vSpecular.z, 0.05f, -FLT_MAX, +FLT_MAX, "%.3f", flags);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	ImGui::PushItemWidth(100);
+	ImGui::InputFloat("##input Specular_B", &LightDesc->vSpecular.z, 0.01f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+
+#pragma endregion
+
+	m_pLight->Set_LightDesc(*LightDesc);
+
+	return S_OK;
+}
+
+#pragma endregion
+
+#pragma region 컨테이너 초기화 코드
 
 HRESULT CLevel_GamePlay::VectorClear()
 {
