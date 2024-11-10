@@ -90,11 +90,14 @@ PS_OUT PS_MAIN_NORMAL(PS_IN_NORMAL In)
 
     vector vDiffuse = g_DiffuseTexture.Sample(LinearSampler, In.vTexcoord);
 
-    vector vNormalDesc = g_NormalTexture.Sample(LinearSampler, In.vTexcoord);
+    float2 vNormalXY = g_NormalTexture.Sample(LinearSampler, In.vTexcoord).rg * 2.0f - 1.0f;
 	/* 로컬상의 변환되지 않은 노말벡터를 구했다. */
 	/* 로컬스페이스 => 정점의로컬스페이스(x), 노멀벡터당 하나씩 로컬스페이스를 독립적으로 구성했다. */
-    float3 vNormal = vNormalDesc.xyz * 2.f - 1.f;
-
+    float vNormalZ = sqrt(saturate(1.0f - dot(vNormalXY, vNormalXY)));
+	
+    float3 vNormal = float3(vNormalXY, vNormalZ);
+    //float3			vNormal = float3(vNormalDesc.b, vNormalDesc.g, vNormalDesc.r) * 2.f - 1.f;
+	
     float3x3 WorldMatrix = float3x3(In.vTangent, In.vBinormal, In.vNormal);
 
     vNormal = normalize(mul(vNormal, WorldMatrix));

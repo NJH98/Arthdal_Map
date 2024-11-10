@@ -86,25 +86,37 @@ PS_OUT PS_MAIN(PS_IN In)
 	// 최종 색상
 	Out.vDiffuse = vector(vMtrlDiffuse.rgb, 1.f);
 	
-	// 노말 이미지
-    vector vBaseNomal = g_NomalTexture[0].Sample(LinearSampler, In.vTexcoord * 30.f);
-    vector vDestNomal1 = g_NomalTexture[1].Sample(LinearSampler, In.vTexcoord * 30.f);
-    vector vDestNomal2 = g_NomalTexture[2].Sample(LinearSampler, In.vTexcoord * 30.f);
-    vector vDestNomal3 = g_NomalTexture[3].Sample(LinearSampler, In.vTexcoord * 30.f);
-    vector vDestNomal4 = g_NomalTexture[4].Sample(LinearSampler, In.vTexcoord * 30.f);
-    vector vDestNomal5 = g_NomalTexture[5].Sample(LinearSampler, In.vTexcoord * 30.f);
-    vector vDestNomal6 = g_NomalTexture[6].Sample(LinearSampler, In.vTexcoord * 30.f);
+	// 노말 텍스처에서 X, Y만 샘플링하고 Z 채널을 계산하여 노말 벡터를 구성합니다.
+    float2 vBaseNormalXY = g_NomalTexture[0].Sample(LinearSampler, In.vTexcoord * 30.f).rg * 2.0f - 1.0f;
+    float2 vDestNormal1XY = g_NomalTexture[1].Sample(LinearSampler, In.vTexcoord * 30.f).rg * 2.0f - 1.0f;
+    float2 vDestNormal2XY = g_NomalTexture[2].Sample(LinearSampler, In.vTexcoord * 30.f).rg * 2.0f - 1.0f;
+    float2 vDestNormal3XY = g_NomalTexture[3].Sample(LinearSampler, In.vTexcoord * 30.f).rg * 2.0f - 1.0f;
+    float2 vDestNormal4XY = g_NomalTexture[4].Sample(LinearSampler, In.vTexcoord * 30.f).rg * 2.0f - 1.0f;
+    float2 vDestNormal5XY = g_NomalTexture[5].Sample(LinearSampler, In.vTexcoord * 30.f).rg * 2.0f - 1.0f;
+    float2 vDestNormal6XY = g_NomalTexture[6].Sample(LinearSampler, In.vTexcoord * 30.f).rg * 2.0f - 1.0f;
 
-    vector vMtrlNomal = vBaseNomal * vMask0.r + vDestNomal1 * (1.f - vMask0.r);
-    vMtrlNomal = vMtrlNomal * vMask0.g + vDestNomal2 * (1.f - vMask0.g);
-    vMtrlNomal = vMtrlNomal * vMask0.b + vDestNomal3 * (1.f - vMask0.b);
-    vMtrlNomal = vMtrlNomal * vMask1.r + vDestNomal4 * (1.f - vMask1.r);
-    vMtrlNomal = vMtrlNomal * vMask1.g + vDestNomal5 * (1.f - vMask1.g);
-    vMtrlNomal = vMtrlNomal * vMask1.b + vDestNomal6 * (1.f - vMask1.b);
-	 
-	// 최종 노말값
-	// -1.f ~ 1.f -> 0.f ~ 1.f  최소값 0으로 최댓값 1로 조정
-    Out.vNormal = vector((In.vNormal.xyz + vMtrlNomal.rgb) * 0.5f + 0.5f, 0.f);
+	// X, Y를 기반으로 Z 성분을 계산하여 float3 형태로 노말 벡터를 구성합니다.
+    float3 vBaseNormal = float3(vBaseNormalXY, sqrt(saturate(1.0f - dot(vBaseNormalXY, vBaseNormalXY))));
+    float3 vDestNormal1 = float3(vDestNormal1XY, sqrt(saturate(1.0f - dot(vDestNormal1XY, vDestNormal1XY))));
+    float3 vDestNormal2 = float3(vDestNormal2XY, sqrt(saturate(1.0f - dot(vDestNormal2XY, vDestNormal2XY))));
+    float3 vDestNormal3 = float3(vDestNormal3XY, sqrt(saturate(1.0f - dot(vDestNormal3XY, vDestNormal3XY))));
+    float3 vDestNormal4 = float3(vDestNormal4XY, sqrt(saturate(1.0f - dot(vDestNormal4XY, vDestNormal4XY))));
+    float3 vDestNormal5 = float3(vDestNormal5XY, sqrt(saturate(1.0f - dot(vDestNormal5XY, vDestNormal5XY))));
+    float3 vDestNormal6 = float3(vDestNormal6XY, sqrt(saturate(1.0f - dot(vDestNormal6XY, vDestNormal6XY))));
+
+	// 마스크 값을 기반으로 노말 벡터들을 혼합합니다.
+    float3 vMtrlNormal = vBaseNormal * vMask0.r + vDestNormal1 * (1.f - vMask0.r);
+    vMtrlNormal = vMtrlNormal * vMask0.g + vDestNormal2 * (1.f - vMask0.g);
+    vMtrlNormal = vMtrlNormal * vMask0.b + vDestNormal3 * (1.f - vMask0.b);
+    vMtrlNormal = vMtrlNormal * vMask1.r + vDestNormal4 * (1.f - vMask1.r);
+    vMtrlNormal = vMtrlNormal * vMask1.g + vDestNormal5 * (1.f - vMask1.g);
+    vMtrlNormal = vMtrlNormal * vMask1.b + vDestNormal6 * (1.f - vMask1.b);
+	
+	// 최종 노말 값 조정 (-1 ~ 1 범위를 0 ~ 1 범위로 변환)
+    //Out.vNormal = float4((In.vNormal.xyz + vMtrlNormal) * 0.5f + 0.5f, 0.f);
+    float3 vFinalNormal = normalize(In.vNormal.xyz * 2.0f - 1.0f + (vMtrlNormal * 2.0f - 1.0f));
+    Out.vNormal = float4(vFinalNormal * 0.5f + 0.5f, 0.0f);
+
 	
 	// 픽셀피킹을 위한 깊이값
 	Out.vDepth = vector(In.vProjPos.z / In.vProjPos.w, In.vProjPos.w / 1000.f, 0.f, 0.f);
