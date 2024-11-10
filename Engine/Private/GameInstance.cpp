@@ -364,6 +364,11 @@ void CGameInstance::Delete_Light(_uint iIndex)
 	m_pLight_Manager->Delete_Light(iIndex);
 }
 
+void CGameInstance::Clear_Light()
+{
+	m_pLight_Manager->Clear_Light();
+}
+
 HRESULT CGameInstance::Render_Lights(CShader * pShader, CVIBuffer_Rect * pVIBuffer)
 {
 

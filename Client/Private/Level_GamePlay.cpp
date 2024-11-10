@@ -165,7 +165,7 @@ void CLevel_GamePlay::ShowFileDialog()
 	ImGuiFileDialog::Instance()->OpenDialog(
 		"OpenFileDialog",           // vKey
 		"Select a File",           // vTitle
-		".bmp",					   // vFilters
+		".bmp,.dat",			   // vFilters
 		IGFD::FileDialogConfig()   // vConfig (기본 설정)
 	);
 
@@ -333,6 +333,8 @@ HRESULT CLevel_GamePlay::Terrain_HeightSaveLoad(_float fTimeDelta)
 		}
 
 		delete[] wstrFilePath;
+
+		filePath = "";
 	}
 
 	if (ImGui::Button("  Load_Terrain_Height.bmp  ")) {
@@ -363,6 +365,8 @@ HRESULT CLevel_GamePlay::Terrain_HeightSaveLoad(_float fTimeDelta)
 
 		m_pTerrain = static_cast<CTerrain*>(pTerrain);
 		Safe_AddRef(m_pTerrain);
+
+		filePath = "";
 	}
 
 	ImGui::PopItemWidth();
@@ -497,6 +501,8 @@ HRESULT CLevel_GamePlay::Terrain_MaskSaveLoad(_float fTimeDelta)
 		}
 
 		delete[] wstrFilePath;
+
+		filePath = "";
 	}
 
 	if (ImGui::Button("  Load_Mask_bmp  ")) {
@@ -513,6 +519,8 @@ HRESULT CLevel_GamePlay::Terrain_MaskSaveLoad(_float fTimeDelta)
 		}
 
 		delete[] wstrFilePath;
+
+		filePath = "";
 	}
 
 	return S_OK;
@@ -541,6 +549,79 @@ HRESULT CLevel_GamePlay::Change_Mask(_float fTimeDelta)
 				m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Swap_SRVs(0, SelectStageingImgage);
 				m_pTerrain->Get_Texture(CTerrain::TEXTURE_NORMAL)->Swap_SRVs(0, SelectStageingImgage);
 			}
+
+			ImGui::SameLine(0.0f, 30.0f);
+			ImVec2 SavebuttonSize(100, 30);
+			if (ImGui::Button("Save_Use_Mask", SavebuttonSize)) {
+
+				/*if (filePath.length() < 55) {
+					MSG_BOX(TEXT("Chocie FilePath"));
+					return E_FAIL;
+				}
+
+				ofstream outFile(filePath, ios::binary);
+
+				if (!outFile.is_open()) {
+					MSG_BOX(TEXT("파일 저장 실패"));
+					return E_FAIL;
+				}
+
+				for (const auto& LightList : m_pGameInstance->Get_LightList()) {
+
+					LIGHT_DESC Desc = *LightList->Get_LightDesc();
+
+					outFile.write(reinterpret_cast<const char*>(&Desc.eType), sizeof(_uint));
+					outFile.write(reinterpret_cast<const char*>(&Desc.vDirection), sizeof(_float4));
+					outFile.write(reinterpret_cast<const char*>(&Desc.vPosition), sizeof(_float4));
+					outFile.write(reinterpret_cast<const char*>(&Desc.fRange), sizeof(_float));
+					outFile.write(reinterpret_cast<const char*>(&Desc.vDiffuse), sizeof(_float4));
+					outFile.write(reinterpret_cast<const char*>(&Desc.vAmbient), sizeof(_float4));
+					outFile.write(reinterpret_cast<const char*>(&Desc.vSpecular), sizeof(_float4));
+				}
+
+				outFile.close();
+
+				filePath = "";*/
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Load_Use_Mask", SavebuttonSize)) {
+
+				/*if (filePath.length() < 55) {
+					MSG_BOX(TEXT("Chocie FilePath"));
+					return E_FAIL;
+				}
+
+				ifstream inFile(filePath, ios::binary);
+
+				if (!inFile.is_open()) {
+					MSG_BOX(TEXT("파일 불러오기 실패"));
+					return E_FAIL;
+				}
+
+				m_pGameInstance->Clear_Light();
+
+				while (inFile.peek() != EOF) {
+					LIGHT_DESC Desc{};
+
+					inFile.read(reinterpret_cast<char*>(&Desc.eType), sizeof(_uint));
+					inFile.read(reinterpret_cast<char*>(&Desc.vDirection), sizeof(_float4));
+					inFile.read(reinterpret_cast<char*>(&Desc.vPosition), sizeof(_float4));
+					inFile.read(reinterpret_cast<char*>(&Desc.fRange), sizeof(_float));
+					inFile.read(reinterpret_cast<char*>(&Desc.vDiffuse), sizeof(_float4));
+					inFile.read(reinterpret_cast<char*>(&Desc.vAmbient), sizeof(_float4));
+					inFile.read(reinterpret_cast<char*>(&Desc.vSpecular), sizeof(_float4));
+
+					if (FAILED(m_pGameInstance->Add_Light(Desc)))
+						return E_FAIL;
+				}
+
+				inFile.close();
+
+				filePath = "";*/
+			}
+
 #pragma endregion
 
 #pragma region MaskTexture
@@ -805,15 +886,15 @@ HRESULT CLevel_GamePlay::GameObject_Create_GameObject(_float fTimeDelta)
 	ImGui::InputText("Layertag##Monster", Layertag, IM_ARRAYSIZE(Layertag));
 	
 	if (ImGui::Button("  Create GameObject  ")) {
-		CGameObject::GAMEOBJECT_DESC Desc{};
+		CMapObject_Default::MAPOBJECT_DESC Desc{};
 		_wstring wLayertag{};
 		if (Layertag[0] == '\0')						// 입력받은 레이어 테그가 없을경우
 			wLayertag = TEXT("Layer_Defalt");		// Layer_Defalt 레이어로 넣어준다
 		else
 			wLayertag = char_to_wstring(Layertag);	// 입력받은 값이 있다면 해당값으로 레이어를 선언한다
 
-		Desc.ModelNum = m_iSelectModel;
 		Desc.LayerTag = wLayertag;
+		Desc.ModelNum = m_iSelectModel;
 		if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, wLayertag, TEXT("Prototype_GameObject_MapObject_Default"), &Desc)))
 			return E_FAIL;
 	}
@@ -831,16 +912,19 @@ HRESULT CLevel_GamePlay::GameObject_Create_GameObject(_float fTimeDelta)
 			m_pGameInstance->Picking(&PickPos);
 
 			if (m_pGameInstance->Get_DIKeyState(DIK_Q)) {
-				CGameObject::GAMEOBJECT_DESC Desc{};
+				CMapObject_Default::MAPOBJECT_DESC Desc{};
 				_wstring wLayertag{};
 				if (Layertag[0] == '\0')					// 입력받은 레이어 테그가 없을경우
 					wLayertag = TEXT("Layer_Defalt");		// Layer_Defalt 레이어로 넣어준다
 				else
 					wLayertag = char_to_wstring(Layertag);	// 입력받은 값이 있다면 해당값으로 레이어를 선언한다
 
-				Desc.Pos = PickPos;
-				Desc.ModelNum = m_iSelectModel;
+				Matrix WorldMatrix = Matrix::Identity;
+				WorldMatrix.Translation(Vector3(PickPos));
+
 				Desc.LayerTag = wLayertag;
+				Desc.ModelNum = m_iSelectModel;
+				Desc.WorldMatrix = WorldMatrix;
 
 				if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, wLayertag, TEXT("Prototype_GameObject_MapObject_Default"), &Desc)))
 					return E_FAIL;
@@ -929,15 +1013,75 @@ HRESULT CLevel_GamePlay::GameObject_Save_Load(_float fTimeDelta)
 {
 	ImVec2 buttonSize(100, 30);
 	if (ImGui::Button("Save_Obj", buttonSize)) {
-		if (m_pLayer != nullptr) {
-			/* 저장할 데이터 고민 */
+
+		if (m_StringLayerName.length() < 1) {
+			MSG_BOX(TEXT("Chocie Layer"));
+			return E_FAIL;
 		}
+
+		if (filePath.length() < 55) {
+			MSG_BOX(TEXT("Chocie FilePath"));
+			return E_FAIL;
+		}
+
+		ofstream outFile(filePath, ios::binary);
+
+		if (!outFile.is_open()) {
+			MSG_BOX(TEXT("파일 저장 실패"));
+			return E_FAIL;
+		}
+
+		for (const auto& LayerList : *(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, m_StringLayerName))) {
+
+			CMapObject_Default::MAPOBJECT_DESC Desc{};
+
+			Desc.WorldMatrix = LayerList->Get_TranformCom()->Get_WorldMatrix();
+			Desc.ModelNum = static_cast<CMapObject_Default*>(LayerList)->Get_UseModel();
+
+			outFile.write(reinterpret_cast<const char*>(&Desc.WorldMatrix), sizeof(_matrix));
+			outFile.write(reinterpret_cast<const char*>(&Desc.ModelNum), sizeof(_uint));
+		}
+
+		outFile.close();
+
+		filePath = "";
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Load_Obj", buttonSize)) {
-		
-	}
 
+		if (m_StringLayerName.length() < 1) {
+			MSG_BOX(TEXT("Chocie Layer"));
+			return E_FAIL;
+		}
+
+		if (filePath.length() < 55) {
+			MSG_BOX(TEXT("Chocie FilePath"));
+			return E_FAIL;
+		}
+
+		ifstream inFile(filePath, ios::binary);
+
+		if (!inFile.is_open()) {
+			MSG_BOX(TEXT("파일 불러오기 실패"));
+			return E_FAIL;
+		}
+
+		while (inFile.peek() != EOF) {
+			CMapObject_Default::MAPOBJECT_DESC Desc{};
+
+			inFile.read(reinterpret_cast<char*>(&Desc.WorldMatrix), sizeof(_matrix));
+			inFile.read(reinterpret_cast<char*>(&Desc.ModelNum), sizeof(_uint));
+			Desc.LayerTag = m_StringLayerName;
+
+			if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, m_StringLayerName, TEXT("Prototype_GameObject_MapObject_Default"), &Desc)))
+				return E_FAIL;
+		}
+
+		inFile.close();
+
+		filePath = "";
+	}
+	
 	return S_OK;
 }
 
@@ -968,8 +1112,11 @@ HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 			{
 				// 기존 객체 변경 점
 				// 사용중인 쉐이더 , 인스턴싱 유무
-				static_cast<CMapObject_Default*>(m_pGameObj)->Set_UseShader(1);
-				static_cast<CMapObject_Default*>(m_pGameObj)->Set_InstanceRender(true);
+				if (m_pGameObj != nullptr) {
+					static_cast<CMapObject_Default*>(m_pGameObj)->Set_UseShader(1);
+					static_cast<CMapObject_Default*>(m_pGameObj)->Set_InstanceRender(true);
+				}
+				
 
 				// 현제 선택한 리스트 박스의 인덱스
 				m_iSelectGameObj = FindNum;
@@ -1564,13 +1711,73 @@ HRESULT CLevel_GamePlay::Light_Save_Load(_float fTimeDelta)
 {
 	ImVec2 buttonSize(100, 30);
 	if (ImGui::Button("Save_Light", buttonSize)) {
-		if (m_pLayer != nullptr) {
-			/* 저장할 데이터 고민 */
+
+		if (filePath.length() < 55) {
+			MSG_BOX(TEXT("Chocie FilePath"));
+			return E_FAIL;
 		}
+		
+		ofstream outFile(filePath, ios::binary);
+
+		if (!outFile.is_open()) {
+			MSG_BOX(TEXT("파일 저장 실패"));
+			return E_FAIL;
+		}
+
+		for (const auto& LightList : m_pGameInstance->Get_LightList()) {
+
+			LIGHT_DESC Desc = *LightList->Get_LightDesc();
+
+			outFile.write(reinterpret_cast<const char*>(&Desc.eType), sizeof(_uint));
+			outFile.write(reinterpret_cast<const char*>(&Desc.vDirection), sizeof(_float4));
+			outFile.write(reinterpret_cast<const char*>(&Desc.vPosition), sizeof(_float4));
+			outFile.write(reinterpret_cast<const char*>(&Desc.fRange), sizeof(_float));
+			outFile.write(reinterpret_cast<const char*>(&Desc.vDiffuse), sizeof(_float4));
+			outFile.write(reinterpret_cast<const char*>(&Desc.vAmbient), sizeof(_float4));
+			outFile.write(reinterpret_cast<const char*>(&Desc.vSpecular), sizeof(_float4));
+		}
+
+		outFile.close();
+
+		filePath = "";
 	}
+
 	ImGui::SameLine();
+
 	if (ImGui::Button("Load_Light", buttonSize)) {
 
+		if (filePath.length() < 55) {
+			MSG_BOX(TEXT("Chocie FilePath"));
+			return E_FAIL;
+		}
+
+		ifstream inFile(filePath, ios::binary);
+
+		if (!inFile.is_open()) {
+			MSG_BOX(TEXT("파일 불러오기 실패"));
+			return E_FAIL;
+		}
+
+		m_pGameInstance->Clear_Light();
+
+		while (inFile.peek() != EOF) {
+			LIGHT_DESC Desc{};
+
+			inFile.read(reinterpret_cast<char*>(&Desc.eType), sizeof(_uint));
+			inFile.read(reinterpret_cast<char*>(&Desc.vDirection), sizeof(_float4));
+			inFile.read(reinterpret_cast<char*>(&Desc.vPosition), sizeof(_float4));
+			inFile.read(reinterpret_cast<char*>(&Desc.fRange), sizeof(_float));
+			inFile.read(reinterpret_cast<char*>(&Desc.vDiffuse), sizeof(_float4));
+			inFile.read(reinterpret_cast<char*>(&Desc.vAmbient), sizeof(_float4));
+			inFile.read(reinterpret_cast<char*>(&Desc.vSpecular), sizeof(_float4));
+
+			if (FAILED(m_pGameInstance->Add_Light(Desc)))
+				return E_FAIL;
+		}
+
+		inFile.close();
+
+		filePath = "";
 	}
 
 	return S_OK;

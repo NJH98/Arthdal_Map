@@ -8,6 +8,14 @@ BEGIN(Client)
 class CMapObject_Default final : public CMapObject
 {
 public:
+    typedef struct
+    {
+        Matrix WorldMatrix = Matrix::Identity;
+        _uint  ModelNum = 0;
+        _wstring	LayerTag = {};
+    } MAPOBJECT_DESC;
+
+public:
     enum MAP_MODEL_LIST {
         MAP_MODEL_ForkLift,
         Map_MODEL_AgoVillage_Boss,
@@ -31,8 +39,9 @@ public:
     virtual HRESULT Render() override;
     virtual HRESULT Render_LightDepth() override;
 
-    _uint Get_UseShader() { return m_iUseShader; };
+    _uint Get_UseShader() { return m_iUseShader; }
     void Set_UseShader(_uint ShaderNum) { m_iUseShader = ShaderNum; }
+    _uint Get_UseModel() { return m_iUseModel; }
     void Set_InstanceRender(_bool isInstance) { m_bIsRenderInstance = isInstance; }
 
 private:

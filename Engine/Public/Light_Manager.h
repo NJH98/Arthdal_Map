@@ -14,6 +14,7 @@ public:
 	LIGHT_DESC*			Get_LightDesc(_uint iIndex);
 	class CLight*		Get_Light(_uint iIndex);
 	void				Delete_Light(_uint iIndex);
+	void				Clear_Light();
 	list<class CLight*> Get_LightList() { return m_Lights; }
 
 public:

@@ -23,11 +23,13 @@ HRESULT CMapObject_Default::Initialize_Prototype()
 
 HRESULT CMapObject_Default::Initialize(void* pArg)
 {
-	if (pArg != nullptr)
-	{
-		CGameObject::GAMEOBJECT_DESC* pDesc = static_cast<CGameObject::GAMEOBJECT_DESC*>(pArg);
-		m_GameObjDesc = *pDesc;
+	MAPOBJECT_DESC MapDesc{};
+	if (pArg != nullptr){
+		MAPOBJECT_DESC* pDesc = static_cast<MAPOBJECT_DESC*>(pArg);
+		MapDesc = *pDesc;
 	}
+
+	m_iUseModel = MapDesc.ModelNum;
 
 	// TransformCom 셋팅
 	if (FAILED(__super::Initialize(nullptr)))
@@ -37,14 +39,10 @@ HRESULT CMapObject_Default::Initialize(void* pArg)
 		return E_FAIL;
 	
 	// 위치,회전,크기 조정
-	m_pTransformCom->Set_Scaled(m_GameObjDesc.Scale.x, m_GameObjDesc.Scale.y, m_GameObjDesc.Scale.z);
-	m_pTransformCom->All_Rotation(m_GameObjDesc.Angle);
-	m_pTransformCom->Set_State(CTransform::STATE_POSITION, XMLoadFloat3(&m_GameObjDesc.Pos));
+	m_pTransformCom->Set_WorldMatrix(MapDesc.WorldMatrix);
 
-	// 사용모델 번호, 깊이번호 저장
-	m_iUseModel = m_GameObjDesc.ModelNum;
-
-	list<CGameObject*>* GameObjectLayer = m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, m_GameObjDesc.LayerTag);
+	// 피킹객체를 알기위한 DepthNum 지정
+	list<CGameObject*>* GameObjectLayer = m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, MapDesc.LayerTag);
 	if (GameObjectLayer != nullptr) {
 		m_iDepthNum = _uint(GameObjectLayer->size());
 	}
@@ -62,11 +60,6 @@ _int CMapObject_Default::Update(_float fTimeDelta)
 {
 	if (m_bDead)
 		return OBJ_DEAD;
-
-	if (m_pGameInstance->Get_DIKeyState_Once(DIK_T)) {
-		Matrix test = XMMatrixIdentity();
-		m_pTransformCom->Set_WorldMatrix(test);
-	}
 
 	return OBJ_NOEVENT;
 }
@@ -158,7 +151,7 @@ HRESULT CMapObject_Default::Ready_Components()
 #pragma region 추가 모델
 
 	/* FOR.Com_Model */
-	switch (m_GameObjDesc.ModelNum)
+	switch (m_iUseModel)
 	{
 	case MAP_MODEL_ForkLift:
 		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_ForkLift"),

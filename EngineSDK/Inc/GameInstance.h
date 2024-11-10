@@ -103,6 +103,7 @@ public:
 	LIGHT_DESC* Get_LightDesc(_uint iIndex);
 	list<class CLight*> Get_LightList();
 	void Delete_Light(_uint iIndex);
+	void Clear_Light();
 	HRESULT Render_Lights(class CShader* pShader, class CVIBuffer_Rect* pVIBuffer);
 
 #pragma endregion

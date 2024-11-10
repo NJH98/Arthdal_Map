@@ -45,6 +45,14 @@ void CLight_Manager::Delete_Light(_uint iIndex)
 	m_Lights.erase(iter);
 }
 
+void CLight_Manager::Clear_Light()
+{
+	for (auto& pLight : m_Lights)
+		Safe_Release(pLight);
+
+	m_Lights.clear();
+}
+
 HRESULT CLight_Manager::Initialize()
 {
 
