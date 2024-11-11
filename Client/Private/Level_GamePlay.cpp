@@ -699,127 +699,31 @@ HRESULT CLevel_GamePlay::Change_Mask(_float fTimeDelta)
 
 #pragma region Stageing Texture
 			ImGui::SeparatorText("Stageing Mask Texture");
-			// 1번쨰 줄
-			ID3D11ShaderResourceView* UseTexture7 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(7);
-			if (UseTexture7) {
-				ImGui::Image((void*)UseTexture7, ImVec2(100, 100)); // 원하는 크기로 설정
-			}ImGui::SameLine(0.0f, 10.0f);
-			ID3D11ShaderResourceView* UseTexture8 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(8);
-			if (UseTexture8) {
-				ImGui::Image((void*)UseTexture8, ImVec2(100, 100)); // 원하는 크기로 설정
-			}ImGui::SameLine(0.0f, 10.0f);
-			ID3D11ShaderResourceView* UseTexture9 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(9);
-			if (UseTexture9) {
-				ImGui::Image((void*)UseTexture9, ImVec2(100, 100)); // 원하는 크기로 설정
-			}ImGui::SameLine(0.0f, 10.0f);
-			ID3D11ShaderResourceView* UseTexture10 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(10);
-			if (UseTexture10) {
-				ImGui::Image((void*)UseTexture10, ImVec2(100, 100)); // 원하는 크기로 설정
-			}ImGui::SameLine(0.0f, 10.0f);
-			ID3D11ShaderResourceView* UseTexture11 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(11);
-			if (UseTexture11) {
-				ImGui::Image((void*)UseTexture11, ImVec2(100, 100)); // 원하는 크기로 설정
-			}ImGui::SameLine(0.0f, 10.0f);
-			ID3D11ShaderResourceView* UseTexture12 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(12);
-			if (UseTexture12) {
-				ImGui::Image((void*)UseTexture12, ImVec2(100, 100)); // 원하는 크기로 설정
-			}
 
-			// 라디오 버튼
-			if (ImGui::RadioButton("Tile 7", SelectStageingImgage == 7)) {
-				SelectStageingImgage = 7;
-			}
-			ImGui::SameLine(0.0f, 45.0f);
-			if (ImGui::RadioButton("Tile 8", SelectStageingImgage == 8)) {
-				SelectStageingImgage = 8;
-			}
-			ImGui::SameLine(0.0f, 45.0f);
-			if (ImGui::RadioButton("Tile 9", SelectStageingImgage == 9)) {
-				SelectStageingImgage = 9;
-			}
-			ImGui::SameLine(0.0f, 45.0f);
-			if (ImGui::RadioButton("Tile 10", SelectStageingImgage == 10)) {
-				SelectStageingImgage = 10;
-			}
-			ImGui::SameLine(0.0f, 40.0f);
-			if (ImGui::RadioButton("Tile 11", SelectStageingImgage == 11)) {
-				SelectStageingImgage = 11;
-			}
-			ImGui::SameLine(0.0f, 40.0f);
-			if (ImGui::RadioButton("Tile 12", SelectStageingImgage == 12)) {
-				SelectStageingImgage = 12;
-			}
+			ImGui::BeginChild("ScrollableRegion", ImVec2(0, 300), true, ImGuiWindowFlags_HorizontalScrollbar);
+			ID3D11ShaderResourceView* UseTextureStageing{};
 
-			// 2번쨰 줄
-			ID3D11ShaderResourceView* UseTexture13 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(13);
-			if (UseTexture13) {
-				ImGui::Image((void*)UseTexture13, ImVec2(100, 100)); // 원하는 크기로 설정
-			}ImGui::SameLine(0.0f, 10.0f);
-			ID3D11ShaderResourceView* UseTexture14 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(14);
-			if (UseTexture14) {
-				ImGui::Image((void*)UseTexture14, ImVec2(100, 100)); // 원하는 크기로 설정
-			}ImGui::SameLine(0.0f, 10.0f);
-			ID3D11ShaderResourceView* UseTexture15 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(15);
-			if (UseTexture15) {
-				ImGui::Image((void*)UseTexture15, ImVec2(100, 100)); // 원하는 크기로 설정
-			}ImGui::SameLine(0.0f, 10.0f);
-			ID3D11ShaderResourceView* UseTexture16 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(16);
-			if (UseTexture16) {
-				ImGui::Image((void*)UseTexture16, ImVec2(100, 100)); // 원하는 크기로 설정
-			}ImGui::SameLine(0.0f, 10.0f);
-			ID3D11ShaderResourceView* UseTexture17 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(17);
-			if (UseTexture17) {
-				ImGui::Image((void*)UseTexture17, ImVec2(100, 100)); // 원하는 크기로 설정
-			}ImGui::SameLine(0.0f, 10.0f);
-			ID3D11ShaderResourceView* UseTexture18 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(18);
-			if (UseTexture18) {
-				ImGui::Image((void*)UseTexture18, ImVec2(100, 100)); // 원하는 크기로 설정
-			}
+			for (_uint i = 7; i < 81; i++) {
 
-			// 라디오 버튼
-			if (ImGui::RadioButton("Tile 13", SelectStageingImgage == 13)) {
-				SelectStageingImgage = 13;
+				UseTextureStageing = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(i);
+				if (UseTextureStageing) {
+					ImGui::Image((void*)UseTextureStageing, ImVec2(100, 100)); // 원하는 크기로 설정
+				}
+				if (i % 6 != 0) {
+					ImGui::SameLine(0.0f, 10.0f);
+				}
+				else {
+					for (_uint j = 0; j < 6; j++) {
+						string TileNum = "Tile_" + to_string(i + j);
+						if (ImGui::RadioButton(TileNum.c_str(), SelectStageingImgage == i + j - 5)) {
+							SelectStageingImgage = i + j - 5;
+						}
+						if(j != 5)
+							ImGui::SameLine(0.0f, 40.0f);
+					}
+				}
 			}
-			ImGui::SameLine(0.0f, 40.0f);
-			if (ImGui::RadioButton("Tile 14", SelectStageingImgage == 14)) {
-				SelectStageingImgage = 14;
-			}
-			ImGui::SameLine(0.0f, 40.0f);
-			if (ImGui::RadioButton("Tile 15", SelectStageingImgage == 15)) {
-				SelectStageingImgage = 15;
-			}
-			ImGui::SameLine(0.0f, 40.0f);
-			if (ImGui::RadioButton("Tile 16", SelectStageingImgage == 16)) {
-				SelectStageingImgage = 16;
-			}
-			ImGui::SameLine(0.0f, 40.0f);
-			if (ImGui::RadioButton("Tile 17", SelectStageingImgage == 17)) {
-				SelectStageingImgage = 17;
-			}
-			ImGui::SameLine(0.0f, 40.0f);
-			if (ImGui::RadioButton("Tile 18", SelectStageingImgage == 18)) {
-				SelectStageingImgage = 18;
-			}
-
-			// 3번쨰 줄
-			ID3D11ShaderResourceView* UseTexture19 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(19);
-			if (UseTexture19) {
-				ImGui::Image((void*)UseTexture19, ImVec2(100, 100)); // 원하는 크기로 설정
-			}ImGui::SameLine(0.0f, 10.0f);
-			ID3D11ShaderResourceView* UseTexture20 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(20);
-			if (UseTexture20) {
-				ImGui::Image((void*)UseTexture20, ImVec2(100, 100)); // 원하는 크기로 설정
-			}
-
-			if (ImGui::RadioButton("Tile 19", SelectStageingImgage == 19)) {
-				SelectStageingImgage = 19;
-			}
-			ImGui::SameLine(0.0f, 40.0f);
-			if (ImGui::RadioButton("Tile 20", SelectStageingImgage == 20)) {
-				SelectStageingImgage = 20;
-			}
-			
-
+			ImGui::EndChild();
 #pragma endregion
 
 		}
@@ -907,7 +811,7 @@ HRESULT CLevel_GamePlay::GameObject_Create_GameObject(_float fTimeDelta)
 
 	if (bObjCreate_Picking) 
 	{
-		if (m_pGameInstance->Get_DIMouseState_Once(DIMK_LBUTTON)) {
+		if (m_pGameInstance->Get_DIMouseState(DIMK_LBUTTON) && m_fTerrainTimeCheck > 0.1f) {
 			_float3 PickPos{};
 			m_pGameInstance->Picking(&PickPos);
 
@@ -928,8 +832,11 @@ HRESULT CLevel_GamePlay::GameObject_Create_GameObject(_float fTimeDelta)
 
 				if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, wLayertag, TEXT("Prototype_GameObject_MapObject_Default"), &Desc)))
 					return E_FAIL;
+
+				m_fTerrainTimeCheck = 0.f;
 			}
 		}
+		m_fTerrainTimeCheck += fTimeDelta;
 	}
 
 	return S_OK;
@@ -1122,12 +1029,15 @@ HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 				m_iSelectGameObj = FindNum;
 				// 현제 선택한 게임 오브젝트를 대입한다
 				m_pGameObj = m_pGameInstance->Get_Object(LEVEL_GAMEPLAY, m_StringLayerName, FindNum);
-				// 현제 선택중인 오브젝트의 TransformCom 객체를 셋팅한다.
-				m_pTransformCom = m_pGameObj->Get_TranformCom();
-				// 피킹된 객체 쉐이더 변경
-				static_cast<CMapObject_Default*>(m_pGameObj)->Set_UseShader(3);
-				// 피킹된 객체 인스턴싱 랜더에서 기본 랜더로 교체
-				static_cast<CMapObject_Default*>(m_pGameObj)->Set_InstanceRender(false);
+
+				if (m_pGameObj != nullptr) {
+					// 현제 선택중인 오브젝트의 TransformCom 객체를 셋팅한다.
+					m_pTransformCom = m_pGameObj->Get_TranformCom();
+					// 피킹된 객체 쉐이더 변경
+					static_cast<CMapObject_Default*>(m_pGameObj)->Set_UseShader(3);
+					// 피킹된 객체 인스턴싱 랜더에서 기본 랜더로 교체
+					static_cast<CMapObject_Default*>(m_pGameObj)->Set_InstanceRender(false);
+				}
 			}
 		}
 	}

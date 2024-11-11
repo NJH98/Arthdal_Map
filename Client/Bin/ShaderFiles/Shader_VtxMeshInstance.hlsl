@@ -55,10 +55,10 @@ VS_OUT_NORMAL VS_MAIN( /*Á¤Á¡*/VS_IN In)
     vPosition = mul(vPosition, g_ProjMatrix);
 
     Out.vPosition = vPosition;
+    Out.vNormal = normalize(mul(vector(In.vNormal, 0.f), TransformMatrix)).xyz;
     Out.vTexcoord = In.vTexcoord;
-    Out.vNormal = normalize(mul(vector(In.vNormal, 0.f), g_WorldMatrix)).xyz;
     Out.vProjPos = Out.vPosition;
-    Out.vTangent = normalize(mul(vector(In.vTangent, 0.f), g_WorldMatrix)).xyz;
+    Out.vTangent = normalize(mul(vector(In.vTangent, 0.f), TransformMatrix)).xyz;
     Out.vBinormal = normalize(cross(Out.vNormal, Out.vTangent));
     Out.DepthNum = In.DepthNum;
     

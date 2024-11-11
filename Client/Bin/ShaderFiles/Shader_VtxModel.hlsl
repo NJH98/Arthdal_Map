@@ -198,7 +198,7 @@ technique11	DefaultTechnique
 
 	pass NormalMapping
 	{// 1
-		SetRasterizerState(RS_Default);
+        SetRasterizerState(RS_Cull_None);
 		SetDepthStencilState(DSS_Default, 0);
 		SetBlendState(BS_Default, vector(0.f, 0.f, 0.f, 0.f), 0xffffffff);
 

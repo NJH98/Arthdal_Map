@@ -41,6 +41,12 @@ HRESULT CMapObject_Default::Initialize(void* pArg)
 	// 위치,회전,크기 조정
 	m_pTransformCom->Set_WorldMatrix(MapDesc.WorldMatrix);
 
+	_float TurnX = XMConvertToDegrees(asin(MapDesc.WorldMatrix._32));
+	_float TurnY = XMConvertToDegrees(atan2(MapDesc.WorldMatrix._31, MapDesc.WorldMatrix._33));
+	_float TurnZ = XMConvertToDegrees(atan2(MapDesc.WorldMatrix._12, MapDesc.WorldMatrix._22));
+
+	m_GameObjDesc.Angle = _float3(TurnX, TurnY, TurnZ);
+
 	// 피킹객체를 알기위한 DepthNum 지정
 	list<CGameObject*>* GameObjectLayer = m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, MapDesc.LayerTag);
 	if (GameObjectLayer != nullptr) {
