@@ -8,6 +8,8 @@ class CNavigation;
 class CCollider;
 class CShader;
 class CModel;
+
+class CVIBuffer_Terrain;
 END
 
 BEGIN(Client)
@@ -40,6 +42,13 @@ public:
 	virtual _int Update(_float fTimeDelta) override;
 	virtual void Late_Update(_float fTimeDelta) override;
 	virtual HRESULT Render() override;
+
+private:
+	// 지형타기 향후 상위 부모에 넣을수 있다
+	HRESULT Ready_Terrain();
+	HRESULT Terrain_Landing(CTransform* pTransform, _float fOffsetY = 0.f);
+	CVIBuffer_Terrain* m_pTerrainVIBuffer = { nullptr };
+	CTransform* m_pTerrainTransform = { nullptr };
 
 private:
 	_uint				m_iState = {  };

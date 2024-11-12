@@ -39,6 +39,9 @@ HRESULT CPlayer::Initialize(void * pArg)
 	/*if (FAILED(Ready_PartObjects()))
 		return E_FAIL;*/
 
+	if (FAILED(Ready_Terrain()))
+		return E_FAIL;
+
 	m_iState = STATE_IDLE;
 
 	m_pTransformCom->Set_State(CTransform::STATE_POSITION, XMVectorSet(0.1f, 0.f, 0.1f, 1.f));
@@ -69,7 +72,7 @@ _int CPlayer::Update(_float fTimeDelta)
 
 	if (GetKeyState(VK_UP) & 0x8000)
 	{
-		m_pTransformCom->Go_Straight(fTimeDelta, m_pNavigationCom);
+		m_pTransformCom->Go_Straight(fTimeDelta/*m_pNavigationCom*/);
 
 		if(m_iState & STATE_IDLE)
 			m_iState ^= STATE_IDLE;
@@ -82,6 +85,8 @@ _int CPlayer::Update(_float fTimeDelta)
 		m_iState = STATE_RESET;
 		m_iState |= STATE_IDLE;
 	}
+
+	Terrain_Landing(m_pTransformCom);
 
 	m_pColliderCom->Update(m_pTransformCom->Get_WorldMatrix_Ptr());
 
@@ -186,6 +191,44 @@ HRESULT CPlayer::Render()
 	return S_OK;
 }
 
+HRESULT CPlayer::Ready_Terrain()
+{
+	CTerrain* pTerrain = static_cast<CTerrain*>(m_pGameInstance->Get_Object(LEVEL_GAMEPLAY, TEXT("Layer_Terrain")));
+	
+	m_pTerrainVIBuffer = pTerrain->Get_VIBuffer();
+	m_pTerrainTransform = pTerrain->Get_TranformCom();
+
+	return S_OK;
+}
+
+HRESULT CPlayer::Terrain_Landing(CTransform* pTransform, _float fOffsetY)
+{
+	// 플레이어의 월드 위치
+	Vector3 vWorldPos = pTransform->Get_State(CTransform::STATE_POSITION);
+
+	// 지형의 월드행렬,역행렬
+	Matrix matTerrainWorld = m_pTerrainTransform->Get_WorldMatrix();
+	Matrix matTerrainWorldInverse = m_pTerrainTransform->Get_WorldMatrix_Inverse();
+
+	// 플레이어의 월드*지형역행렬 = 로컬에서 높이 비교
+	Vector3 vLocalPos{};
+	vLocalPos = XMVector3TransformCoord(vWorldPos, matTerrainWorldInverse);
+
+	// 높이값 계산
+	_float fHeight = m_pTerrainVIBuffer->Compute_Height(vLocalPos);
+
+	// offset 만큼 올려서 높이 지정
+	vLocalPos.y = fHeight + fOffsetY;
+
+	// 변경된 로컬 위치 * 지형월드행렬 = 월드의 플레이어 위치
+	vWorldPos = XMVector3TransformCoord(vLocalPos, matTerrainWorld);
+
+	// 변화된 월드 위치 적용
+	pTransform->Set_State(CTransform::STATE_POSITION, vWorldPos);
+
+	return S_OK;
+}
+
 HRESULT CPlayer::Ready_Components()
 {
 	/* For.Com_Navigation */
@@ -286,4 +329,6 @@ void CPlayer::Free()
 	Safe_Release(m_pNavigationCom);
 	Safe_Release(m_pShaderCom);
 	Safe_Release(m_pModelCom);
+	Safe_Release(m_pTerrainVIBuffer);
+	Safe_Release(m_pTerrainTransform);
 }

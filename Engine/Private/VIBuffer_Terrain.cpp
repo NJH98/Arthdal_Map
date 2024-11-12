@@ -446,6 +446,46 @@ void CVIBuffer_Terrain::Culling(_fmatrix WorldMatrix)
 	m_iNumIndices = iNumIndices;
 }
 
+_float CVIBuffer_Terrain::Compute_Height(_float3& vLocalPos)
+{
+	// 객체가 존재하는 네모 영역의 왼쪽 하단 인덱스
+	_uint iIndex = _uint(vLocalPos.z) * m_iNumVerticesX + _uint(vLocalPos.x);
+	// 구한 인덱스 기준으로 네모 영역의 인덱스 들을 구한다
+	_uint iIndices[4] = {
+		iIndex + m_iNumVerticesX,		// 좌 상단 
+		iIndex + m_iNumVerticesX + 1,	// 우 상단
+		iIndex + 1,						// 우 하단
+		iIndex							// 좌 하단
+	};
+
+	_float		fWidth = vLocalPos.x - m_pVertexPositions[iIndices[0]].x;
+	_float		fDepth = m_pVertexPositions[iIndices[0]].z - vLocalPos.z;
+
+	XMVECTOR Plane;
+
+	// 오른쪽 위 삼각형에 있는 경우
+	if (fWidth > fDepth) {
+		Plane = XMPlaneFromPoints(XMLoadFloat3(&m_pVertexPositions[iIndices[0]]),
+			XMLoadFloat3(&m_pVertexPositions[iIndices[1]]),
+			XMLoadFloat3(&m_pVertexPositions[iIndices[2]]));
+	}
+	// 왼쪽 아래 삼각형에 있는 경우
+	else {
+		Plane = XMPlaneFromPoints(XMLoadFloat3(&m_pVertexPositions[iIndices[0]]),
+			XMLoadFloat3(&m_pVertexPositions[iIndices[2]]),
+			XMLoadFloat3(&m_pVertexPositions[iIndices[3]]));
+	}
+
+	// 평면 방정식의 계수를 추출
+	_float a = XMVectorGetX(Plane);
+	_float b = XMVectorGetY(Plane);
+	_float c = XMVectorGetZ(Plane);
+	_float d = XMVectorGetW(Plane);
+
+	// y 값을 계산
+	return (-a * vLocalPos.x - c * vLocalPos.z - d) / b;
+}
+
 void CVIBuffer_Terrain::Change_Height(_float Range, _float HowMuch)
 {
 	D3D11_MAPPED_SUBRESOURCE		SubResource{};

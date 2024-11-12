@@ -24,7 +24,9 @@ public:
 
 public:
 	void Culling(_fmatrix WorldMatrix);
+	_float Compute_Height(_float3& vLocalPos);
 
+public:
 	void Change_Height(_float Range, _float HowMuch);
 	HRESULT Save_HeightMap(const _tchar* pHeightMapFilePath);
 
