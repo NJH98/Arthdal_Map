@@ -38,6 +38,13 @@ public:
 
 	CNavigation* Get_NavigationCom() { return m_pNavigationCom; }
 
+	void Change_Wire() {
+		if (m_iUseShader == 0)
+			m_iUseShader = 1;
+		else
+			m_iUseShader = 0;
+	}
+
 private:
 	CShader*				m_pShaderCom = { nullptr };
 	CTexture*				m_pTextureCom[TEXTURE_END] = { nullptr };
@@ -46,6 +53,7 @@ private:
 
 	_uint					m_iBaseTextureNum = 0;
 
+	_uint					m_iUseShader = 0;
 private:
 	HRESULT Ready_Components(void* pArg);
 

@@ -336,7 +336,7 @@ HRESULT CTexture::Save_MaskTexture(const _tchar* pMaskFilePath, _uint iChoiceTex
 			_uint index = z * 256 + x;
 
 			UINT8* pixel = pTexels + z * mappedResource.RowPitch + x * 4;
-			uint8_t color[4] = { pixel[0], pixel[1], pixel[2], 255}; // Blue, Green, Red, Alpha
+			uint8_t color[4] = { pixel[2], pixel[1], pixel[0], 255}; //Red, Green, Blue, Alpha
 			ofs.write(reinterpret_cast<char*>(color), 4);
 		}
 	}

@@ -486,7 +486,7 @@ _float CVIBuffer_Terrain::Compute_Height(_float3& vLocalPos)
 	return (-a * vLocalPos.x - c * vLocalPos.z - d) / b;
 }
 
-void CVIBuffer_Terrain::Change_Height(_float Range, _float HowMuch)
+void CVIBuffer_Terrain::Change_Height(_float Range, _float HowMuch, _bool Up)
 {
 	D3D11_MAPPED_SUBRESOURCE		SubResource{};
 
@@ -503,8 +503,20 @@ void CVIBuffer_Terrain::Change_Height(_float Range, _float HowMuch)
 
 			_float Length = (VertexPos - MousePos).Length();
 
-			if(Length < Range)
-				m_pVertexPositions[i].y += HowMuch;
+			if (Length < Range) {
+				if (Up && HowMuch > m_pVertexPositions[i].y) {
+					m_pVertexPositions[i].y += 1.f;
+				
+					if (m_pVertexPositions[i].y > HowMuch)
+						m_pVertexPositions[i].y = HowMuch;
+				}
+				else if (!Up && HowMuch < m_pVertexPositions[i].y) {
+					m_pVertexPositions[i].y -= 1.f;
+
+					if (m_pVertexPositions[i].y < HowMuch)
+						m_pVertexPositions[i].y = HowMuch;
+				}
+			}
 		}
 
 		for (_uint i = 0; i < m_iNumVerticesZ; i++)
@@ -514,7 +526,7 @@ void CVIBuffer_Terrain::Change_Height(_float Range, _float HowMuch)
 				_uint			iIndex = i * m_iNumVerticesX + j;
 				
 				pVertices[iIndex].vPosition = m_pVertexPositions[iIndex];
-				pVertices[iIndex].vNormal = _float3(0.f, 0.f, 0.f);
+				//pVertices[iIndex].vNormal = _float3(0.f, 0.f, 0.f);
 				pVertices[iIndex].vTexcoord = _float2(j / (m_iNumVerticesX - 1.f), i / (m_iNumVerticesZ - 1.f));
 			}
 		}

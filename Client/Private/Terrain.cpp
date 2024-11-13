@@ -58,10 +58,10 @@ void CTerrain::Late_Update(_float fTimeDelta)
 	__super::Late_Update(fTimeDelta);
 
 	//m_pVIBufferCom->Culling(m_pTransformCom->Get_WorldMatrix());
-	m_pNavigationCom->Update(XMLoadFloat4x4(m_pTransformCom->Get_WorldMatrix_Ptr()));
+	//m_pNavigationCom->Update(XMLoadFloat4x4(m_pTransformCom->Get_WorldMatrix_Ptr()));
 	
 #ifdef _DEBUG
-	m_pGameInstance->Add_DebugObject(m_pNavigationCom);
+	//m_pGameInstance->Add_DebugObject(m_pNavigationCom);
 #endif
 
 	m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
@@ -84,7 +84,7 @@ HRESULT CTerrain::Render()
 	if (FAILED(m_pTextureCom[TEXTURE_MASK]->Bind_ShadeResourcesMask(m_pShaderCom, "g_MaskTexture", 2)))
 		return E_FAIL;
 
-	if (FAILED(m_pShaderCom->Begin(0)))
+	if (FAILED(m_pShaderCom->Begin(m_iUseShader)))
 		return E_FAIL;
 	if (FAILED(m_pVIBufferCom->Bind_Buffers()))
 		return E_FAIL;

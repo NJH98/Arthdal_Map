@@ -68,13 +68,13 @@ PS_OUT PS_MAIN(PS_IN In)
     vector vMask1 = g_MaskTexture[1].Sample(LinearSampler, In.vTexcoord);
 
 	// 디퓨즈 이미지
-    vector		vBaseDiffuse = g_DiffuseTexture[0].Sample(LinearSampler, In.vTexcoord * 30.f);
-	vector		vDestDiffuse1 = g_DiffuseTexture[1].Sample(LinearSampler, In.vTexcoord * 30.f);
-    vector		vDestDiffuse2 = g_DiffuseTexture[2].Sample(LinearSampler, In.vTexcoord * 30.f);
-    vector		vDestDiffuse3 = g_DiffuseTexture[3].Sample(LinearSampler, In.vTexcoord * 30.f);
-    vector		vDestDiffuse4 = g_DiffuseTexture[4].Sample(LinearSampler, In.vTexcoord * 30.f);
-    vector		vDestDiffuse5 = g_DiffuseTexture[5].Sample(LinearSampler, In.vTexcoord * 30.f);
-    vector		vDestDiffuse6 = g_DiffuseTexture[6].Sample(LinearSampler, In.vTexcoord * 30.f);
+    vector		vBaseDiffuse = g_DiffuseTexture[0].Sample(LinearSampler, In.vTexcoord * 240.f);
+	vector		vDestDiffuse1 = g_DiffuseTexture[1].Sample(LinearSampler, In.vTexcoord * 240.f);
+    vector		vDestDiffuse2 = g_DiffuseTexture[2].Sample(LinearSampler, In.vTexcoord * 240.f);
+    vector		vDestDiffuse3 = g_DiffuseTexture[3].Sample(LinearSampler, In.vTexcoord * 240.f);
+    vector		vDestDiffuse4 = g_DiffuseTexture[4].Sample(LinearSampler, In.vTexcoord * 240.f);
+    vector		vDestDiffuse5 = g_DiffuseTexture[5].Sample(LinearSampler, In.vTexcoord * 240.f);
+    vector		vDestDiffuse6 = g_DiffuseTexture[6].Sample(LinearSampler, In.vTexcoord * 240.f);
 
     vector		vMtrlDiffuse = vBaseDiffuse * vMask0.r + vDestDiffuse1 * (1.f - vMask0.r);
     vMtrlDiffuse = vMtrlDiffuse * vMask0.g + vDestDiffuse2 * (1.f - vMask0.g);
@@ -87,13 +87,13 @@ PS_OUT PS_MAIN(PS_IN In)
 	Out.vDiffuse = vector(vMtrlDiffuse.rgb, 1.f);
 	
 	// 노말 텍스처에서 X, Y만 샘플링하고 Z 채널을 계산하여 노말 벡터를 구성합니다.
-    float2 vBaseNormalXY = g_NomalTexture[0].Sample(LinearSampler, In.vTexcoord * 30.f).rg * 2.0f - 1.0f;
-    float2 vDestNormal1XY = g_NomalTexture[1].Sample(LinearSampler, In.vTexcoord * 30.f).rg * 2.0f - 1.0f;
-    float2 vDestNormal2XY = g_NomalTexture[2].Sample(LinearSampler, In.vTexcoord * 30.f).rg * 2.0f - 1.0f;
-    float2 vDestNormal3XY = g_NomalTexture[3].Sample(LinearSampler, In.vTexcoord * 30.f).rg * 2.0f - 1.0f;
-    float2 vDestNormal4XY = g_NomalTexture[4].Sample(LinearSampler, In.vTexcoord * 30.f).rg * 2.0f - 1.0f;
-    float2 vDestNormal5XY = g_NomalTexture[5].Sample(LinearSampler, In.vTexcoord * 30.f).rg * 2.0f - 1.0f;
-    float2 vDestNormal6XY = g_NomalTexture[6].Sample(LinearSampler, In.vTexcoord * 30.f).rg * 2.0f - 1.0f;
+    float2 vBaseNormalXY = g_NomalTexture[0].Sample(LinearSampler, In.vTexcoord * 240.f).rg * 2.0f - 1.0f;
+    float2 vDestNormal1XY = g_NomalTexture[1].Sample(LinearSampler, In.vTexcoord * 240.f).rg * 2.0f - 1.0f;
+    float2 vDestNormal2XY = g_NomalTexture[2].Sample(LinearSampler, In.vTexcoord * 240.f).rg * 2.0f - 1.0f;
+    float2 vDestNormal3XY = g_NomalTexture[3].Sample(LinearSampler, In.vTexcoord * 240.f).rg * 2.0f - 1.0f;
+    float2 vDestNormal4XY = g_NomalTexture[4].Sample(LinearSampler, In.vTexcoord * 240.f).rg * 2.0f - 1.0f;
+    float2 vDestNormal5XY = g_NomalTexture[5].Sample(LinearSampler, In.vTexcoord * 240.f).rg * 2.0f - 1.0f;
+    float2 vDestNormal6XY = g_NomalTexture[6].Sample(LinearSampler, In.vTexcoord * 240.f).rg * 2.0f - 1.0f;
 
 	// X, Y를 기반으로 Z 성분을 계산하여 float3 형태로 노말 벡터를 구성합니다.
     float3 vBaseNormal = float3(vBaseNormalXY, sqrt(saturate(1.0f - dot(vBaseNormalXY, vBaseNormalXY))));
@@ -128,7 +128,7 @@ PS_OUT PS_MAIN(PS_IN In)
 technique11	DefaultTechnique
 {
 	pass Terrain
-	{
+	{// 0
 		SetRasterizerState(RS_Default);
 		// SetRasterizerState(RS_Wireframe);
 		SetDepthStencilState(DSS_Default, 0);
@@ -138,5 +138,16 @@ technique11	DefaultTechnique
 		GeometryShader = NULL;
 		PixelShader = compile ps_5_0 PS_MAIN();
 	}
+
+    pass Wire
+    {// 1
+        SetRasterizerState(RS_Wireframe);
+        SetDepthStencilState(DSS_Default, 0);
+        SetBlendState(BS_Default, vector(0.f, 0.f, 0.f, 0.f), 0xffffffff);
+
+        VertexShader = compile vs_5_0 VS_MAIN();
+        GeometryShader = NULL;
+        PixelShader = compile ps_5_0 PS_MAIN();
+    }
 
 }

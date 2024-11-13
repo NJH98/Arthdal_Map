@@ -99,7 +99,7 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 	VectorClear();
 
 	if (m_pGameInstance->Get_DIKeyState_Once(DIK_T)) {
-		
+		m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Prototype_GameObject_Player"));
 	}
 
 }
@@ -266,6 +266,11 @@ HRESULT CLevel_GamePlay::Create_Terrain_Input(_float fTimeDelta)
 
 	ImGui::PopItemWidth();
 
+	ImGui::SeparatorText("Wire_Change");
+	if (ImGui::Button("  Terrain Wire  ")) {
+		m_pTerrain->Change_Wire();
+	}
+
 	return S_OK;
 }
 
@@ -276,8 +281,10 @@ HRESULT CLevel_GamePlay::Terrain_HeightChange(_float fTimeDelta)
 	ImGui::PushItemWidth(150); // 크기조정
 	static float TerrainRange = 0.f;
 	ImGui::InputFloat("Height_Range", &TerrainRange, 0.5f);
-	static float TerrainHeightValue = 0.f;
-	ImGui::InputFloat("Height_Value", &TerrainHeightValue, 0.5f);
+	static float TerrainHeightUpMax = 0.f;
+	ImGui::InputFloat("Height_UpMax", &TerrainHeightUpMax, 0.5f);
+	static float TerrainHeightDownMax = 0.f;
+	ImGui::InputFloat("Height_DownMax", &TerrainHeightDownMax, 0.5f);
 
 	static bool bHeight_Picking;
 	ImGui::Checkbox("Height Picking", &bHeight_Picking);
@@ -286,7 +293,7 @@ HRESULT CLevel_GamePlay::Terrain_HeightChange(_float fTimeDelta)
 	
 	if (bHeight_Picking) 
 	{
-		if (m_pGameInstance->Get_DIMouseState(DIMK_LBUTTON) && m_fTerrainTimeCheck > 0.2f) {
+		if (m_pGameInstance->Get_DIMouseState(DIMK_LBUTTON) /*&& m_fTerrainTimeCheck > 0.2f*/) {
 			// 피킹하고
 			m_pGameInstance->Picking(&m_vPickPos);
 			// 피킹정보 저장하고
@@ -294,20 +301,20 @@ HRESULT CLevel_GamePlay::Terrain_HeightChange(_float fTimeDelta)
 			
 			if (m_pGameInstance->Get_DIKeyState(DIK_Q)) {
 				// 값을 올린다
-				m_pTerrain->Get_VIBuffer()->Change_Height(TerrainRange, TerrainHeightValue);
+				m_pTerrain->Get_VIBuffer()->Change_Height(TerrainRange, TerrainHeightUpMax, true);
 				m_fTerrainTimeCheck = 0.f;
 			}
 
 			if (m_pGameInstance->Get_DIKeyState(DIK_E)) {
 				// 값을 내린다
-				m_pTerrain->Get_VIBuffer()->Change_Height(TerrainRange, -TerrainHeightValue);
+				m_pTerrain->Get_VIBuffer()->Change_Height(TerrainRange, TerrainHeightDownMax, false);
 				m_fTerrainTimeCheck = 0.f;
 			}
 			
 		}
 
-		if (m_fTerrainTimeCheck < 0.2f)
-			m_fTerrainTimeCheck += fTimeDelta;
+		/*if (m_fTerrainTimeCheck < 0.2f)
+			m_fTerrainTimeCheck += fTimeDelta;*/
 	}
 	
 
@@ -548,13 +555,18 @@ HRESULT CLevel_GamePlay::Change_Mask(_float fTimeDelta)
 			if (ImGui::Button("Base Change", buttonSize)) {
 				m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Swap_SRVs(0, SelectStageingImgage);
 				m_pTerrain->Get_Texture(CTerrain::TEXTURE_NORMAL)->Swap_SRVs(0, SelectStageingImgage);
+
+				if (m_iMaskingNum[0] == SelectStageingImgage)
+					m_iMaskingNum[0] = 0;
+				else
+					m_iMaskingNum[0] = SelectStageingImgage;
 			}
 
 			ImGui::SameLine(0.0f, 30.0f);
 			ImVec2 SavebuttonSize(100, 30);
 			if (ImGui::Button("Save_Use_Mask", SavebuttonSize)) {
 
-				/*if (filePath.length() < 55) {
+				if (filePath.length() < 55) {
 					MSG_BOX(TEXT("Chocie FilePath"));
 					return E_FAIL;
 				}
@@ -566,29 +578,20 @@ HRESULT CLevel_GamePlay::Change_Mask(_float fTimeDelta)
 					return E_FAIL;
 				}
 
-				for (const auto& LightList : m_pGameInstance->Get_LightList()) {
-
-					LIGHT_DESC Desc = *LightList->Get_LightDesc();
-
-					outFile.write(reinterpret_cast<const char*>(&Desc.eType), sizeof(_uint));
-					outFile.write(reinterpret_cast<const char*>(&Desc.vDirection), sizeof(_float4));
-					outFile.write(reinterpret_cast<const char*>(&Desc.vPosition), sizeof(_float4));
-					outFile.write(reinterpret_cast<const char*>(&Desc.fRange), sizeof(_float));
-					outFile.write(reinterpret_cast<const char*>(&Desc.vDiffuse), sizeof(_float4));
-					outFile.write(reinterpret_cast<const char*>(&Desc.vAmbient), sizeof(_float4));
-					outFile.write(reinterpret_cast<const char*>(&Desc.vSpecular), sizeof(_float4));
+				for (_uint i = 0; i < 7; i++) {
+					outFile.write(reinterpret_cast<const char*>(&m_iMaskingNum[i]), sizeof(_uint));
 				}
 
 				outFile.close();
 
-				filePath = "";*/
+				filePath = "";
 			}
 
 			ImGui::SameLine();
 
 			if (ImGui::Button("Load_Use_Mask", SavebuttonSize)) {
 
-				/*if (filePath.length() < 55) {
+				if (filePath.length() < 55) {
 					MSG_BOX(TEXT("Chocie FilePath"));
 					return E_FAIL;
 				}
@@ -600,26 +603,20 @@ HRESULT CLevel_GamePlay::Change_Mask(_float fTimeDelta)
 					return E_FAIL;
 				}
 
-				m_pGameInstance->Clear_Light();
-
+				_uint i = 0;
 				while (inFile.peek() != EOF) {
-					LIGHT_DESC Desc{};
-
-					inFile.read(reinterpret_cast<char*>(&Desc.eType), sizeof(_uint));
-					inFile.read(reinterpret_cast<char*>(&Desc.vDirection), sizeof(_float4));
-					inFile.read(reinterpret_cast<char*>(&Desc.vPosition), sizeof(_float4));
-					inFile.read(reinterpret_cast<char*>(&Desc.fRange), sizeof(_float));
-					inFile.read(reinterpret_cast<char*>(&Desc.vDiffuse), sizeof(_float4));
-					inFile.read(reinterpret_cast<char*>(&Desc.vAmbient), sizeof(_float4));
-					inFile.read(reinterpret_cast<char*>(&Desc.vSpecular), sizeof(_float4));
-
-					if (FAILED(m_pGameInstance->Add_Light(Desc)))
-						return E_FAIL;
+					inFile.read(reinterpret_cast<char*>(&m_iMaskingNum[i]), sizeof(_uint));
+					i++;
 				}
 
 				inFile.close();
 
-				filePath = "";*/
+				for (_uint i = 0; i < 7; i++) {
+					m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Swap_SRVs(i, m_iMaskingNum[i]);
+					m_pTerrain->Get_Texture(CTerrain::TEXTURE_NORMAL)->Swap_SRVs(i, m_iMaskingNum[i]);
+				}
+
+				filePath = "";
 			}
 
 #pragma endregion
@@ -694,6 +691,11 @@ HRESULT CLevel_GamePlay::Change_Mask(_float fTimeDelta)
 			if (ImGui::Button("Mask Change", buttonSize2)) {
 				m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Swap_SRVs(SelectUseImage, SelectStageingImgage);
 				m_pTerrain->Get_Texture(CTerrain::TEXTURE_NORMAL)->Swap_SRVs(SelectUseImage, SelectStageingImgage);
+
+				if (m_iMaskingNum[SelectUseImage] == SelectStageingImgage)
+					m_iMaskingNum[SelectUseImage] = SelectUseImage;
+				else
+					m_iMaskingNum[SelectUseImage] = SelectStageingImgage;
 			}
 #pragma endregion
 
@@ -2043,8 +2045,8 @@ HRESULT CLevel_GamePlay::Ready_Layer_Player()
 
 HRESULT CLevel_GamePlay::OBJ_TEST()
 {
-	if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Prototype_GameObject_Player"))))
-		return E_FAIL;
+	/*if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Prototype_GameObject_Player"))))
+		return E_FAIL;*/
 
 	return S_OK;
 }

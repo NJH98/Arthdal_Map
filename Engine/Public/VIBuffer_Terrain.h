@@ -27,7 +27,7 @@ public:
 	_float Compute_Height(_float3& vLocalPos);
 
 public:
-	void Change_Height(_float Range, _float HowMuch);
+	void Change_Height(_float Range, _float HowMuch, _bool Up);
 	HRESULT Save_HeightMap(const _tchar* pHeightMapFilePath);
 
 	_uint Get_VerticesX() { return m_iNumVerticesX - 1; }
