@@ -116,15 +116,15 @@ HRESULT CTexture::Bind_ShadeResourcesMask(CShader* pShader, const _char* pConsta
 HRESULT CTexture::Add_MaskTexture()
 {
 	// 텍스쳐 색상 입히는 용도의 subresource_data ( 흰색 불투명 )
-	vector<UINT8> initData(256 * 256 * 4, 255); 
+	vector<UINT8> initData(2048 * 2048 * 4, 255);
 	D3D11_SUBRESOURCE_DATA SubresourceData = {};
 	SubresourceData.pSysMem = initData.data();
-	SubresourceData.SysMemPitch = 256 * 4;
+	SubresourceData.SysMemPitch = 2048 * 4;
 
 	// CPU 접근용 Staging 텍스쳐
 	D3D11_TEXTURE2D_DESC stagingDesc = {};
-	stagingDesc.Width = 256;
-	stagingDesc.Height = 256;
+	stagingDesc.Width = 2048;
+	stagingDesc.Height = 2048;
 	stagingDesc.MipLevels = 1;
 	stagingDesc.ArraySize = 1;
 	stagingDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -145,8 +145,8 @@ HRESULT CTexture::Add_MaskTexture()
 
 	// GPU 접근용 텍스처 설명 설정 (셰이더 리소스로 사용)
 	D3D11_TEXTURE2D_DESC textureDesc = {};
-	textureDesc.Width = 256;
-	textureDesc.Height = 256;
+	textureDesc.Width = 2048;
+	textureDesc.Height = 2048;
 	textureDesc.MipLevels = 1;
 	textureDesc.ArraySize = 1;
 	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -233,13 +233,13 @@ HRESULT CTexture::Pick_ChangeMask(_float2 PickPos2d, _uint iChoiceTextures, _uin
 	_uint RT_Pixely = {};
 	_uint RT_Pixelx = {};
 	RT_Pixely = _uint(PickPos2d.y) + Range;
-	if (RT_Pixely > 255) {
-		RT_Pixely = 255;
+	if (RT_Pixely > 2047) {
+		RT_Pixely = 2047;
 	}
 
 	RT_Pixelx = _uint(PickPos2d.x) + Range;
-	if (RT_Pixelx > 255) {
-		RT_Pixelx = 255;
+	if (RT_Pixelx > 2047) {
+		RT_Pixelx = 2047;
 	}
 
 	for (_uint x = LD_Pixelx; x <= RT_Pixelx; ++x) {
@@ -304,9 +304,9 @@ HRESULT CTexture::Save_MaskTexture(const _tchar* pMaskFilePath, _uint iChoiceTex
 	BMPHeaderTexture bmpHeader;
 	BMPInfoHeaderTexture bmpInfoHeader;
 
-	bmpInfoHeader.biWidth = 256;
-	bmpInfoHeader.biHeight = 256;
-	bmpInfoHeader.biSizeImage = 256 * 256 * 4;
+	bmpInfoHeader.biWidth = 2048;
+	bmpInfoHeader.biHeight = 2048;
+	bmpInfoHeader.biSizeImage = 2048 * 2048 * 4;
 
 	bmpHeader.bfSize = bmpHeader.bfOffBits + bmpInfoHeader.biSizeImage;
 
@@ -331,9 +331,9 @@ HRESULT CTexture::Save_MaskTexture(const _tchar* pMaskFilePath, _uint iChoiceTex
 	UINT8* pTexels = static_cast<UINT8*>(mappedResource.pData);
 
 	// Write image data
-	for (_uint z = 0; z < 256; ++z) {
-		for (_uint x = 0; x < 256; ++x) {
-			_uint index = z * 256 + x;
+	for (_uint z = 0; z < 2048; ++z) {
+		for (_uint x = 0; x < 2048; ++x) {
+			_uint index = z * 2048 + x;
 
 			UINT8* pixel = pTexels + z * mappedResource.RowPitch + x * 4;
 			uint8_t color[4] = { pixel[2], pixel[1], pixel[0], 255}; //Red, Green, Blue, Alpha

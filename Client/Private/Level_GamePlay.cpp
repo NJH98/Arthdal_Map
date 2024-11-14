@@ -458,12 +458,12 @@ HRESULT CLevel_GamePlay::Terrain_Masking(_float fTimeDelta)
 			_float3 PickPos{};
 			m_pGameInstance->Picking(&PickPos);
 			
-			test.x = (PickPos.x / _float(m_pTerrain->Get_VIBuffer()->Get_VerticesX())) * 256.f;
-			test.y = (PickPos.z / _float(m_pTerrain->Get_VIBuffer()->Get_VerticesZ())) * 256.f;
+			test.x = (PickPos.x / _float(m_pTerrain->Get_VIBuffer()->Get_VerticesX())) * 2048.f;
+			test.y = (PickPos.z / _float(m_pTerrain->Get_VIBuffer()->Get_VerticesZ())) * 2048.f;
 
 			if (m_pGameInstance->Get_DIKeyState(DIK_Q)) {
 				if (0.f <= test.x && 0.f <= test.y &&
-					test.x <= 256.f && test.y <= 256.f) 
+					test.x <= 2048.f && test.y <= 2048.f)
 				{
 					CTexture* pMaskTexture = m_pTerrain->Get_Texture(CTerrain::TEXTURE_MASK);
 					pMaskTexture->Pick_ChangeMask(test, m_iSelectTile, MaskRange, MaskValue, MaskRGB);
@@ -472,7 +472,7 @@ HRESULT CLevel_GamePlay::Terrain_Masking(_float fTimeDelta)
 
 			if (m_pGameInstance->Get_DIKeyState(DIK_E)) {
 				if (0.f <= test.x && 0.f <= test.y &&
-					test.x <= 256.f && test.y <= 256.f) 
+					test.x <= 2048.f && test.y <= 2048.f)
 				{
 					CTexture* pMaskTexture = m_pTerrain->Get_Texture(CTerrain::TEXTURE_MASK);
 					pMaskTexture->Pick_ChangeMask(test, m_iSelectTile, MaskRange, 255, 3);
