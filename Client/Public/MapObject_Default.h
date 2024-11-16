@@ -17,12 +17,10 @@ public:
 
 public:
     enum MAP_MODEL_LIST {
-        MAP_MODEL_ForkLift,
-        Map_MODEL_AgoVillage_Boss,
-        Map_MODEL_Plant_Berry,
-        Map_MODEL_Plant_Bush,
-        Map_MODEL_Plant_Weed,
-        Map_MODEL_Tree_Bamboo,
+        Map_MODEL_AllianceEnd = 29,
+        Map_MODEL_GulidEnd = 33,
+        Map_MODEL_HouseEnd = 109,
+        Map_MODEL_ObjectEnd = 181,
         MAP_MODEL_END
     };
 private:

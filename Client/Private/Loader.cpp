@@ -206,39 +206,54 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 
 #pragma endregion
 
-	/* 맵 배치 오브젝트 모델들 */
+#pragma region 맵 배치 오브젝트 모델
 	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
 
-	// 테스트 포크리프트
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_ForkLift"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/River/River"), PreTransformMatrix))))
-		return E_FAIL;
-	m_pGameInstance->Get_GlobalData()->ModelName.push_back("Prototype_Component_Model_ForkLift");
+	for (_uint i = 0; i < 29; i++) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Alliance" + to_wstring(i);
+		_wstring FilePath = L"../Bin/Resources/Models/MapModel/Alliance" + to_wstring(i);
+		string ModelName = "Alliance_" + to_string(i);
 
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_AgoVillage_Boss"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/MapModel/AGo_Village/AT_BGAgo_Boss"), PreTransformMatrix))))
-		return E_FAIL;
-	m_pGameInstance->Get_GlobalData()->ModelName.push_back("Prototype_Component_Model_AgoVillage_Boss");
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, PrototypeTag.c_str(),
+			CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, FilePath.c_str(), PreTransformMatrix))))
+			return E_FAIL;
+		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
+	}
 
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Berry"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/MapModel/Plant/AT_BGCom_Berry"), PreTransformMatrix))))
-		return E_FAIL;
-	m_pGameInstance->Get_GlobalData()->ModelName.push_back("Prototype_Component_Model_Plant_Berry");
+	/*for (_uint i = 0; i < 3; i++) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Gulid" + to_wstring(i);
+		_wstring FilePath = L"../Bin/Resources/Models/MapModel/Gulid" + to_wstring(i);
+		string ModelName = "Gulid_" + to_string(i);
 
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Bush"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/MapModel/Plant/AT_BGCom_Bush"), PreTransformMatrix))))
-		return E_FAIL;
-	m_pGameInstance->Get_GlobalData()->ModelName.push_back("Prototype_Component_Model_Plant_Bush");
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, PrototypeTag.c_str(),
+			CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, FilePath.c_str(), PreTransformMatrix))))
+			return E_FAIL;
+		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
+	}
 
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Weed"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/MapModel/Plant/AT_BGCom_Weed"), PreTransformMatrix))))
-		return E_FAIL;
-	m_pGameInstance->Get_GlobalData()->ModelName.push_back("Prototype_Component_Model_Plant_Weed");
+	for (_uint i = 0; i < 75; i++) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_House" + to_wstring(i);
+		_wstring FilePath = L"../Bin/Resources/Models/MapModel/House" + to_wstring(i);
+		string ModelName = "House_" + to_string(i);
 
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Tree_Bamboo"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, TEXT("../Bin/Resources/Models/MapModel/Tree/AT_BGCom_Tr_BamBoo"), PreTransformMatrix))))
-		return E_FAIL;
-	m_pGameInstance->Get_GlobalData()->ModelName.push_back("Prototype_Component_Model_Tree_Bamboo");
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, PrototypeTag.c_str(),
+			CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, FilePath.c_str(), PreTransformMatrix))))
+			return E_FAIL;
+		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
+	}
+
+	for (_uint i = 0; i < 72; i++) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Object" + to_wstring(i);
+		_wstring FilePath = L"../Bin/Resources/Models/MapModel/Object" + to_wstring(i);
+		string ModelName = "Object_" + to_string(i);
+
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, PrototypeTag.c_str(),
+			CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, FilePath.c_str(), PreTransformMatrix))))
+			return E_FAIL;
+		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
+	}*/
+	
+#pragma endregion
 
 	lstrcpy(m_szLoadingText, TEXT("네비게이션을(를) 로딩중입니다."));
 	/* For.Prototype_Component_Navigation */

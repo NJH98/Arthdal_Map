@@ -813,7 +813,7 @@ HRESULT CLevel_GamePlay::GameObject_Create_GameObject(_float fTimeDelta)
 
 	if (bObjCreate_Picking) 
 	{
-		if (m_pGameInstance->Get_DIMouseState(DIMK_LBUTTON) && m_fTerrainTimeCheck > 0.1f) {
+		if (m_pGameInstance->Get_DIMouseState_Once(DIMK_LBUTTON)) {
 			_float3 PickPos{};
 			m_pGameInstance->Picking(&PickPos);
 
@@ -834,11 +834,8 @@ HRESULT CLevel_GamePlay::GameObject_Create_GameObject(_float fTimeDelta)
 
 				if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, wLayertag, TEXT("Prototype_GameObject_MapObject_Default"), &Desc)))
 					return E_FAIL;
-
-				m_fTerrainTimeCheck = 0.f;
 			}
 		}
-		m_fTerrainTimeCheck += fTimeDelta;
 	}
 
 	return S_OK;

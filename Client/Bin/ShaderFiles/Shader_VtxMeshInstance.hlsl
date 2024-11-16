@@ -118,11 +118,45 @@ PS_OUT PS_MAIN_NORMAL(PS_IN_NORMAL In)
     return Out;
 }
 
+PS_OUT PS_MAIN_NORMAL2(PS_IN_NORMAL In)
+{
+    PS_OUT Out = (PS_OUT) 0;
+
+    vector vDiffuse = g_DiffuseTexture.Sample(LinearSampler, In.vTexcoord);
+    vector vNormalDesc = g_NormalTexture.Sample(LinearSampler, In.vTexcoord);
+	/* 로컬상의 변환되지 않은 노말벡터를 구했다. */
+	/* 로컬스페이스 => 정점의로컬스페이스(x), 노멀벡터당 하나씩 로컬스페이스를 독립적으로 구성했다. */
+    float3 vNormal = vNormalDesc.xyz * 2.f - 1.f;
+    float3x3 WorldMatrix = float3x3(In.vTangent, In.vBinormal, In.vNormal);
+    vNormal = normalize(mul(vNormal, WorldMatrix));
+
+    if (0.3f >= vDiffuse.a)
+        discard;
+
+    Out.vDiffuse = vDiffuse;
+
+	/* -1.f ~ 1.f -> 0.f ~ 1.f */
+    Out.vNormal = vector(vNormal * 0.5f + 0.5f, 0.f);
+    Out.vDepth = vector(In.vProjPos.z / In.vProjPos.w, In.vProjPos.w / 1000.f, 0.f, 0.f);
+
+    return Out;
+}
 
 technique11 DefaultTechnique
 {
-    pass Basic
-    {
+    pass BlueNormal
+    { // 0 Blue Normal
+        SetRasterizerState(RS_Cull_None);
+        SetDepthStencilState(DSS_Default, 0);
+        SetBlendState(BS_Default, vector(0.f, 0.f, 0.f, 0.f), 0xffffffff);
+
+        VertexShader = compile vs_5_0 VS_MAIN();
+        GeometryShader = NULL;
+        PixelShader = compile ps_5_0 PS_MAIN_NORMAL2();
+    }
+
+    pass YelloNormal
+    {   // 1 Yello Normal
         SetRasterizerState(RS_Cull_None);
         SetDepthStencilState(DSS_Default, 0);
         SetBlendState(BS_Default, vector(0.f, 0.f, 0.f, 0.f), 0xffffffff);
@@ -131,6 +165,5 @@ technique11 DefaultTechnique
         GeometryShader = NULL;
         PixelShader = compile ps_5_0 PS_MAIN_NORMAL ();
     }
-
 
 }   

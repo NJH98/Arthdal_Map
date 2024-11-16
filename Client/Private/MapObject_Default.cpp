@@ -157,46 +157,38 @@ HRESULT CMapObject_Default::Ready_Components()
 #pragma region Ãß°¡ ¸ðµ¨
 
 	/* FOR.Com_Model */
-	switch (m_iUseModel)
-	{
-	case MAP_MODEL_ForkLift:
-		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_ForkLift"),
+
+	if (m_iUseModel < Map_MODEL_AllianceEnd) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Alliance" + to_wstring(m_iUseModel);
+
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
 			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
 			return E_FAIL;
-		m_InstnaceLayer = TEXT("Prototype_Component_Model_ForkLift");
-		break;
-	case Map_MODEL_AgoVillage_Boss:
-		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_AgoVillage_Boss"),
+		m_InstnaceLayer = PrototypeTag;
+	}
+	else if (m_iUseModel < Map_MODEL_GulidEnd) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Gulid" + to_wstring(m_iUseModel - Map_MODEL_AllianceEnd -1);
+
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
 			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
 			return E_FAIL;
-		m_InstnaceLayer = TEXT("Prototype_Component_Model_AgoVillage_Boss");
-		break;
-	case Map_MODEL_Plant_Berry:
-		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Berry"),
+		m_InstnaceLayer = PrototypeTag;
+	}
+	else if (m_iUseModel < Map_MODEL_HouseEnd) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_House" + to_wstring(m_iUseModel - Map_MODEL_GulidEnd - 1);
+
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
 			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
 			return E_FAIL;
-		m_InstnaceLayer = TEXT("Prototype_Component_Model_Plant_Berry");
-		break;
-	case Map_MODEL_Plant_Bush:
-		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Bush"),
+		m_InstnaceLayer = PrototypeTag;
+	}
+	else if (m_iUseModel < Map_MODEL_ObjectEnd) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Object" + to_wstring(m_iUseModel - Map_MODEL_HouseEnd - 1);
+
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
 			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
 			return E_FAIL;
-		m_InstnaceLayer = TEXT("Prototype_Component_Model_Plant_Bush");
-		break;
-	case Map_MODEL_Plant_Weed:
-		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Plant_Weed"),
-			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
-			return E_FAIL;
-		m_InstnaceLayer = TEXT("Prototype_Component_Model_Plant_Weed");
-		break;
-	case Map_MODEL_Tree_Bamboo:
-		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Tree_Bamboo"),
-			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
-			return E_FAIL;
-		m_InstnaceLayer = TEXT("Prototype_Component_Model_Tree_Bamboo");
-		break;
-	default:
-		break;
+		m_InstnaceLayer = PrototypeTag;
 	}
 
 #pragma endregion
