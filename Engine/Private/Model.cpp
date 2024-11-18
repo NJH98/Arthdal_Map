@@ -520,7 +520,17 @@ HRESULT CModel::Ready_Materials(const _tchar* pModelFilePath)
 			MultiByteToWideChar(CP_ACP, 0, szFullPath, int(strlen(szFullPath)), szWideFullPath, MAX_PATH);
 
 			memcpy(&DataMaterialDesc.cNames[j], &pAIMaterial.cNames[j], sizeof(char) * MAX_PATH);
-			MeshMaterial.pMaterialTextures[j] = CTexture::Create(m_pDevice, m_pContext, szWideFullPath, 1);
+
+			CTexture *CloneTex = static_cast<CTexture*>(m_pGameInstance->Clone_Component(3, szWideFullPath));
+			if (CloneTex == nullptr) {
+
+				m_pGameInstance->Add_Prototype(3, szWideFullPath, CTexture::Create(m_pDevice, m_pContext, szWideFullPath, 1));
+				MeshMaterial.pMaterialTextures[j] = static_cast<CTexture*>(m_pGameInstance->Clone_Component(3, szWideFullPath));
+			}
+			else{
+				MeshMaterial.pMaterialTextures[j] = CloneTex;
+			}
+			
 			if (nullptr == MeshMaterial.pMaterialTextures[j])
 			{
 				MSG_BOX(szWideFullPath);

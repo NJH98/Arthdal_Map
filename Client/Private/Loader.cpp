@@ -220,7 +220,7 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
 	}
 
-	/*for (_uint i = 0; i < 3; i++) {
+	for (_uint i = 0; i < 3; i++) {
 		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Gulid" + to_wstring(i);
 		_wstring FilePath = L"../Bin/Resources/Models/MapModel/Gulid" + to_wstring(i);
 		string ModelName = "Gulid_" + to_string(i);
@@ -251,7 +251,7 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 			CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, FilePath.c_str(), PreTransformMatrix))))
 			return E_FAIL;
 		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
-	}*/
+	}
 	
 #pragma endregion
 

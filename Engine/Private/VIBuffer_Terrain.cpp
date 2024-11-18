@@ -448,6 +448,13 @@ void CVIBuffer_Terrain::Culling(_fmatrix WorldMatrix)
 
 _float CVIBuffer_Terrain::Compute_Height(_float3& vLocalPos)
 {
+	// 범위 벗어남 예외처리
+	if (vLocalPos.z < 0.f || vLocalPos.x < 0.f ||
+		vLocalPos.z > _float(m_iNumVerticesZ) ||
+		vLocalPos.x > _float(m_iNumVerticesX)) {
+		return vLocalPos.y;
+	}
+
 	// 객체가 존재하는 네모 영역의 왼쪽 하단 인덱스
 	_uint iIndex = _uint(vLocalPos.z) * m_iNumVerticesX + _uint(vLocalPos.x);
 	// 구한 인덱스 기준으로 네모 영역의 인덱스 들을 구한다
