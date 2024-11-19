@@ -17,10 +17,7 @@ public:
 
 public:
     enum MAP_MODEL_LIST {
-        Map_MODEL_AllianceEnd = 29,
-        Map_MODEL_GulidEnd = 33,
-        Map_MODEL_HouseEnd = 109,
-        Map_MODEL_ObjectEnd = 181,
+        Map_MODEL_ObjectEnd = 185,
         MAP_MODEL_END
     };
 private:

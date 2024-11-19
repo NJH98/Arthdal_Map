@@ -162,8 +162,8 @@ HRESULT CModel::RenderInstancing(class CShader* pShader, CInstancing_Buffer* buf
 
 		if (FAILED(m_Materials[iMaterialIndex].pMaterialTextures[aiTextureType_DIFFUSE]->Bind_ShadeResource(pShader, "g_DiffuseTexture", 0)))
 			MSG_BOX(TEXT("FAIL_DIF"));
-		/*if (FAILED(m_Materials[iMaterialIndex].pMaterialTextures[aiTextureType_NORMALS]->Bind_ShadeResource(pShader, "g_NormalTexture", 0)))
-			MSG_BOX(TEXT("FAIL_NORM"));*/
+		if (FAILED(m_Materials[iMaterialIndex].pMaterialTextures[aiTextureType_NORMALS]->Bind_ShadeResource(pShader, "g_NormalTexture", 0)))
+			MSG_BOX(TEXT("FAIL_NORM"));
 
 		pShader->Begin(0);
 

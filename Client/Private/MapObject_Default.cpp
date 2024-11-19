@@ -158,15 +158,15 @@ HRESULT CMapObject_Default::Ready_Components()
 
 	/* FOR.Com_Model */
 
-	if (m_iUseModel < Map_MODEL_AllianceEnd) {
-		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Alliance" + to_wstring(m_iUseModel);
+	if (m_iUseModel < Map_MODEL_ObjectEnd) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Object" + to_wstring(m_iUseModel);
 
 		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
 			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
 			return E_FAIL;
 		m_InstnaceLayer = PrototypeTag;
 	}
-	else if (m_iUseModel < Map_MODEL_GulidEnd) {
+	/*else if (m_iUseModel < Map_MODEL_GulidEnd) {
 		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Gulid" + to_wstring(m_iUseModel - Map_MODEL_AllianceEnd -1);
 
 		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
@@ -189,7 +189,7 @@ HRESULT CMapObject_Default::Ready_Components()
 			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
 			return E_FAIL;
 		m_InstnaceLayer = PrototypeTag;
-	}
+	}*/
 
 #pragma endregion
 

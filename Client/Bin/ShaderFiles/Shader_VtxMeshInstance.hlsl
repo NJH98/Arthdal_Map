@@ -138,14 +138,26 @@ PS_OUT PS_MAIN_NORMAL2(PS_IN_NORMAL In)
 	/* -1.f ~ 1.f -> 0.f ~ 1.f */
     Out.vNormal = vector(vNormal * 0.5f + 0.5f, 0.f);
     Out.vDepth = vector(In.vProjPos.z / In.vProjPos.w, In.vProjPos.w / 1000.f, 0.f, 0.f);
-
+    Out.vPickDepth = vector(In.vProjPos.z / In.vProjPos.w, 0.f, float(In.DepthNum), 1.f);
+    
     return Out;
 }
 
 technique11 DefaultTechnique
 {
+    pass YelloNormal
+    {
+        SetRasterizerState(RS_Cull_None);
+        SetDepthStencilState(DSS_Default, 0);
+        SetBlendState(BS_Default, vector(0.f, 0.f, 0.f, 0.f), 0xffffffff);
+
+        VertexShader = compile vs_5_0 VS_MAIN();
+        GeometryShader = NULL;
+        PixelShader = compile ps_5_0 PS_MAIN_NORMAL();
+    }
+
     pass BlueNormal
-    { // 0 Blue Normal
+    {
         SetRasterizerState(RS_Cull_None);
         SetDepthStencilState(DSS_Default, 0);
         SetBlendState(BS_Default, vector(0.f, 0.f, 0.f, 0.f), 0xffffffff);
@@ -153,17 +165,6 @@ technique11 DefaultTechnique
         VertexShader = compile vs_5_0 VS_MAIN();
         GeometryShader = NULL;
         PixelShader = compile ps_5_0 PS_MAIN_NORMAL2();
-    }
-
-    pass YelloNormal
-    {   // 1 Yello Normal
-        SetRasterizerState(RS_Cull_None);
-        SetDepthStencilState(DSS_Default, 0);
-        SetBlendState(BS_Default, vector(0.f, 0.f, 0.f, 0.f), 0xffffffff);
-
-        VertexShader = compile vs_5_0 VS_MAIN();
-        GeometryShader = NULL;
-        PixelShader = compile ps_5_0 PS_MAIN_NORMAL ();
     }
 
 }   
