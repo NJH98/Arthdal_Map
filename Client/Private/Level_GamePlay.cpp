@@ -15,6 +15,9 @@
 #include "Cell.h"
 #include "Light.h"
 
+#include "..\imgui\ImGuizmo.h"
+static ImGuizmo::OPERATION eGizmoType = { ImGuizmo::TRANSLATE };
+
 CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CLevel{ pDevice, pContext }
 {
@@ -64,6 +67,8 @@ HRESULT CLevel_GamePlay::Initialize()
 		col.w *= 0.8f;  // col.w는 색상의 알파(투명도) 값을 나타냅니다.
 	}
 
+	ImGuizmo::Enable(true);
+
 	// Gui 랜더링 on/off 처음시작시 랜더가 우선작동해서 오류가 발생한다
 	m_bGuiReady = false;
 
@@ -82,6 +87,11 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
+	ImGuizmo::SetOrthographic(false);
+	ImGuizmo::SetRect(0, 0, g_iWinSizeX, g_iWinSizeY); // 뷰포트 크기 설정
+	ImGuizmo::BeginFrame();
+
+
 	ImGui::Begin("MainImgui");
 	{
 		Dialog_Imgui(fTimeDelta);
@@ -95,6 +105,37 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 		Light_Imgui(fTimeDelta);
 	}
 	ImGui::End();
+
+
+	//   =============== ImGuizmo =============== 
+	if (nullptr != m_pGameObj)  // 카메라가 내가 픽한 오브젝트 위치에 도달했을때 nullptr을 반환
+	{
+		static CGameObject* pPrePickedObj = nullptr;
+		static _bool     bFristSetting = false;
+		static _float4x4 WorldMatrix = {};
+		static _float4x4 ViewMatrix = {};
+		static _float4x4 ProjMatrix = {};
+
+
+		if (!bFristSetting || pPrePickedObj != m_pGameObj)
+		{
+			XMStoreFloat4x4(&WorldMatrix, m_pGameObj->Get_TranformCom()->Get_WorldMatrix());
+
+			pPrePickedObj = m_pGameObj;
+			bFristSetting = true;
+		}
+
+		XMStoreFloat4x4(&ViewMatrix, m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_VIEW));
+		XMStoreFloat4x4(&ProjMatrix, m_pGameInstance->Get_Transform_Matrix(CPipeLine::D3DTS_PROJ));
+
+		// eGizmoType = ImGuizmo::ROTATE
+		// eGizmoType = ImGuizmo::ROTATE
+
+		if (ImGuizmo::Manipulate((_float*)(&ViewMatrix), (_float*)(&ProjMatrix), eGizmoType, ImGuizmo::LOCAL, (_float*)(&WorldMatrix)))
+		{		
+			m_pGameObj->Get_TranformCom()->Set_WorldMatrix(WorldMatrix);
+		}
+	}
 
 	VectorClear();
 

@@ -186,6 +186,9 @@
     <ClInclude Include="..\Public\MapObject_Default.h">
       <Filter>02.GameObjects\98.MapObject\MapObject_Default</Filter>
     </ClInclude>
+    <ClInclude Include="..\imgui\ImGuizmo.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -271,6 +274,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\MapObject_Default.cpp">
       <Filter>02.GameObjects\98.MapObject\MapObject_Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui\ImGuizmo.cpp">
+      <Filter>imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -112,6 +112,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -178,6 +179,7 @@
     <ClInclude Include="..\imgui\imgui.h" />
     <ClInclude Include="..\imgui\ImGuiFileDialog.h" />
     <ClInclude Include="..\imgui\ImGuiFileDialogConfig.h" />
+    <ClInclude Include="..\imgui\ImGuizmo.h" />
     <ClInclude Include="..\imgui\imgui_impl_dx11.h" />
     <ClInclude Include="..\imgui\imgui_impl_win32.h" />
     <ClInclude Include="..\imgui\imgui_internal.h" />
@@ -212,6 +214,7 @@
   <ItemGroup>
     <ClCompile Include="..\imgui\imgui.cpp" />
     <ClCompile Include="..\imgui\ImGuiFileDialog.cpp" />
+    <ClCompile Include="..\imgui\ImGuizmo.cpp" />
     <ClCompile Include="..\imgui\imgui_draw.cpp" />
     <ClCompile Include="..\imgui\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\imgui\imgui_impl_win32.cpp" />
