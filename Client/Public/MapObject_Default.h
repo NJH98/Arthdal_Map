@@ -18,7 +18,12 @@ public:
 public:
     enum MAP_MODEL_LIST {
         Map_MODEL_ObjectEnd = 185,
-        MAP_MODEL_END
+        Map_MODEL_PlantEnd = 207,
+        Map_MODEL_TreeEnd = 232,
+        Map_MODEL_HouseEnd = 275,
+        Map_MODEL_GuildEnd = 292,
+        Map_MODEL_CommonEnd = 336,
+        MAP_MODEL_END,
     };
 private:
     CMapObject_Default(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

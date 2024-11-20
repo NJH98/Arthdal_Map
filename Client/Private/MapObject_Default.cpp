@@ -166,8 +166,16 @@ HRESULT CMapObject_Default::Ready_Components()
 			return E_FAIL;
 		m_InstnaceLayer = PrototypeTag;
 	}
-	/*else if (m_iUseModel < Map_MODEL_GulidEnd) {
-		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Gulid" + to_wstring(m_iUseModel - Map_MODEL_AllianceEnd -1);
+	else if (m_iUseModel < Map_MODEL_PlantEnd) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Plant" + to_wstring(m_iUseModel - Map_MODEL_ObjectEnd);
+
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
+			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
+			return E_FAIL;
+		m_InstnaceLayer = PrototypeTag;
+	}
+	else if (m_iUseModel < Map_MODEL_TreeEnd) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Tree" + to_wstring(m_iUseModel - Map_MODEL_PlantEnd);
 
 		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
 			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
@@ -175,21 +183,29 @@ HRESULT CMapObject_Default::Ready_Components()
 		m_InstnaceLayer = PrototypeTag;
 	}
 	else if (m_iUseModel < Map_MODEL_HouseEnd) {
-		_wstring PrototypeTag = L"Prototype_Component_Model_Map_House" + to_wstring(m_iUseModel - Map_MODEL_GulidEnd - 1);
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_House" + to_wstring(m_iUseModel - Map_MODEL_TreeEnd);
 
 		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
 			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
 			return E_FAIL;
 		m_InstnaceLayer = PrototypeTag;
 	}
-	else if (m_iUseModel < Map_MODEL_ObjectEnd) {
-		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Object" + to_wstring(m_iUseModel - Map_MODEL_HouseEnd - 1);
+	else if (m_iUseModel < Map_MODEL_GuildEnd) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Guild" + to_wstring(m_iUseModel - Map_MODEL_HouseEnd);
 
 		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
 			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
 			return E_FAIL;
 		m_InstnaceLayer = PrototypeTag;
-	}*/
+	}
+	else if (m_iUseModel < Map_MODEL_CommonEnd) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Common" + to_wstring(m_iUseModel - Map_MODEL_GuildEnd);
+
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
+			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
+			return E_FAIL;
+		m_InstnaceLayer = PrototypeTag;
+	}
 
 #pragma endregion
 

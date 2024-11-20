@@ -1047,6 +1047,12 @@ HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 	ImGui::SeparatorText("GameObj List");
 	ImGui::PushItemWidth(200); // 크기조정
 
+	_int ModelNum = -1;
+	if (m_pGameObj != nullptr) {
+		ModelNum = _int(static_cast<CMapObject_Default*>(m_pGameObj)->Get_UseModel());
+	}
+	ImGui::Text("ModelNum = %d", ModelNum);
+
 	static bool bFind_GameObject;
 	ImGui::Checkbox("Find Picking", &bFind_GameObject);
 	
@@ -1054,7 +1060,7 @@ HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 	_uint	FindNum{};
 
 	if (bFind_GameObject) {
-		if (m_pGameInstance->Get_DIMouseState_Once(DIMK_LBUTTON) && m_pGameInstance->Get_DIKeyState(DIK_Q)) {
+		if (m_pGameInstance->Get_DIMouseState_Once(DIMK_LBUTTON) && m_pGameInstance->Get_DIKeyState(DIK_E)) {
 			if (m_pGameInstance->Picking(&FindPos, &FindNum))
 			{
 				// 기존 객체 변경 점

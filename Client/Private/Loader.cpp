@@ -211,7 +211,7 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 
 	for (_uint i = 0; i < 185; i++) {
 		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Object" + to_wstring(i);
-		_wstring FilePath = L"../Bin/Resources/Models/MapModel/Object_" + to_wstring(i);
+		_wstring FilePath = L"../Bin/Resources/Models/MapModel/Object/Object_" + to_wstring(i);
 		string ModelName = "Object_" + to_string(i);
 
 		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, PrototypeTag.c_str(),
@@ -220,10 +220,10 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
 	}
 
-	/*for (_uint i = 0; i < 3; i++) {
-		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Gulid" + to_wstring(i);
-		_wstring FilePath = L"../Bin/Resources/Models/MapModel/Gulid" + to_wstring(i);
-		string ModelName = "Gulid_" + to_string(i);
+	for (_uint i = 0; i < 22; i++) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Plant" + to_wstring(i);
+		_wstring FilePath = L"../Bin/Resources/Models/MapModel/Plant/Plant_" + to_wstring(i);
+		string ModelName = "Plant_" + to_string(i);
 
 		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, PrototypeTag.c_str(),
 			CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, FilePath.c_str(), PreTransformMatrix))))
@@ -231,9 +231,20 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
 	}
 
-	for (_uint i = 0; i < 75; i++) {
+	for (_uint i = 0; i < 25; i++) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Tree" + to_wstring(i);
+		_wstring FilePath = L"../Bin/Resources/Models/MapModel/Tree/Tree_" + to_wstring(i);
+		string ModelName = "Tree_" + to_string(i);
+
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, PrototypeTag.c_str(),
+			CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, FilePath.c_str(), PreTransformMatrix))))
+			return E_FAIL;
+		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
+	}
+	
+	for (_uint i = 0; i < 43; i++) {
 		_wstring PrototypeTag = L"Prototype_Component_Model_Map_House" + to_wstring(i);
-		_wstring FilePath = L"../Bin/Resources/Models/MapModel/House" + to_wstring(i);
+		_wstring FilePath = L"../Bin/Resources/Models/MapModel/House/House_" + to_wstring(i);
 		string ModelName = "House_" + to_string(i);
 
 		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, PrototypeTag.c_str(),
@@ -242,16 +253,27 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
 	}
 
-	for (_uint i = 0; i < 72; i++) {
-		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Object" + to_wstring(i);
-		_wstring FilePath = L"../Bin/Resources/Models/MapModel/Object" + to_wstring(i);
-		string ModelName = "Object_" + to_string(i);
+	for (_uint i = 0; i < 17; i++) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Guild" + to_wstring(i);
+		_wstring FilePath = L"../Bin/Resources/Models/MapModel/House/Guild_" + to_wstring(i);
+		string ModelName = "Guild_" + to_string(i);
 
 		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, PrototypeTag.c_str(),
 			CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, FilePath.c_str(), PreTransformMatrix))))
 			return E_FAIL;
 		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
-	}*/
+	}
+
+	for (_uint i = 0; i < 44; i++) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Common" + to_wstring(i);
+		_wstring FilePath = L"../Bin/Resources/Models/MapModel/Common/Common_" + to_wstring(i);
+		string ModelName = "Common_" + to_string(i);
+
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, PrototypeTag.c_str(),
+			CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, FilePath.c_str(), PreTransformMatrix))))
+			return E_FAIL;
+		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
+	}
 	
 #pragma endregion
 
