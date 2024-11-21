@@ -150,8 +150,17 @@ HRESULT CModel::Render(_uint iMeshIndex)
 	return S_OK;
 }
 
+static int iSahderNum = 0;
+
 HRESULT CModel::RenderInstancing(class CShader* pShader, CInstancing_Buffer* buffer)
 {
+	if (m_pGameInstance->Get_DIKeyState_Once(DIK_C)) {
+		if (iSahderNum == 0)
+			iSahderNum = 1;
+		else
+			iSahderNum = 0;
+	}
+
 	if (FAILED(pShader->Bind_Matrix("g_ViewMatrix", &m_pGameInstance->Get_Transform_Float4x4(CPipeLine::D3DTS_VIEW))))
 		return E_FAIL;
 	if (FAILED(pShader->Bind_Matrix("g_ProjMatrix", &m_pGameInstance->Get_Transform_Float4x4(CPipeLine::D3DTS_PROJ))))
@@ -166,7 +175,7 @@ HRESULT CModel::RenderInstancing(class CShader* pShader, CInstancing_Buffer* buf
 		if (FAILED(m_Materials[iMaterialIndex].pMaterialTextures[aiTextureType_NORMALS]->Bind_ShadeResource(pShader, "g_NormalTexture", 0)))
 			MSG_BOX(TEXT("FAIL_NORM"));
 
-		pShader->Begin(0);
+		pShader->Begin(iSahderNum);
 
 		mesh->Bind_Buffers();
 		buffer->PushData();
@@ -463,8 +472,6 @@ HRESULT CModel::Bind_Bone_Mesh(CModel* pOtherModel)
 	return S_OK;
 }
 
-static int test = 0;
-
 HRESULT CModel::Ready_Meshes()
 {
 	m_iNumMeshes = m_pBin_Scene->iMeshCount;
@@ -483,9 +490,6 @@ HRESULT CModel::Ready_Meshes()
 
 		m_Meshes.push_back(pMesh);
 	}
-
-	cout << test << "  " << m_fCullingRadius << endl;
-	test++;
 
 	return S_OK;
 }

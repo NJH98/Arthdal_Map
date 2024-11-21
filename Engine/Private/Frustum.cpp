@@ -9,15 +9,15 @@ CFrustum::CFrustum()
 
 HRESULT CFrustum::Initialize()
 {
-	m_vPoints[0] = _float3(-1.f, 1.f, 0.f);
-	m_vPoints[1] = _float3(1.f, 1.f, 0.f);
-	m_vPoints[2] = _float3(1.f, -1.f, 0.f);
-	m_vPoints[3] = _float3(-1.f, -1.f, 0.f);
+	m_vPoints[0] = _float3(-1.f,	1.f,	0.f);
+	m_vPoints[1] = _float3(1.f,		1.f,	0.f);
+	m_vPoints[2] = _float3(1.f,		-1.f,	0.f);
+	m_vPoints[3] = _float3(-1.f,	-1.f,	0.f);
 
-	m_vPoints[4] = _float3(-1.f, 1.f, 1.f);
-	m_vPoints[5] = _float3(1.f, 1.f, 1.f);
-	m_vPoints[6] = _float3(1.f, -1.f, 1.f);
-	m_vPoints[7] = _float3(-1.f, -1.f, 1.f);
+	m_vPoints[4] = _float3(-1.f,	1.f,	0.9995f);
+	m_vPoints[5] = _float3(1.f,		1.f,	0.9995f);
+	m_vPoints[6] = _float3(1.f,		-1.f,	0.9995f);
+	m_vPoints[7] = _float3(-1.f,	-1.f,	0.9995f);
 
 	return S_OK;
 }
