@@ -984,9 +984,11 @@ HRESULT CLevel_GamePlay::GameObject_Save_Load(_float fTimeDelta)
 
 			Desc.WorldMatrix = LayerList->Get_TranformCom()->Get_WorldMatrix();
 			Desc.ModelNum = static_cast<CMapObject_Default*>(LayerList)->Get_UseModel();
+			Desc.CullRadiuse = static_cast<CMapObject_Default*>(LayerList)->Get_Radiuse();
 
 			outFile.write(reinterpret_cast<const char*>(&Desc.WorldMatrix), sizeof(_matrix));
 			outFile.write(reinterpret_cast<const char*>(&Desc.ModelNum), sizeof(_uint));
+			outFile.write(reinterpret_cast<const char*>(&Desc.CullRadiuse), sizeof(_float));
 		}
 
 		outFile.close();
@@ -1018,6 +1020,7 @@ HRESULT CLevel_GamePlay::GameObject_Save_Load(_float fTimeDelta)
 
 			inFile.read(reinterpret_cast<char*>(&Desc.WorldMatrix), sizeof(_matrix));
 			inFile.read(reinterpret_cast<char*>(&Desc.ModelNum), sizeof(_uint));
+			inFile.read(reinterpret_cast<char*>(&Desc.CullRadiuse), sizeof(_float));
 			Desc.LayerTag = m_StringLayerName;
 
 			if (FAILED(m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, m_StringLayerName, TEXT("Prototype_GameObject_MapObject_Default"), &Desc)))

@@ -30,6 +30,7 @@ HRESULT CMapObject_Default::Initialize(void* pArg)
 	}
 
 	m_iUseModel = MapDesc.ModelNum;
+	m_fRadiuse = MapDesc.CullRadiuse;
 
 	// TransformCom ¼ÂÆÃ
 	if (FAILED(__super::Initialize(nullptr)))
@@ -75,10 +76,15 @@ void CMapObject_Default::Late_Update(_float fTimeDelta)
 	//m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
 	//m_pGameInstance->Add_RenderObject(CRenderer::RG_SHADOWOBJ, this);
 
-	if(m_bIsRenderInstance)
-		m_pGameInstance->Push_Instance_Object(m_InstnaceLayer, this);
-	else
-		m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
+	Vector3 Pos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+
+	if (m_pGameInstance->isIn_Frustum_WorldSpace(Pos, m_fRadiuse)) {
+		if (m_bIsRenderInstance)
+			m_pGameInstance->Push_Instance_Object(m_InstnaceLayer, this);
+		else
+			m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
+	}
+
 }
 
 HRESULT CMapObject_Default::Render()
@@ -206,8 +212,18 @@ HRESULT CMapObject_Default::Ready_Components()
 			return E_FAIL;
 		m_InstnaceLayer = PrototypeTag;
 	}
+	else if (m_iUseModel < Map_MODEL_LampEnd) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Lamp" + to_wstring(m_iUseModel - Map_MODEL_CommonEnd);
+
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
+			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
+			return E_FAIL;
+		m_InstnaceLayer = PrototypeTag;
+	}
 
 #pragma endregion
+
+	m_fRadiuse = m_pModelCom->Get_CullRadius();
 
 	return S_OK;
 }

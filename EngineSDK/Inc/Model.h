@@ -87,6 +87,11 @@ public:
 
 	HRESULT Bind_Bone_Mesh(CModel* pOtherModel);
 
+public:
+	_float Get_CullRadius() { return m_fCullingRadius; }
+private:
+	_float		m_fCullingRadius = 0.f;
+
 private:
 	DATA_BINSCENE* m_pBin_Scene = nullptr;
 	TYPE							m_eType = { TYPE_END };

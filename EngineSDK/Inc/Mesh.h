@@ -22,7 +22,7 @@ public:
 	}
 
 public:
-	virtual HRESULT Initialize_Prototype(const CModel* pModel, const DATA_BINMESH* pAIMesh, _fmatrix PreTransformMatrix);
+	virtual HRESULT Initialize_Prototype(const CModel* pModel, const DATA_BINMESH* pAIMesh, _fmatrix PreTransformMatrix, _float* CullRadiuse);
 	virtual HRESULT Initialize(void* pArg) override;
 
 public:
@@ -49,12 +49,12 @@ private:
 
 
 private:
-	HRESULT	Ready_VertexBuffer_NonAnim(const DATA_BINMESH* pAIMesh, _fmatrix PreTransformMatrix);
+	HRESULT	Ready_VertexBuffer_NonAnim(const DATA_BINMESH* pAIMesh, _fmatrix PreTransformMatrix, _float* CullRadiuse);
 	HRESULT	Ready_VertexBuffer_Anim(const CModel* pModel, const DATA_BINMESH* pAIMesh);
 
 
 public:
-	static CMesh* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const CModel* pModel, const DATA_BINMESH* pAIMesh, _fmatrix PreTransformMatrix);
+	static CMesh* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const CModel* pModel, const DATA_BINMESH* pAIMesh, _fmatrix PreTransformMatrix, _float* CullRadiuse = nullptr);
 	virtual CComponent* Clone(void* pArg);
 	virtual void Free() override;
 };

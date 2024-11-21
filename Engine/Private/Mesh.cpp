@@ -13,7 +13,7 @@ CMesh::CMesh(const CMesh& Prototype)
 {
 }
 
-HRESULT CMesh::Initialize_Prototype(const CModel* pModel, const DATA_BINMESH* pAIMesh, _fmatrix PreTransformMatrix)
+HRESULT CMesh::Initialize_Prototype(const CModel* pModel, const DATA_BINMESH* pAIMesh, _fmatrix PreTransformMatrix, _float* CullRadiuse)
 {
 	strcpy_s(m_szName, pAIMesh->cName);
 	m_iNumVertexBuffers = 1;
@@ -30,7 +30,7 @@ HRESULT CMesh::Initialize_Prototype(const CModel* pModel, const DATA_BINMESH* pA
 
 #pragma region VERTEX_BUFFER
 
-	HRESULT hr = pModel->Get_ModelType() == CModel::TYPE_NONANIM ? Ready_VertexBuffer_NonAnim(pAIMesh, PreTransformMatrix) : Ready_VertexBuffer_Anim(pModel, pAIMesh);
+	HRESULT hr = pModel->Get_ModelType() == CModel::TYPE_NONANIM ? Ready_VertexBuffer_NonAnim(pAIMesh, PreTransformMatrix, CullRadiuse) : Ready_VertexBuffer_Anim(pModel, pAIMesh);
 	if (FAILED(hr))
 		return E_FAIL;
 
@@ -110,7 +110,7 @@ HRESULT CMesh::Move_Bone(const CModel* pModel)
 	return S_OK;
 }
 
-HRESULT CMesh::Ready_VertexBuffer_NonAnim(const DATA_BINMESH* pAIMesh, _fmatrix PreTransformMatrix)
+HRESULT CMesh::Ready_VertexBuffer_NonAnim(const DATA_BINMESH* pAIMesh, _fmatrix PreTransformMatrix, _float* CullRadiuse)
 {
 	m_iVertexStride = sizeof(VTXMESH);
 
@@ -125,12 +125,21 @@ HRESULT CMesh::Ready_VertexBuffer_NonAnim(const DATA_BINMESH* pAIMesh, _fmatrix 
 	VTXMESH* pVertices = new VTXMESH[m_iNumVertices];
 	ZeroMemory(pVertices, sizeof(VTXMESH) * m_iNumVertices);
 
+	Vector3 LocalStart = { 0.f,0.f,0.f };
+
 	for (_uint i = 0; i < m_iNumVertices; ++i)
 	{
 		pVertices[i] = pAIMesh->pNonAnimVertices[i];
 		XMStoreFloat3(&pVertices[i].vPosition, XMVector3TransformCoord(XMLoadFloat3(&pVertices[i].vPosition), PreTransformMatrix));
 		XMStoreFloat3(&pVertices[i].vNormal, XMVector3TransformNormal(XMLoadFloat3(&pVertices[i].vNormal), PreTransformMatrix));
 		XMStoreFloat3(&pVertices[i].vTangent, XMVector3TransformNormal(XMLoadFloat3(&pVertices[i].vTangent), PreTransformMatrix));
+
+		_float CalcRadiuse = Vector3::Distance(LocalStart, pVertices[i].vPosition);
+		if (CullRadiuse != nullptr) {
+			if (*CullRadiuse < CalcRadiuse) {
+				*CullRadiuse = CalcRadiuse;
+			}
+		}
 	}
 
 	ZeroMemory(&m_InitialData, sizeof(D3D11_SUBRESOURCE_DATA));
@@ -194,11 +203,11 @@ HRESULT CMesh::Ready_VertexBuffer_Anim(const CModel* pModel, const DATA_BINMESH*
 	return S_OK;
 }
 
-CMesh* CMesh::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const CModel* pModel, const DATA_BINMESH* pAIMesh, _fmatrix PreTransformMatrix)
+CMesh* CMesh::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const CModel* pModel, const DATA_BINMESH* pAIMesh, _fmatrix PreTransformMatrix, _float* CullRadiuse)
 {
 	CMesh* pInstance = new CMesh(pDevice, pContext);
 
-	if (FAILED(pInstance->Initialize_Prototype(pModel, pAIMesh, PreTransformMatrix)))
+	if (FAILED(pInstance->Initialize_Prototype(pModel, pAIMesh, PreTransformMatrix, CullRadiuse)))
 	{
 		MSG_BOX(TEXT("Failed to Created : CMesh"));
 		Safe_Release(pInstance);

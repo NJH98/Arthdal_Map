@@ -25,6 +25,7 @@ CModel::CModel(const CModel& Prototype)
 	, m_Animations{ Prototype.m_Animations }
 	, m_CurrentTrackPosition{ Prototype.m_CurrentTrackPosition }
 	, m_KeyFrameIndices{ Prototype.m_KeyFrameIndices }
+	, m_fCullingRadius{ Prototype.m_fCullingRadius }
 {
 	for (auto& pAnimation : m_Animations)
 		Safe_AddRef(pAnimation);
@@ -462,18 +463,29 @@ HRESULT CModel::Bind_Bone_Mesh(CModel* pOtherModel)
 	return S_OK;
 }
 
+static int test = 0;
+
 HRESULT CModel::Ready_Meshes()
 {
 	m_iNumMeshes = m_pBin_Scene->iMeshCount;
 
+	_float CullRadius = 0.f;
+
 	for (_uint i = 0; i < m_iNumMeshes; ++i)
 	{
-		CMesh* pMesh = CMesh::Create(m_pDevice, m_pContext, this, &m_pBin_Scene->pBinMesh[i], XMLoadFloat4x4(&m_PreTransformMatrix));
+		CMesh* pMesh = CMesh::Create(m_pDevice, m_pContext, this, &m_pBin_Scene->pBinMesh[i], XMLoadFloat4x4(&m_PreTransformMatrix), &CullRadius);
 		if (nullptr == pMesh)
 			return E_FAIL;
 
+		if (m_fCullingRadius < CullRadius) {
+			m_fCullingRadius = CullRadius;
+		}
+
 		m_Meshes.push_back(pMesh);
 	}
+
+	cout << test << "  " << m_fCullingRadius << endl;
+	test++;
 
 	return S_OK;
 }
