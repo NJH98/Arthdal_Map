@@ -174,8 +174,16 @@ HRESULT CModel::RenderInstancing(class CShader* pShader, CInstancing_Buffer* buf
 			MSG_BOX(TEXT("FAIL_DIF"));
 		if (FAILED(m_Materials[iMaterialIndex].pMaterialTextures[aiTextureType_NORMALS]->Bind_ShadeResource(pShader, "g_NormalTexture", 0)))
 			MSG_BOX(TEXT("FAIL_NORM"));
+		if (m_Materials[iMaterialIndex].pMaterialTextures[aiTextureType_SPECULAR] != nullptr)
+			if (FAILED(m_Materials[iMaterialIndex].pMaterialTextures[aiTextureType_SPECULAR]->Bind_ShadeResource(pShader, "g_MaskTexture", 0)))
+				MSG_BOX(TEXT("FAIL_MASK"));
 
-		pShader->Begin(iSahderNum);
+		if (m_Materials[iMaterialIndex].pMaterialTextures[aiTextureType_SHININESS] == nullptr) {
+			pShader->Begin(iSahderNum);
+		}
+		else {
+			pShader->Begin(3);
+		}
 
 		mesh->Bind_Buffers();
 		buffer->PushData();
