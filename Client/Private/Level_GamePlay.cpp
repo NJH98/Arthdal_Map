@@ -139,9 +139,9 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 
 	VectorClear();
 
-	if (m_pGameInstance->Get_DIKeyState_Once(DIK_T)) {
+	/*if (m_pGameInstance->Get_DIKeyState_Once(DIK_T)) {
 		m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Prototype_GameObject_Player"));
-	}
+	}*/
 
 }
 
@@ -851,6 +851,10 @@ HRESULT CLevel_GamePlay::GameObject_Create_GameObject(_float fTimeDelta)
 	static bool bObjCreate_Picking;
 	ImGui::Spacing();
 	ImGui::Checkbox("Obj Picking", &bObjCreate_Picking);
+	static bool bObjRandom;
+	ImGui::Spacing();
+	ImGui::Checkbox("Obj Random", &bObjRandom);
+
 
 	if (bObjCreate_Picking) 
 	{
@@ -866,7 +870,19 @@ HRESULT CLevel_GamePlay::GameObject_Create_GameObject(_float fTimeDelta)
 				else
 					wLayertag = char_to_wstring(Layertag);	// 입력받은 값이 있다면 해당값으로 레이어를 선언한다
 
+				if (m_StringLayerName.size() > 0)
+					wLayertag = m_StringLayerName;
+
 				Matrix WorldMatrix = Matrix::Identity;
+				if (bObjRandom) {
+					Matrix scaleMatrix = Matrix::CreateScale(m_pGameInstance->Get_Random(0.7f, 1.2f));
+					_float rotationAngle = XMConvertToRadians(m_pGameInstance->Get_Random(0.f, 360.f));
+					Matrix rotationMatrix = Matrix::CreateRotationY(rotationAngle);
+
+					WorldMatrix *= scaleMatrix;       // 스케일 적용
+					WorldMatrix *= rotationMatrix;    // Y축 회전 적용
+				}
+
 				WorldMatrix.Translation(Vector3(PickPos));
 
 				Desc.LayerTag = wLayertag;
@@ -930,19 +946,29 @@ HRESULT CLevel_GamePlay::GameObject_Layer_ListBox(_float fTimeDelta)
 			string MapName = wstring_to_string(m_vecString_Map_Layer[n]);
 			if (ImGui::Selectable(MapName.c_str(), is_selected))
 			{
+				// 기존 선택중인 객체 셋팅 초기화
+				if (m_pGameObj != nullptr) {
+					static_cast<CMapObject_Default*>(m_pGameObj)->Set_UseShader(1);
+					static_cast<CMapObject_Default*>(m_pGameObj)->Set_InstanceRender(true);
+				}
+
 				m_iSelectMap = n;		// 현제 레이어 리스트 박스의 인덱스
-				
-				// 선택되어지지 말아야하는 객체는 여기서 레이어를 예외처리
-				auto iter = m_pMap_Layers[LEVEL_GAMEPLAY].begin();
-				advance(iter, n);						// 이터레이터를 이동
-				m_pLayer = (*iter).second;				// 현제 선택중인 Layer 에 대입
-				m_StringLayerName = (*iter).first;		// 현제 선택중인 Layer 의 map 이름
-			
-				// 현제 선택중인 Layer 의 0번쨰 오브젝트를 현제 선택한 오브젝트로 지정
-				m_pGameObj = m_pGameInstance->Get_Object(LEVEL_GAMEPLAY, m_StringLayerName);
-			
-				// GameObject 리스트 박스 정보 갱신
-				GameObject_vecStringSet();
+
+				if (MapName != "Layer_Terrain" &&
+					MapName != "Layer_BackGround" &&
+					MapName != "Layer_Camera") // 선택되어지지 말아야하는 객체는 여기서 레이어를 예외처리 
+				{
+					auto iter = m_pMap_Layers[LEVEL_GAMEPLAY].begin();
+					advance(iter, n);						// 이터레이터를 이동
+					m_pLayer = (*iter).second;				// 현제 선택중인 Layer 에 대입
+					m_StringLayerName = (*iter).first;		// 현제 선택중인 Layer 의 map 이름
+
+					// 현제 선택중인 Layer 의 0번쨰 오브젝트를 현제 선택한 오브젝트로 지정
+					m_pGameObj = m_pGameInstance->Get_Object(LEVEL_GAMEPLAY, m_StringLayerName);
+
+					// GameObject 리스트 박스 정보 갱신
+					GameObject_vecStringSet();
+				}
 			}
 
 			if (is_selected)
@@ -982,13 +1008,17 @@ HRESULT CLevel_GamePlay::GameObject_Save_Load(_float fTimeDelta)
 
 			CMapObject_Default::MAPOBJECT_DESC Desc{};
 
-			Desc.WorldMatrix = LayerList->Get_TranformCom()->Get_WorldMatrix();
-			Desc.ModelNum = static_cast<CMapObject_Default*>(LayerList)->Get_UseModel();
-			Desc.CullRadiuse = static_cast<CMapObject_Default*>(LayerList)->Get_Radiuse();
+			/*if (static_cast<CMapObject_Default*>(LayerList)->Get_UseModel() < 185 ||
+				static_cast<CMapObject_Default*>(LayerList)->Get_UseModel() > 231) 
+			{*/
+				Desc.WorldMatrix = LayerList->Get_TranformCom()->Get_WorldMatrix();
+				Desc.ModelNum = static_cast<CMapObject_Default*>(LayerList)->Get_UseModel();
+				Desc.CullRadiuse = static_cast<CMapObject_Default*>(LayerList)->Get_Radiuse();
 
-			outFile.write(reinterpret_cast<const char*>(&Desc.WorldMatrix), sizeof(_matrix));
-			outFile.write(reinterpret_cast<const char*>(&Desc.ModelNum), sizeof(_uint));
-			outFile.write(reinterpret_cast<const char*>(&Desc.CullRadiuse), sizeof(_float));
+				outFile.write(reinterpret_cast<const char*>(&Desc.WorldMatrix), sizeof(_matrix));
+				outFile.write(reinterpret_cast<const char*>(&Desc.ModelNum), sizeof(_uint));
+				outFile.write(reinterpret_cast<const char*>(&Desc.CullRadiuse), sizeof(_float));
+			//}
 		}
 
 		outFile.close();
@@ -1037,14 +1067,14 @@ HRESULT CLevel_GamePlay::GameObject_Save_Load(_float fTimeDelta)
 
 HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 {
-	if (m_StringLayerName != L"\0") 
+	/*if (m_StringLayerName != L"\0") 
 	{
 		m_iGameObjListSize = _uint(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, m_StringLayerName)->size());
 		if (m_iGameObjListSize != m_iPreGameObjListSize) {
 			GameObject_vecStringSet();
 			m_iPreGameObjListSize = m_iGameObjListSize;
 		}
-	}
+	}*/
 	
 
 	ImGui::SeparatorText("GameObj List");
@@ -1094,21 +1124,25 @@ HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 	
 	if (ImGui::BeginListBox("##GameObj_List"))
 	{
-		for (_uint n = 0; n < m_iPreGameObjListSize; n++)
+		for (_uint n = 0; n < m_iGameObjListSize; n++)
 		{
 			bool is_selected = (m_iSelectGameObj == n);
-			string MapName = m_vecString_GameObj[n];
-			if (ImGui::Selectable(MapName.c_str(), is_selected))
-			{
-				// 현제 선택한 리스트 박스의 인덱스
-				m_iSelectGameObj = n;
-				// 현제 선택한 게임 오브젝트를 대입한다
-				m_pGameObj = m_pGameInstance->Get_Object(LEVEL_GAMEPLAY, m_StringLayerName, n);
-			}
+			if (m_vecString_GameObj.size() > 0) {
 
-			if (is_selected)
-				ImGui::SetItemDefaultFocus();
-			// 반복문으로 리스트박스의 선택된 객체 찾기
+				string MapName = m_vecString_GameObj[n];
+				
+				if (ImGui::Selectable(MapName.c_str(), is_selected))
+				{
+					// 현제 선택한 리스트 박스의 인덱스
+					m_iSelectGameObj = n;
+					// 현제 선택한 게임 오브젝트를 대입한다
+					m_pGameObj = m_pGameInstance->Get_Object(LEVEL_GAMEPLAY, m_StringLayerName, n);
+				}
+
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();
+				// 반복문으로 리스트박스의 선택된 객체 찾기
+			}
 		}
 
 		if (m_pGameObj != nullptr)
@@ -1150,6 +1184,12 @@ HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 			
 		}
 	}
+
+	if (ImGui::Button("ListUpdate")) {
+		if (m_StringLayerName != L"\0") {
+			GameObject_vecStringSet();
+		}
+	}
 	return S_OK;
 }
 
@@ -1171,7 +1211,7 @@ HRESULT CLevel_GamePlay::GameObject_vecStringSet()
 
 HRESULT CLevel_GamePlay::GameObject_Pos_Scal_Turn()
 {
-	if (m_pTransformCom != nullptr) 
+	if (m_pGameObj != nullptr && m_pTransformCom != nullptr)
 	{
 		// 랜더링 방식
 		_uint GameObjectRenderChange = static_cast<CMapObject_Default*>(m_pGameObj)->Get_UseShader();
