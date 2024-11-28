@@ -184,6 +184,9 @@
     <Filter Include="01.Utility\02.GameObjects\Instance">
       <UniqueIdentifier>{67ecbefa-57d8-4bcc-b79c-6b01f0881b2a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\13.AreaManager">
+      <UniqueIdentifier>{eff6e093-1961-45af-be9c-594e520d2e29}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Base.cpp">
@@ -362,6 +365,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\VertexBuffer.cpp">
       <Filter>01.Utility\02.GameObjects\Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\AreaManager.cpp">
+      <Filter>01.Utility\13.AreaManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -553,6 +559,9 @@
     </ClInclude>
     <ClInclude Include="..\Public\VertexBuffer.h">
       <Filter>01.Utility\02.GameObjects\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\AreaManager.h">
+      <Filter>01.Utility\13.AreaManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

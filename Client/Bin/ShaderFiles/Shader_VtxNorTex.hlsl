@@ -66,7 +66,7 @@ PS_OUT PS_MAIN(PS_IN In)
 	// 마스크 이미지
     vector vMask0 = g_MaskTexture[0].Sample(LinearSampler, In.vTexcoord);
     vector vMask1 = g_MaskTexture[1].Sample(LinearSampler, In.vTexcoord);
-
+	
 	// 디퓨즈 이미지
     vector		vBaseDiffuse = g_DiffuseTexture[0].Sample(LinearSampler, In.vTexcoord * 240.f);
 	vector		vDestDiffuse1 = g_DiffuseTexture[1].Sample(LinearSampler, In.vTexcoord * 240.f);

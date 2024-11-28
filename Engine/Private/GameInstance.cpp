@@ -11,6 +11,7 @@
 #include "Frustum.h"
 #include "GlobalData.h"
 #include "Instance_Manager.h"
+#include "AreaManager.h"
 
 IMPLEMENT_SINGLETON(CGameInstance)
 
@@ -98,6 +99,10 @@ HRESULT CGameInstance::Initialize_Engine(HINSTANCE hInst, _uint iNumLevels, cons
 		return E_FAIL;
 	m_pInstanceManager->Initialize();
 
+	m_pAreaManager = CAreaManager::Create();
+	if (nullptr == m_pAreaManager)
+		return E_FAIL;
+
 
 	return S_OK;
 }
@@ -114,6 +119,8 @@ void CGameInstance::Update_Engine(_float fTimeDelta)
 	m_pPipeLine->Update();
 
 	m_pFrustum->Update();
+
+	m_pAreaManager->Update();
 
 	m_pObject_Manager->Update(fTimeDelta);
 	
@@ -554,8 +561,32 @@ void CGameInstance::Render_Instance()
 	m_pInstanceManager->Render();
 }
 
+#pragma region AREA_MANAGER
+
+_bool CGameInstance::IsInRenderArea(_int AreaIndex)
+{
+	return m_pAreaManager->IsInRenderArea(AreaIndex);
+}
+
+_uint CGameInstance::AreaIndexSet(_float3 vPos)
+{
+	return m_pAreaManager->AreaIndexSet(vPos);
+}
+
+_bool CGameInstance::Get_RenderAreaChange()
+{
+	return m_pAreaManager->Get_RenderAreaChange();
+}
+
+_int CGameInstance::Get_RenderArea(_int list)
+{
+	return m_pAreaManager->Get_RenderArea(list);
+}
+#pragma endregion
+
 void CGameInstance::Release_Engine()
 {	
+	Safe_Release(m_pAreaManager);
 	Safe_Release(m_pFrustum);
 	Safe_Release(m_pPicking);
 	Safe_Release(m_pTarget_Manager);

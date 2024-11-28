@@ -168,6 +168,13 @@ public:
 	void Render_Instance();
 #pragma endregion
 
+#pragma region	AREA_MANAGER
+	_bool	IsInRenderArea(_int AreaIndex);
+	_uint   AreaIndexSet(_float3 vPos);
+	_bool	Get_RenderAreaChange();
+	_int	Get_RenderArea(_int list);
+#pragma endregion
+
 private:
 	class CGraphic_Device*			m_pGraphic_Device = { nullptr };
 	class CInput_Device*			m_pInput_Device = { nullptr };
@@ -184,6 +191,7 @@ private:
 	class CPicking*					m_pPicking = { nullptr };
 	class CFrustum*					m_pFrustum = { nullptr };
 	class CInstance_Manager*		m_pInstanceManager = { nullptr };
+	class CAreaManager*				m_pAreaManager = { nullptr };
 
 	class CGlobalData*				m_pGlobalData = { nullptr };
 

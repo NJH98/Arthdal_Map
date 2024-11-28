@@ -101,6 +101,7 @@ namespace Engine
     {
         vector<string>  ModelName = {};
         _float3         Pick_Pos;
+        _float3         My_Pos;
 
     }GLOBAL_DATA;
 }

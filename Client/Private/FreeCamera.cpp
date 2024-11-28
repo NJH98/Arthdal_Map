@@ -58,6 +58,11 @@ void CFreeCamera::Priority_Update(_float fTimeDelta)
 		}
 	}
 
+	Vector3 Pos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+
+	GLOBAL_DATA* temp = m_pGameInstance->Get_GlobalData();
+	temp->My_Pos = Pos;
+
 	__super::Priority_Update(fTimeDelta);
 }
 

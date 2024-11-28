@@ -57,6 +57,8 @@ private:
     _bool           m_bIsRenderInstance = true;
     _bool           m_bIsCalling = true;
 
+    _uint           m_iArea = 0;
+
     CModel*         m_pModelCom = { nullptr };
     CShader*        m_pShaderCom = { nullptr };
     CShader*        m_pSubShaderCom = { nullptr };

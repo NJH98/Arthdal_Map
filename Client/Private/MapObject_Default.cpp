@@ -56,6 +56,10 @@ HRESULT CMapObject_Default::Initialize(void* pArg)
 	else
 		m_iDepthNum = 0;
 
+
+	Vector3 Pos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+	m_iArea = m_pGameInstance->AreaIndexSet(Pos);
+
 	return S_OK;
 }
 
@@ -75,6 +79,9 @@ void CMapObject_Default::Late_Update(_float fTimeDelta)
 {
 	//m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
 	//m_pGameInstance->Add_RenderObject(CRenderer::RG_SHADOWOBJ, this);
+
+	if (m_pGameInstance->IsInRenderArea(m_iArea) == false)
+		return;
 
 	Vector3 Pos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
 
