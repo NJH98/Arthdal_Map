@@ -1498,7 +1498,7 @@ HRESULT CLevel_GamePlay::Cell_Add(_float fTimeDelta)
 	ImVec2 buttonSize(200, 50);
 	if (ImGui::Button("Setting Terrain Cell Don't Use", buttonSize)) {
 		// 터레인이 크면 컴퓨터의 램이 감당을 못한다
-		return S_OK;
+		//return S_OK;
 		// 기존의 셀을 지우고
 		m_pNavigationCom_Terrain->Clear_Cell();
 
