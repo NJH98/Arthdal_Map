@@ -14,18 +14,41 @@ private:
 	virtual ~CCell() = default;
 	
 public:
+	_vector Get_Point_vector(POINT ePoint) const {
+		return XMLoadFloat3(&m_vPoints[ePoint]);
+	}
+
 	_vector Get_Point(POINT ePoint) const {
 		return XMLoadFloat3(&m_vPoints[ePoint]);
+	}
+
+	_int Get_Neighbor(LINE eLine) const {
+		return m_iNeighborIndices[eLine];
 	}
 
 	void Set_Neighbor(LINE eLine, CCell* pNeighbor) {
 		m_iNeighborIndices[eLine] = pNeighbor->m_iIndex;
 	}
 
+	void No_Neighbor(LINE eLine) {
+		m_iNeighborIndices[eLine] = -1;
+	}
+
+	void Set_Bin_Neighbor(LINE eLine, _int iNeighborIndex) {
+		m_iNeighborIndices[eLine] = iNeighborIndex;
+	}
+
 public:
 	HRESULT Initialize(const _float3* pPoints, _int iIndex);
 	_bool Compare_Points(_fvector vSour, _fvector vDest);
 	_bool isIn(_fvector vPosition, _int* pNeighborIndex);
+	void Set_PickCell(_bool IsPick) { m_bIsPick = IsPick; }
+	_bool Get_PickCell() { return m_bIsPick; }
+	_int Get_Index() { return m_iIndex; }
+	void Set_Index(_int Index) { m_iIndex = Index; }
+
+	_bool Get_Ride() { return m_bIsRide; }
+	void Set_Ride(_bool IsRide) { m_bIsRide = IsRide; }
 
 #ifdef _DEBUG
 public:
@@ -38,6 +61,9 @@ private:
 	_int							m_iIndex = {};
 	_float3							m_vPoints[POINT_END] = {};
 	_int							m_iNeighborIndices[LINE_END] = { -1, -1, -1 };
+
+	_bool							m_bIsPick = false;
+	_bool							m_bIsRide = false;
 
 #ifdef _DEBUG
 private:

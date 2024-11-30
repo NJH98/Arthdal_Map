@@ -109,10 +109,18 @@ private:
 	HRESULT Cell_Imgui(_float fTimeDelta);
 	HRESULT Cell_Add(_float fTimeDelta);
 		_float3 Cell_Point_Correction(_float3 Point);
+	HRESULT Cell_ListBox(_float fTimeDelta);
+	HRESULT Cell_Data(_float fTimeDelta);
+	HRESULT Cell_vecStringSet();
+	HRESULT Cell_Save_Load(_float fTimeDelta);
 
-	class CNavigation* m_pNavigationCom_Terrain = { nullptr };		// 터레인으로 접근하는 NavigationCom 객체
-	_float3		PickA = {}, PickB = {}, PickC = {};	// Cell_Add 용 변수들
-	_int		WhatPick = { 0 };
+	class CNavigation*	m_pNavigationCom_Terrain = { nullptr };		// 터레인으로 접근하는 NavigationCom 객체
+	CCell*				m_pCell = { nullptr };						// 현제 선택중인 셀 포인터 
+	_uint				m_CellNum = { 0 };							// 현제 셀 갯수
+	vector<string>		m_vecString_Cell;							// 셀 리스트박스 벡터
+	_uint				m_iSelectCell = { 0 };						// 현제 선택중인 리스트박스 인덱스
+	_float3				PickA = {}, PickB = {}, PickC = {};			// Cell_Add 용 변수들
+	_int				WhatPick = { 0 };							
 
 #pragma endregion
 

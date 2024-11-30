@@ -45,6 +45,8 @@ public:
 			m_iUseShader = 0;
 	}
 
+	void Set_NaviRender(_bool isRender) { m_bNaviRender = isRender; }
+
 private:
 	CShader*				m_pShaderCom = { nullptr };
 	CTexture*				m_pTextureCom[TEXTURE_END] = { nullptr };
@@ -54,6 +56,9 @@ private:
 	_uint					m_iBaseTextureNum = 0;
 
 	_uint					m_iUseShader = 0;
+
+	_bool					m_bNaviRender = true;
+
 private:
 	HRESULT Ready_Components(void* pArg);
 

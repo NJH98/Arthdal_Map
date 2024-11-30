@@ -139,6 +139,12 @@ void CNavigation::Delete_Cell(_uint iter)
 	}
 	Safe_Release(*iterator);
 	m_Cells.erase(iterator);
+
+	_int Index = 0;
+	for (auto& Cell : m_Cells) {
+		Cell->Set_Index(Index);
+		Index++;
+	}
 }
 
 void CNavigation::Add_Cell(_float3 PointA, _float3 PointB, _float3 PointC)
@@ -201,6 +207,33 @@ void CNavigation::Add_Cell_NoneCheck(_float3 PointA, _float3 PointB, _float3 Poi
 	m_Cells.emplace_back(pCell);
 }
 
+void CNavigation::Add_Bin_Cell(CELL_DESC CellDesc)
+{
+	_float3			vPoints[3]{};
+	vPoints[0] = CellDesc.PointA;
+	vPoints[1] = CellDesc.PointB;
+	vPoints[2] = CellDesc.PointC;
+
+	for (auto& CheckCell : m_Cells)
+	{
+		if (XMVector3Equal(XMLoadFloat3(&CellDesc.PointA), CheckCell->Get_Point_vector(CCell::POINT_A)) &&
+			XMVector3Equal(XMLoadFloat3(&CellDesc.PointB), CheckCell->Get_Point_vector(CCell::POINT_B)) &&
+			XMVector3Equal(XMLoadFloat3(&CellDesc.PointC), CheckCell->Get_Point_vector(CCell::POINT_C)))
+			return;
+	}
+
+	CCell* pCell = CCell::Create(m_pDevice, m_pContext, vPoints, _int(m_Cells.size()));
+	if (nullptr == pCell)
+		return;
+	pCell->Set_Bin_Neighbor(CCell::LINE_AB, CellDesc.NeighborIndex_AB);
+	pCell->Set_Bin_Neighbor(CCell::LINE_BC, CellDesc.NeighborIndex_BC);
+	pCell->Set_Bin_Neighbor(CCell::LINE_CA, CellDesc.NeighborIndex_CA);
+
+	pCell->Set_Ride(CellDesc.IsRide);
+
+	m_Cells.emplace_back(pCell);
+}
+
 #ifdef _DEBUG
 
 HRESULT CNavigation::Render()
@@ -217,18 +250,31 @@ HRESULT CNavigation::Render()
 	if (-1 != m_iCurrentCellIndex)
 		WorldMatrix._42 += 0.1f;	
 
-	if (FAILED(m_pShader->Bind_Matrix("g_WorldMatrix", &WorldMatrix)))
-		return E_FAIL;
-
-	m_pShader->Bind_RawValue("g_vColor", &vColor, sizeof(_float4));
-
-	m_pShader->Begin(0);
-
-
 	if (-1 == m_iCurrentCellIndex)
 	{
-		for (auto& pCell : m_Cells)
+		for (auto& pCell : m_Cells) 
+		{
+			if (pCell->Get_PickCell()) {
+				vColor = _float4(1.f, 0.f, 0.f, 1.f);
+				WorldMatrix._42 += 0.1f;
+
+				if (FAILED(m_pShader->Bind_Matrix("g_WorldMatrix", &WorldMatrix)))
+					return E_FAIL;
+			}
+			else {
+				vColor = _float4(0.f, 1.f, 0.f, 1.f);
+				
+				if (FAILED(m_pShader->Bind_Matrix("g_WorldMatrix", &m_WorldMatrix)))
+					return E_FAIL;
+			}
+
+			m_pShader->Bind_RawValue("g_vColor", &vColor, sizeof(_float4));
+
+			m_pShader->Begin(0);
+
 			pCell->Render();
+		}
+		
 	}
 	else
 	{

@@ -61,7 +61,8 @@ void CTerrain::Late_Update(_float fTimeDelta)
 	//m_pNavigationCom->Update(XMLoadFloat4x4(m_pTransformCom->Get_WorldMatrix_Ptr()));
 	
 #ifdef _DEBUG
-	m_pGameInstance->Add_DebugObject(m_pNavigationCom);
+	if(m_bNaviRender)
+		m_pGameInstance->Add_DebugObject(m_pNavigationCom);
 #endif
 
 	m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);

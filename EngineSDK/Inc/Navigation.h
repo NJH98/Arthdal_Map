@@ -11,6 +11,20 @@ public:
 	{
 		_int			iCurrentIndex = {-1};
 	}NAVIGATION_DESC;
+
+	typedef struct
+	{
+		_float3 PointA = {};
+		_float3 PointB = {};
+		_float3 PointC = {};
+
+		_int NeighborIndex_AB = {};
+		_int NeighborIndex_BC = {};
+		_int NeighborIndex_CA = {};
+
+		_bool IsRide = false;
+	}CELL_DESC;
+
 private:
 	CNavigation(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CNavigation(const CNavigation& Prototype);
@@ -29,6 +43,9 @@ public:
 	void Delete_Cell(_uint iter);
 	void Add_Cell(_float3 PointA, _float3 PointB, _float3 PointC);
 	void Add_Cell_NoneCheck(_float3 PointA, _float3 PointB, _float3 PointC);
+
+	void Add_Bin_Cell(CELL_DESC CellDesc);
+
 	vector<class CCell*> Get_vecCell() { return m_Cells; }
 
 #ifdef _DEBUG

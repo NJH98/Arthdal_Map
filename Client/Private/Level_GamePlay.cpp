@@ -1366,9 +1366,26 @@ HRESULT CLevel_GamePlay::Cell_Imgui(_float fTimeDelta)
 		{
 			m_pNavigationCom_Terrain = m_pTerrain->Get_NavigationCom();
 		
+			if (m_pNavigationCom_Terrain == nullptr)
+				return E_FAIL;
+
 			// 값을 입력받고 셀 추가
 			if (FAILED(Cell_Add(fTimeDelta)))
 				return E_FAIL;
+
+			ImGui::Begin("Cell Information");
+			{
+				if (ImGui::CollapsingHeader("Cell List"))
+				{
+					// 셀 리스트 박스
+					Cell_ListBox(fTimeDelta);
+
+					Cell_Save_Load(fTimeDelta);
+
+					Cell_Data(fTimeDelta);
+				}
+			}
+			ImGui::End();
 		}
 	}
 
@@ -1377,6 +1394,12 @@ HRESULT CLevel_GamePlay::Cell_Imgui(_float fTimeDelta)
 
 HRESULT CLevel_GamePlay::Cell_Add(_float fTimeDelta)
 {
+	static bool bCell_Render{true};
+	ImGui::Checkbox("Cell Render", &bCell_Render);
+	if (m_pTerrain != nullptr) {
+		m_pTerrain->Set_NaviRender(bCell_Render);
+	}
+
 	ImGui::SeparatorText("Cell_Add");
 
 	static bool bCell_Picking{};
@@ -1471,7 +1494,7 @@ HRESULT CLevel_GamePlay::Cell_Add(_float fTimeDelta)
 		}
 	}
 
-	if (bCell_Picking && m_pGameInstance->Get_DIKeyState(DIK_E) &&
+	/*if (bCell_Picking && m_pGameInstance->Get_DIKeyState(DIK_E) &&
 		m_pGameInstance->Get_DIMouseState_Once_Up(DIMK_LBUTTON)) 
 	{
 		_float3 PickPos{};
@@ -1489,7 +1512,7 @@ HRESULT CLevel_GamePlay::Cell_Add(_float fTimeDelta)
 				iternum++;
 			}
 		}
-	}
+	}*/
 
 
 	ImGui::Spacing();
@@ -1498,7 +1521,7 @@ HRESULT CLevel_GamePlay::Cell_Add(_float fTimeDelta)
 	ImVec2 buttonSize(200, 50);
 	if (ImGui::Button("Setting Terrain Cell Don't Use", buttonSize)) {
 		// 터레인이 크면 컴퓨터의 램이 감당을 못한다
-		//return S_OK;
+		return S_OK;
 		// 기존의 셀을 지우고
 		m_pNavigationCom_Terrain->Clear_Cell();
 
@@ -1569,6 +1592,261 @@ _float3 CLevel_GamePlay::Cell_Point_Correction(_float3 Point)
 	}
 
 	return Point;
+}
+
+HRESULT CLevel_GamePlay::Cell_ListBox(_float fTimeDelta)
+{
+	ImGui::SeparatorText("Cell List");
+	ImGui::PushItemWidth(200); // 크기조정
+
+	// 셀 받아오기 
+	vector<class CCell*> vecCells = m_pNavigationCom_Terrain->Get_vecCell();
+
+	static bool bFind_Cell;
+	ImGui::Checkbox("Cell Find Picking", &bFind_Cell);
+
+	_float3 FindPos{};
+
+	if (bFind_Cell) {
+		if (m_pGameInstance->Get_DIMouseState_Once(DIMK_LBUTTON) && m_pGameInstance->Get_DIKeyState(DIK_E)) {
+			if (m_pGameInstance->Picking(&FindPos))
+			{
+				if (m_pCell != nullptr) {
+					m_pCell->Set_PickCell(false);
+				}
+
+				_int Dumy{};
+				for (auto& Cell : vecCells) {
+					if (Cell->isIn(XMLoadFloat3(&FindPos), &Dumy)) {
+						m_pCell = Cell;
+						m_pCell->Set_PickCell(true);
+						m_iSelectCell = m_pCell->Get_Index();
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	if (ImGui::BeginListBox("##Cell_List"))
+	{
+		for (_uint n = 0; n < m_CellNum; n++)
+		{
+			bool is_selected = (m_iSelectCell == n);
+			if (m_vecString_Cell.size() > 0) {
+
+				string CellName = m_vecString_Cell[n];
+
+				if (ImGui::Selectable(CellName.c_str(), is_selected))
+				{
+					if (m_pCell != nullptr) {
+						m_pCell->Set_PickCell(false);
+					}
+
+					// 현제 선택한 리스트 박스의 인덱스
+					m_iSelectCell = n;
+					// 현제 선택한 셀을 대입한다
+					m_pCell = vecCells[n];
+					m_pCell->Set_PickCell(true);
+				}
+
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();
+				// 반복문으로 리스트박스의 선택된 객체 찾기
+			}
+		}
+		ImGui::EndListBox();
+	}
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	if (ImGui::Button("DeleteCell")) {
+		if (m_pCell != nullptr) {
+			_int CellIndex = m_pCell->Get_Index();
+
+			if (m_pNavigationCom_Terrain != nullptr) 
+			{
+				m_pNavigationCom_Terrain->Delete_Cell(CellIndex);
+				Cell_vecStringSet();
+
+				vector<class CCell*> vecCellsNow = m_pNavigationCom_Terrain->Get_vecCell();
+				if (vecCellsNow.size() > 0) {
+					m_pCell = vecCellsNow[vecCellsNow.size() - 1];
+					m_pCell->Set_PickCell(true);
+					m_iSelectCell = m_pCell->Get_Index();
+				}
+				else {
+					m_pCell = nullptr;
+				}
+			}
+		}
+	}
+
+	if (ImGui::Button("ListUpdate")) {
+		Cell_vecStringSet();
+	}
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Cell_Data(_float fTimeDelta)
+{
+	ImGui::SeparatorText("Cell Data");
+
+	if (m_pCell == nullptr)
+		return S_OK;
+
+	ImGui::Text("IndexNum = %d", m_pCell->Get_Index());
+	ImGui::Spacing();
+
+	Vector3 Pos = m_pCell->Get_Point(CCell::POINT_A);
+	ImGui::Text("PointA.x = %.2f", Pos.x);
+	ImGui::Text("PointA.y = %.2f", Pos.y);
+	ImGui::Text("PointA.z = %.2f", Pos.z);
+	ImGui::Spacing();
+
+	Pos = m_pCell->Get_Point(CCell::POINT_B);
+	ImGui::Text("PointB.x = %.2f", Pos.x);
+	ImGui::Text("PointB.y = %.2f", Pos.y);
+	ImGui::Text("PointB.z = %.2f", Pos.z);
+	ImGui::Spacing();
+
+	Pos = m_pCell->Get_Point(CCell::POINT_C);
+	ImGui::Text("PointC.x = %.2f", Pos.x);
+	ImGui::Text("PointC.y = %.2f", Pos.y);
+	ImGui::Text("PointC.z = %.2f", Pos.z);
+	ImGui::Spacing();
+
+	ImGui::Text("NeighborAB = %d", m_pCell->Get_Neighbor(CCell::LINE_AB));
+	ImGui::Text("NeighborBC = %d", m_pCell->Get_Neighbor(CCell::LINE_BC));
+	ImGui::Text("NeighborCA = %d", m_pCell->Get_Neighbor(CCell::LINE_CA));
+	ImGui::Spacing();
+
+	_bool IsRide = m_pCell->Get_Ride();
+	ImGui::Checkbox("Is Ride", &IsRide);
+	m_pCell->Set_Ride(IsRide);
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Cell_vecStringSet()
+{
+	// 셀 받아오기 
+	vector<class CCell*> vecCells = m_pNavigationCom_Terrain->Get_vecCell();
+
+	m_CellNum = _uint(vecCells.size());
+	// 기존에 사용중이던 정보 클리어
+	m_vecString_Cell.clear();
+	// 갱신된 새로운 정보 대입
+	for (_uint i = 0; i < m_CellNum; i++)
+	{
+		_wstring Celllistboxname = L"Cell_" + to_wstring(i);
+		m_vecString_Cell.push_back(wstring_to_string(Celllistboxname));
+	}
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Cell_Save_Load(_float fTimeDelta)
+{
+	ImGui::SeparatorText("Cell Save Load");
+	ImVec2 buttonSize(100, 30);
+	if (ImGui::Button("Save_Cell", buttonSize)) {
+
+		if (m_pNavigationCom_Terrain == nullptr) {
+			MSG_BOX(TEXT("Chocie Cell"));
+			return E_FAIL;
+		}
+
+		if (filePath.length() < 55) {
+			MSG_BOX(TEXT("Chocie FilePath"));
+			return E_FAIL;
+		}
+
+		ofstream outFile(filePath, ios::binary);
+
+		if (!outFile.is_open()) {
+			MSG_BOX(TEXT("파일 저장 실패"));
+			return E_FAIL;
+		}
+
+		vector<class CCell*> vecCells = m_pNavigationCom_Terrain->Get_vecCell();
+
+		m_pNavigationCom_Terrain->SetUp_Neighbors();
+
+		for (const auto& Cells : vecCells) {
+
+			CNavigation::CELL_DESC Desc{};
+
+			XMStoreFloat3(&Desc.PointA, Cells->Get_Point(CCell::POINT_A));
+			XMStoreFloat3(&Desc.PointB, Cells->Get_Point(CCell::POINT_B));
+			XMStoreFloat3(&Desc.PointC, Cells->Get_Point(CCell::POINT_C));
+
+			Desc.NeighborIndex_AB = Cells->Get_Neighbor(CCell::LINE_AB);
+			Desc.NeighborIndex_BC = Cells->Get_Neighbor(CCell::LINE_BC);
+			Desc.NeighborIndex_CA = Cells->Get_Neighbor(CCell::LINE_CA);
+
+			Desc.IsRide = Cells->Get_Ride();
+
+			outFile.write(reinterpret_cast<const char*>(&Desc.PointA), sizeof(_float3));
+			outFile.write(reinterpret_cast<const char*>(&Desc.PointB), sizeof(_float3));
+			outFile.write(reinterpret_cast<const char*>(&Desc.PointC), sizeof(_float3));
+
+			outFile.write(reinterpret_cast<const char*>(&Desc.NeighborIndex_AB), sizeof(_int));
+			outFile.write(reinterpret_cast<const char*>(&Desc.NeighborIndex_BC), sizeof(_int));
+			outFile.write(reinterpret_cast<const char*>(&Desc.NeighborIndex_CA), sizeof(_int));
+
+			outFile.write(reinterpret_cast<const char*>(&Desc.IsRide), sizeof(_bool));
+		}
+
+		outFile.close();
+
+		filePath = "";
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Load_Cell", buttonSize)) {
+
+		if (m_pNavigationCom_Terrain == nullptr) {
+			MSG_BOX(TEXT("Chocie Cell"));
+			return E_FAIL;
+		}
+
+		if (filePath.length() < 55) {
+			MSG_BOX(TEXT("Chocie FilePath"));
+			return E_FAIL;
+		}
+
+		ifstream inFile(filePath, ios::binary);
+
+		if (!inFile.is_open()) {
+			MSG_BOX(TEXT("파일 불러오기 실패"));
+			return E_FAIL;
+		}
+
+		m_pNavigationCom_Terrain->Clear_Cell();
+
+		while (inFile.peek() != EOF) {
+			CNavigation::CELL_DESC Desc{};
+
+			inFile.read(reinterpret_cast<char*>(&Desc.PointA), sizeof(_float3));
+			inFile.read(reinterpret_cast<char*>(&Desc.PointB), sizeof(_float3));
+			inFile.read(reinterpret_cast<char*>(&Desc.PointC), sizeof(_float3));
+
+			inFile.read(reinterpret_cast<char*>(&Desc.NeighborIndex_AB), sizeof(_int));
+			inFile.read(reinterpret_cast<char*>(&Desc.NeighborIndex_BC), sizeof(_int));
+			inFile.read(reinterpret_cast<char*>(&Desc.NeighborIndex_CA), sizeof(_int));
+
+			inFile.read(reinterpret_cast<char*>(&Desc.IsRide), sizeof(_bool));
+
+			m_pNavigationCom_Terrain->Add_Bin_Cell(Desc);
+		}
+
+		inFile.close();
+
+		filePath = "";
+		Cell_vecStringSet();
+	}
+
+	return S_OK;
 }
 
 
