@@ -47,6 +47,9 @@ public:
 	void Add_Bin_Cell(CELL_DESC CellDesc);
 
 	vector<class CCell*> Get_vecCell() { return m_Cells; }
+	void Set_CellIndex(_int Index) { m_iCurrentCellIndex = Index; }
+
+	class CCell* Get_OnCell() { return m_Cells[m_iCurrentCellIndex]; }
 
 #ifdef _DEBUG
 public:

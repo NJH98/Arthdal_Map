@@ -9,6 +9,7 @@ CAreaManager::CAreaManager()
 
 void CAreaManager::Update()
 {
+	// 객체의 현제 위치를 계산
 	m_vPlayerPos = m_pGameInstance->Get_GlobalData()->My_Pos;
 
 	_uint PlayerX{}, PlayerY{};
@@ -18,6 +19,12 @@ void CAreaManager::Update()
 
 	m_pPlayerCurrentArea = PlayerX + (PlayerY * m_iDivideArea);
 
+	/* 
+		플레이어블 객체의 지역이 변화되어진 순간 ( 이전 지역과 달라지는 순간 )
+		지역이 변화되었음을 알리고 RenderAreaChange
+		지역들을 갱신
+		현제 지역으로 값 대입
+	*/
 	if (m_pPlayerPreArea != m_pPlayerCurrentArea) {
 		RenderAreaChange = true;
 		RenderAreaSet();
@@ -31,15 +38,13 @@ void CAreaManager::Update()
 void CAreaManager::RenderAreaSet()
 {
 	/*
-		3	*	3
-		5	*	5 << 현제 사용중
-		7	*	7
+		플레이어의 주변 지역들을 갱신시키는 함수
 	*/
 
 	_int ArrayNum = 0;
 
-	for (_int y = -2; y < 3; y++) {
-		for (_int x = -2; x < 3; x++) {
+	for (_int y = -4; y < 5; y++) {
+		for (_int x = -4; x < 5; x++) {
 			m_pRenderArea[ArrayNum] = m_pPlayerCurrentArea + (m_iDivideArea * y) + x;
 			ArrayNum++;
 		}
@@ -48,6 +53,8 @@ void CAreaManager::RenderAreaSet()
 
 _uint CAreaManager::AreaIndexSet(_float3 Pos)
 {
+	// 객체의 자신의 지역 번호를 셋팅하는 함수
+
 	_uint PosX{}, PosZ{};
 
 	PosX = _uint(Pos.x) / m_iAreaValue;
@@ -56,12 +63,59 @@ _uint CAreaManager::AreaIndexSet(_float3 Pos)
 	return (PosX + (PosZ * m_iDivideArea));
 }
 
-_bool CAreaManager::IsInRenderArea(_int AreaIndex)
+_bool CAreaManager::IsInRenderArea(_int AreaIndex, AREADATA ChoiceArea)
 {
-	for (_uint i = 0; i < MAX_AREA; i++) {
-		if (m_pRenderArea[i] == AreaIndex) {
-			return true;
+	// 객체가 자신의 지역이 현제 플레이어주변 지역이 맞는지 확인하는 함수
+
+	switch (ChoiceArea)
+	{
+	case AREA_3X3:
+
+		for (_int areaZ = -1; areaZ < 2; areaZ++) {
+			for (_int areaX = -1; areaX < 2; areaX++) {
+				if (m_pRenderArea[m_iRenderAreaCenter + (m_iDivideRenderArea * areaZ) + areaX] == AreaIndex) {
+					return true;
+				}
+			}
 		}
+
+		break;
+
+	case AREA_5X5:
+		
+		for (_int areaZ = -2; areaZ < 3; areaZ++) {
+			for (_int areaX = -2; areaX < 3; areaX++) {
+				if (m_pRenderArea[m_iRenderAreaCenter + (m_iDivideRenderArea * areaZ) + areaX] == AreaIndex) {
+					return true;
+				}
+			}
+		}
+		
+		break;
+
+	case AREA_7X7:
+	
+		for (_int areaZ = -3; areaZ < 4; areaZ++) {
+			for (_int areaX = -3; areaX < 4; areaX++) {
+				if (m_pRenderArea[m_iRenderAreaCenter + (m_iDivideRenderArea * areaZ) + areaX] == AreaIndex) {
+					return true;
+				}
+			}
+		}
+		
+		break;
+	
+	case AREA_9X9:
+		
+		for (_int i = 0; i < AREA_9X9; i++) {
+			if (m_pRenderArea[i] == AreaIndex) {
+				return true;
+			}
+		}
+		
+		break;
+	default:
+		break;
 	}
 
 	return false;

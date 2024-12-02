@@ -11,7 +11,6 @@
 #include "Frustum.h"
 #include "GlobalData.h"
 #include "Instance_Manager.h"
-#include "AreaManager.h"
 
 IMPLEMENT_SINGLETON(CGameInstance)
 
@@ -563,9 +562,9 @@ void CGameInstance::Render_Instance()
 
 #pragma region AREA_MANAGER
 
-_bool CGameInstance::IsInRenderArea(_int AreaIndex)
+_bool CGameInstance::IsInRenderArea(_int AreaIndex, CAreaManager::AREADATA ChoiceArea)
 {
-	return m_pAreaManager->IsInRenderArea(AreaIndex);
+	return m_pAreaManager->IsInRenderArea(AreaIndex, ChoiceArea);
 }
 
 _uint CGameInstance::AreaIndexSet(_float3 vPos)

@@ -58,7 +58,7 @@ void CTerrain::Late_Update(_float fTimeDelta)
 	__super::Late_Update(fTimeDelta);
 
 	//m_pVIBufferCom->Culling(m_pTransformCom->Get_WorldMatrix());
-	//m_pNavigationCom->Update(XMLoadFloat4x4(m_pTransformCom->Get_WorldMatrix_Ptr()));
+	m_pNavigationCom->Update(XMLoadFloat4x4(m_pTransformCom->Get_WorldMatrix_Ptr()));
 	
 #ifdef _DEBUG
 	if(m_bNaviRender)

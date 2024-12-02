@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base.h"
+#include "Transform.h"
 
 BEGIN(Engine)
 
@@ -50,12 +51,19 @@ public:
 	_bool Get_Ride() { return m_bIsRide; }
 	void Set_Ride(_bool IsRide) { m_bIsRide = IsRide; }
 
+	_int Get_AreaIndex() { return m_iAreaIndex; }
+	_bool Get_Render() { return m_bIsRender; }
+	void Set_Render(_bool Temp) { m_bIsRender = Temp; }
+
+	void Cell_Landing(CTransform* pTransform);
+
 #ifdef _DEBUG
 public:
 	HRESULT Render();
 #endif
 
 private:
+	class CGameInstance*			m_pGameInstance = { nullptr };
 	ID3D11Device*					m_pDevice = { nullptr };
 	ID3D11DeviceContext*			m_pContext = { nullptr };
 	_int							m_iIndex = {};
@@ -64,6 +72,9 @@ private:
 
 	_bool							m_bIsPick = false;
 	_bool							m_bIsRide = false;
+
+	_int							m_iAreaIndex = -1;
+	_bool							m_bIsRender = false;
 
 #ifdef _DEBUG
 private:

@@ -4,6 +4,7 @@
 #include "Renderer.h"
 #include "PipeLine.h"
 #include "SoundManager.h"
+#include "AreaManager.h"
 
 /* 1. 엔진과 클라이언트의 소통을 위한 클래스읻. */
 /* 2. 엔진에서 클라이언트에 보여주고 싶은 함수들을 모아놓는다. */
@@ -169,7 +170,7 @@ public:
 #pragma endregion
 
 #pragma region	AREA_MANAGER
-	_bool	IsInRenderArea(_int AreaIndex);
+	_bool   IsInRenderArea(_int AreaIndex, CAreaManager::AREADATA ChoiceArea);
 	_uint   AreaIndexSet(_float3 vPos);
 	_bool	Get_RenderAreaChange();
 	_int	Get_RenderArea(_int list);

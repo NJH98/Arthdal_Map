@@ -84,6 +84,12 @@ HRESULT CNavigation::Initialize(void * pArg)
 void CNavigation::Update(_fmatrix TerrainWorldMatrix)
 {
 	XMStoreFloat4x4(&m_WorldMatrix, TerrainWorldMatrix);
+
+	if (m_pGameInstance->Get_RenderAreaChange()) {
+		for (auto& pCell : m_Cells) {
+			pCell->Set_Render(m_pGameInstance->IsInRenderArea(pCell->Get_AreaIndex(), CAreaManager::AREA_9X9));
+		}
+	}
 }
 
 _bool CNavigation::isMove(_fvector vPosition)
@@ -150,7 +156,7 @@ void CNavigation::Delete_Cell(_uint iter)
 void CNavigation::Add_Cell(_float3 PointA, _float3 PointB, _float3 PointC)
 {
 	// 카메라 위치
-	Vector3 CamPos = m_pGameInstance->Get_CamPosition_Vector();
+	Vector3 CamPos = XMVectorSet(0.f, 1.f, 0.f, 0.f);
 	// 점들의 위치
 	Vector3 Pa = PointA;
 	Vector3 Pb = PointB;
@@ -214,14 +220,6 @@ void CNavigation::Add_Bin_Cell(CELL_DESC CellDesc)
 	vPoints[1] = CellDesc.PointB;
 	vPoints[2] = CellDesc.PointC;
 
-	for (auto& CheckCell : m_Cells)
-	{
-		if (XMVector3Equal(XMLoadFloat3(&CellDesc.PointA), CheckCell->Get_Point_vector(CCell::POINT_A)) &&
-			XMVector3Equal(XMLoadFloat3(&CellDesc.PointB), CheckCell->Get_Point_vector(CCell::POINT_B)) &&
-			XMVector3Equal(XMLoadFloat3(&CellDesc.PointC), CheckCell->Get_Point_vector(CCell::POINT_C)))
-			return;
-	}
-
 	CCell* pCell = CCell::Create(m_pDevice, m_pContext, vPoints, _int(m_Cells.size()));
 	if (nullptr == pCell)
 		return;
@@ -254,6 +252,9 @@ HRESULT CNavigation::Render()
 	{
 		for (auto& pCell : m_Cells) 
 		{
+			if (pCell->Get_Render() == false)
+				continue;
+
 			if (pCell->Get_PickCell()) {
 				vColor = _float4(1.f, 0.f, 0.f, 1.f);
 				WorldMatrix._42 += 0.1f;

@@ -1,13 +1,15 @@
 #include "..\Public\Cell.h"
-
+#include "GameInstance.h"
 #ifdef _DEBUG
 #include "VIBuffer_Cell.h"
 #endif
 
 CCell::CCell(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
-	: m_pDevice { pDevice }
+	: m_pGameInstance{ CGameInstance::Get_Instance() }
+	, m_pDevice { pDevice }
 	, m_pContext { pContext }
 {
+	Safe_AddRef(m_pGameInstance);
 	Safe_AddRef(m_pDevice);
 	Safe_AddRef(m_pContext);
 }
@@ -17,6 +19,12 @@ HRESULT CCell::Initialize(const _float3 * pPoints, _int iIndex)
 	memcpy(m_vPoints, pPoints, sizeof(_float3) * POINT_END);
 
 	m_iIndex = iIndex;
+
+	m_iAreaIndex = m_pGameInstance->AreaIndexSet(m_vPoints[POINT_A]);
+
+	if (m_pGameInstance->IsInRenderArea(m_iAreaIndex, CAreaManager::AREA_5X5)) {
+		m_bIsRender = true;
+	}
 
 #ifdef _DEBUG
 	m_pVIBuffer = CVIBuffer_Cell::Create(m_pDevice, m_pContext, m_vPoints);
@@ -78,6 +86,31 @@ _bool CCell::isIn(_fvector vPosition, _int* pNeighborIndex)
 	return true;	
 }
 
+void CCell::Cell_Landing(CTransform* pTransform)
+{
+	Vector3 Pos = pTransform->Get_State(CTransform::STATE_POSITION);
+
+	Vector3 PointA = m_vPoints[POINT_A];
+	Vector3 PointB = m_vPoints[POINT_B];
+	Vector3 PointC = m_vPoints[POINT_C];
+	
+	// 평면을 생성
+	_vector Plane = XMPlaneFromPoints(PointA, PointB, PointC);
+
+	// 평면 방정식의 계수를 추출
+	_float a = XMVectorGetX(Plane);
+	_float b = XMVectorGetY(Plane);
+	_float c = XMVectorGetZ(Plane);
+	_float d = XMVectorGetW(Plane);
+
+	// y 값을 계산
+	_float ComputeY =  (-a * Pos.x - c * Pos.z - d) / b;
+
+	Pos.y = ComputeY;
+
+	pTransform->Set_State(CTransform::STATE_POSITION, Pos);
+}
+
 #ifdef _DEBUG
 
 HRESULT CCell::Render()
@@ -114,4 +147,5 @@ void CCell::Free()
 
 	Safe_Release(m_pContext);
 	Safe_Release(m_pDevice);	
+	Safe_Release(m_pGameInstance);
 }

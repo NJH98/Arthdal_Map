@@ -139,9 +139,9 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 
 	VectorClear();
 
-	/*if (m_pGameInstance->Get_DIKeyState_Once(DIK_T)) {
-		m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Prototype_GameObject_Player"));
-	}*/
+	if (m_pGameInstance->Get_DIKeyState_Once(DIK_T)) {
+		//m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Prototype_GameObject_Player"));
+	}
 
 }
 
@@ -1521,26 +1521,46 @@ HRESULT CLevel_GamePlay::Cell_Add(_float fTimeDelta)
 	ImVec2 buttonSize(200, 50);
 	if (ImGui::Button("Setting Terrain Cell Don't Use", buttonSize)) {
 		// 터레인이 크면 컴퓨터의 램이 감당을 못한다
-		return S_OK;
+		//return S_OK;
 		// 기존의 셀을 지우고
 		m_pNavigationCom_Terrain->Clear_Cell();
 
 		// 터레인의 정보를 받아와서 셀을 생성한다
-		_uint NumVerticesX = m_pTerrain->Get_VIBuffer()->Get_VerticesX()+1;
-		_uint NumVerticesZ = m_pTerrain->Get_VIBuffer()->Get_VerticesZ()+1;
+		_uint NumVerticesX = m_pTerrain->Get_VIBuffer()->Get_VerticesX() + 1;
+		_uint NumVerticesZ = m_pTerrain->Get_VIBuffer()->Get_VerticesZ() + 1;
 
 		_uint		iNumIndices = { 0 };
+		_uint		iIndexMax = NumVerticesZ * NumVerticesX;
+		_uint		iValue = 10;
 
-		for (_uint i = 0; i < NumVerticesZ-1; i++) {
-			for (_uint j = 0; j < NumVerticesX-1; j++) {
+		for (_uint i = 0; i < NumVerticesZ - 1; i += iValue) {
+			for (_uint j = 0; j < NumVerticesX - 1; j += iValue) {
 				_uint			iIndex = i * NumVerticesX + j;
 
 				_uint			iIndices[] = {
-				iIndex + NumVerticesX,
-				iIndex + NumVerticesX + 1,
-				iIndex + 1,
+				iIndex + (NumVerticesX * iValue),
+				iIndex + (NumVerticesX * iValue) + iValue,
+				iIndex + iValue,
 				iIndex
 				};
+
+
+				// 범위를 벗어나게 되는경우 예외처리
+				_bool	bOverIndex = false;
+
+				for (auto temp : iIndices) {
+					if (temp > iIndexMax) {
+						bOverIndex = true;
+					}
+				}
+				// x축으로 예상한 범위를 벗어나도 예외처리 ( 의도하지 않는 값이 들어가게 된다 )
+				if (iIndices[1] > (NumVerticesX * (i + iValue + 1) - 1) ||
+					iIndices[2] > (NumVerticesX * (i + iValue) - 1)) {
+					bOverIndex = true;
+				}
+
+				if(bOverIndex)
+					continue;
 
 				_float3 TerrainPointA = m_pTerrain->Get_VIBuffer()->Get_VertexPosition()[iIndices[0]];
 				_float3 TerrainPointB = m_pTerrain->Get_VIBuffer()->Get_VertexPosition()[iIndices[1]];
@@ -1630,6 +1650,7 @@ HRESULT CLevel_GamePlay::Cell_ListBox(_float fTimeDelta)
 
 	if (ImGui::BeginListBox("##Cell_List"))
 	{
+		/*	렉걸려서 주석
 		for (_uint n = 0; n < m_CellNum; n++)
 		{
 			bool is_selected = (m_iSelectCell == n);
@@ -1654,7 +1675,8 @@ HRESULT CLevel_GamePlay::Cell_ListBox(_float fTimeDelta)
 					ImGui::SetItemDefaultFocus();
 				// 반복문으로 리스트박스의 선택된 객체 찾기
 			}
-		}
+		}*/
+
 		ImGui::EndListBox();
 	}
 	ImGui::PopItemWidth();
@@ -1683,6 +1705,37 @@ HRESULT CLevel_GamePlay::Cell_ListBox(_float fTimeDelta)
 
 	if (ImGui::Button("ListUpdate")) {
 		Cell_vecStringSet();
+	}
+	ImGui::Spacing();
+
+	if (ImGui::Button("  Up  ")) {
+		if (m_pCell != nullptr) {
+			m_pCell->Set_PickCell(false);
+		}
+
+		_uint Index = m_pCell->Get_Index();
+
+		if (Index < vecCells.size()) 
+		{
+			m_pCell = vecCells[Index + 1];
+			m_pCell->Set_PickCell(true);
+			m_iSelectCell = m_pCell->Get_Index();
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button(" Down ")) {
+		if (m_pCell != nullptr) {
+			m_pCell->Set_PickCell(false);
+		}
+
+		_uint Index = m_pCell->Get_Index();
+
+		if (Index > 0) 
+		{
+			m_pCell = vecCells[Index - 1];
+			m_pCell->Set_PickCell(true);
+			m_iSelectCell = m_pCell->Get_Index();
+		}
 	}
 
 	return S_OK;

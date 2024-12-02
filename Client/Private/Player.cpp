@@ -72,7 +72,7 @@ _int CPlayer::Update(_float fTimeDelta)
 
 	if (GetKeyState(VK_UP) & 0x8000)
 	{
-		m_pTransformCom->Go_Straight(fTimeDelta/*m_pNavigationCom*/);
+		m_pTransformCom->Go_Straight(fTimeDelta, m_pNavigationCom);
 
 		if(m_iState & STATE_IDLE)
 			m_iState ^= STATE_IDLE;
@@ -86,7 +86,14 @@ _int CPlayer::Update(_float fTimeDelta)
 		m_iState |= STATE_IDLE;
 	}
 
-	Terrain_Landing(m_pTransformCom);
+	// 셀타기, 지형타기
+	CCell* pCell = m_pNavigationCom->Get_OnCell();
+	if (pCell->Get_Ride()) {
+		pCell->Cell_Landing(m_pTransformCom);
+	}
+	else {
+		Terrain_Landing(m_pTransformCom);
+	}
 
 	m_pColliderCom->Update(m_pTransformCom->Get_WorldMatrix_Ptr());
 
@@ -109,8 +116,29 @@ _int CPlayer::Update(_float fTimeDelta)
 			Vector3 CellPointB = iter->Get_Point(CCell::POINT_B);
 			Vector3 CellPointC = iter->Get_Point(CCell::POINT_C);
 
-			m_pNavigationCom->Add_Cell_NoneCheck(CellPointA, CellPointB, CellPointC);
-			m_pNavigationCom->SetUp_Neighbors();
+			CNavigation::CELL_DESC Desc{};
+			Desc.PointA = CellPointA;
+			Desc.PointB = CellPointB;
+			Desc.PointC = CellPointC;
+
+			Desc.NeighborIndex_AB = iter->Get_Neighbor(CCell::LINE_AB);
+			Desc.NeighborIndex_BC = iter->Get_Neighbor(CCell::LINE_BC);
+			Desc.NeighborIndex_CA = iter->Get_Neighbor(CCell::LINE_CA);
+
+			Desc.IsRide = iter->Get_Ride();
+
+			m_pNavigationCom->Add_Bin_Cell(Desc);
+		}
+
+		vector<class CCell*> vecCells = m_pNavigationCom->Get_vecCell();
+		Vector3 Pos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+		_int Dumy{};
+
+		for (auto& Cell : vecCells) {
+			if (Cell->isIn(Pos, &Dumy)) {
+				m_pNavigationCom->Set_CellIndex(Cell->Get_Index());
+				break;
+			}
 		}
 	}
 

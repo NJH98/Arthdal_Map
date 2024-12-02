@@ -80,7 +80,11 @@ void CMapObject_Default::Late_Update(_float fTimeDelta)
 	//m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
 	//m_pGameInstance->Add_RenderObject(CRenderer::RG_SHADOWOBJ, this);
 
-	if (m_pGameInstance->IsInRenderArea(m_iArea) == false)
+	if (m_pGameInstance->Get_RenderAreaChange()) {
+		m_bIsCalling = m_pGameInstance->IsInRenderArea(m_iArea, CAreaManager::AREA_5X5);
+	}
+
+	if (m_bIsCalling == false)
 		return;
 
 	Vector3 Pos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
