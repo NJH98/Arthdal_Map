@@ -140,7 +140,7 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 	VectorClear();
 
 	if (m_pGameInstance->Get_DIKeyState_Once(DIK_T)) {
-		//m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Prototype_GameObject_Player"));
+		m_pGameInstance->Add_CloneObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Prototype_GameObject_Player"));
 	}
 
 }

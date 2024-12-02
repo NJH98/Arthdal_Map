@@ -72,7 +72,7 @@ _int CPlayer::Update(_float fTimeDelta)
 
 	if (GetKeyState(VK_UP) & 0x8000)
 	{
-		m_pTransformCom->Go_Straight(fTimeDelta, m_pNavigationCom);
+		m_pTransformCom->Go_Straight(fTimeDelta * 5.f, m_pNavigationCom);
 
 		if(m_iState & STATE_IDLE)
 			m_iState ^= STATE_IDLE;

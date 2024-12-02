@@ -110,13 +110,26 @@ _bool CNavigation::isMove(_fvector vPosition)
 		/* 나간쪽에 이웃이 있다라면. */
 		if (-1 != iNeighborIndex)
 		{
-			while (true)
+			for(_uint i=0; i< 10; i++)
 			{
 				if (-1 == iNeighborIndex)
 					return false;
 
 				if (true == m_Cells[iNeighborIndex]->isIn(vLocalPos, &iNeighborIndex))
 					break;
+
+				if (i > 8) {
+					_int Dumy{};
+					for (auto& Cell : m_Cells) 
+					{
+						if (Cell->isIn(vLocalPos, &Dumy)) {
+							m_iCurrentCellIndex = Cell->Get_Index();
+							return true;
+						}
+					}
+
+					return true;
+				}
 			}
 			
 			
