@@ -121,6 +121,57 @@ _bool CAreaManager::IsInRenderArea(_int AreaIndex, AREADATA ChoiceArea)
 	return false;
 }
 
+vector<_uint> CAreaManager::Get_RenderArea(AREADATA ChoiceArea)
+{
+	vector<_uint> vecRenderArea;
+
+	switch (ChoiceArea)
+	{
+	case AREA_3X3:
+
+		for (_int areaZ = -1; areaZ < 2; areaZ++) {
+			for (_int areaX = -1; areaX < 2; areaX++) {
+				vecRenderArea.push_back(m_pRenderArea[m_iRenderAreaCenter + (m_iDivideRenderArea * areaZ) + areaX]);
+			}
+		}
+
+		break;
+
+	case AREA_5X5:
+
+		for (_int areaZ = -2; areaZ < 3; areaZ++) {
+			for (_int areaX = -2; areaX < 3; areaX++) {
+				vecRenderArea.push_back(m_pRenderArea[m_iRenderAreaCenter + (m_iDivideRenderArea * areaZ) + areaX]);
+			}
+		}
+
+		break;
+
+	case AREA_7X7:
+
+		for (_int areaZ = -3; areaZ < 4; areaZ++) {
+			for (_int areaX = -3; areaX < 4; areaX++) {
+				vecRenderArea.push_back(m_pRenderArea[m_iRenderAreaCenter + (m_iDivideRenderArea * areaZ) + areaX]);
+			}
+		}
+
+		break;
+
+	case AREA_9X9:
+
+		for (_int i = 0; i < AREA_9X9; i++) {
+			vecRenderArea.push_back(m_pRenderArea[i]);
+		}
+
+		break;
+
+	default:
+		break;
+	}
+
+	return vecRenderArea;
+}
+
 void CAreaManager::Free()
 {
 	Safe_Release(m_pGameInstance);

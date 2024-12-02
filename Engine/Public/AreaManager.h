@@ -23,10 +23,10 @@ public:
     void Update();
     void RenderAreaSet();
 
-    _uint   AreaIndexSet(_float3 Pos);
-    _bool   IsInRenderArea(_int AreaIndex, AREADATA ChoiceArea);
-    _bool   Get_RenderAreaChange() { return RenderAreaChange; }
-    _int    Get_RenderArea(_int list) { return m_pRenderArea[list]; }
+    _uint           AreaIndexSet(_float3 Pos);
+    _bool           IsInRenderArea(_int AreaIndex, AREADATA ChoiceArea);
+    _bool           Get_RenderAreaChange() { return RenderAreaChange; }
+    vector<_uint>   Get_RenderArea(AREADATA ChoiceArea);
 
 
 private:
@@ -37,7 +37,7 @@ private:
     _int    m_pPlayerCurrentArea = { -1 };
 
     _int    m_pRenderArea[MAX_AREA -1] = { -1 };
-    _bool   RenderAreaChange = false;
+    _bool   RenderAreaChange = true;
 
     _int    m_iRenderAreaCenter = 40;           // RenderArea의 중앙 Index
     _int    m_iDivideRenderArea = 9;            // RenderArea의 가로값

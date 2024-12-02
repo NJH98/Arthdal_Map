@@ -69,8 +69,8 @@ void CMapObject_Default::Priority_Update(_float fTimeDelta)
 
 _int CMapObject_Default::Update(_float fTimeDelta)
 {
-	if (m_bDead)
-		return OBJ_DEAD;
+	/*if (m_bDead)
+		return OBJ_DEAD;*/
 
 	return OBJ_NOEVENT;
 }

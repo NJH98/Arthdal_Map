@@ -577,9 +577,9 @@ _bool CGameInstance::Get_RenderAreaChange()
 	return m_pAreaManager->Get_RenderAreaChange();
 }
 
-_int CGameInstance::Get_RenderArea(_int list)
+vector<_uint> CGameInstance::Get_RenderArea(CAreaManager::AREADATA ChoiceArea)
 {
-	return m_pAreaManager->Get_RenderArea(list);
+	return m_pAreaManager->Get_RenderArea(ChoiceArea);
 }
 #pragma endregion
 

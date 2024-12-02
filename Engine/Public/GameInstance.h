@@ -170,10 +170,10 @@ public:
 #pragma endregion
 
 #pragma region	AREA_MANAGER
-	_bool   IsInRenderArea(_int AreaIndex, CAreaManager::AREADATA ChoiceArea);
-	_uint   AreaIndexSet(_float3 vPos);
-	_bool	Get_RenderAreaChange();
-	_int	Get_RenderArea(_int list);
+	_bool			IsInRenderArea(_int AreaIndex, CAreaManager::AREADATA ChoiceArea);
+	_uint			AreaIndexSet(_float3 vPos);
+	_bool			Get_RenderAreaChange();
+	vector<_uint>   Get_RenderArea(CAreaManager::AREADATA ChoiceArea);
 #pragma endregion
 
 private:
