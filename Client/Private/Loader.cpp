@@ -286,6 +286,17 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
 	}
 
+	for (_uint i = 0; i < 2; i++) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Anything" + to_wstring(i);
+		_wstring FilePath = L"../Bin/Resources/Models/MapModel/Anything/Anything_" + to_wstring(i);
+		string ModelName = "Anything_" + to_string(i + 185 + 22 + 25 + 43 + 17 + 44 + 10);
+
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, PrototypeTag.c_str(),
+			CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, FilePath.c_str(), PreTransformMatrix))))
+			return E_FAIL;
+		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
+	}
+
 #pragma endregion
 
 	lstrcpy(m_szLoadingText, TEXT("네비게이션을(를) 로딩중입니다."));

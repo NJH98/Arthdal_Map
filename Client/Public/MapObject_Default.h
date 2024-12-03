@@ -25,6 +25,7 @@ public:
         Map_MODEL_GuildEnd = 292,
         Map_MODEL_CommonEnd = 336,
         Map_MODEL_LampEnd = 346,
+        Map_MODEL_AnythingEnd = 348,
         MAP_MODEL_END,
     };
 private:
