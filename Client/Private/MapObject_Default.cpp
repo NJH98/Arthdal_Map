@@ -89,7 +89,7 @@ void CMapObject_Default::Late_Update(_float fTimeDelta)
 
 	Vector3 Pos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
 
-	if (m_pGameInstance->isIn_Frustum_WorldSpace(Pos, m_fRadiuse)) {
+	if (m_pGameInstance->isIn_Frustum_WorldSpace(Pos, m_fRadiuse * m_pTransformCom->Get_Scaled().x)) {
 		if (m_bIsRenderInstance)
 			m_pGameInstance->Push_Instance_Object(m_InstnaceLayer, this);
 		else

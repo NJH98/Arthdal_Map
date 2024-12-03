@@ -286,7 +286,7 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
 	}
 
-	for (_uint i = 0; i < 2; i++) {
+	for (_uint i = 0; i < 4; i++) {
 		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Anything" + to_wstring(i);
 		_wstring FilePath = L"../Bin/Resources/Models/MapModel/Anything/Anything_" + to_wstring(i);
 		string ModelName = "Anything_" + to_string(i + 185 + 22 + 25 + 43 + 17 + 44 + 10);
