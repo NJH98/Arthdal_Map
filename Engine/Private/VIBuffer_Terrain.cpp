@@ -276,8 +276,17 @@ HRESULT CVIBuffer_Terrain::Initialize(void * pArg)
 			_uint			iIndex = i * m_iNumVerticesX + j;
 
 			if (Desc != nullptr && Desc->pHeightMapFilePath != nullptr){
-				pVertices[iIndex].vPosition = m_pVertexPositions[iIndex] = _float3(_float(j), _float((pPixel[iIndex] & 0x000000ff) / 10.f), _float(i));
-			}
+
+				_float height{};
+				_float3 PixelRGB{};
+
+				PixelRGB.x = static_cast<_float>((pPixel[iIndex] & 0x000000ff) / 10.f);
+				PixelRGB.y = static_cast<_float>((pPixel[iIndex] & 0x0000ff00) >> 8) / 10.f;
+				PixelRGB.z = static_cast<_float>((pPixel[iIndex] & 0x00ff0000) >> 16) / 10.f;
+
+				height = PixelRGB.x + PixelRGB.y + PixelRGB.z;
+
+				pVertices[iIndex].vPosition = m_pVertexPositions[iIndex] = _float3(_float(j), height, _float(i));}
 			else {
 				pVertices[iIndex].vPosition = m_pVertexPositions[iIndex] = _float3(_float(j), 0.f, _float(i));
 			}
@@ -567,8 +576,37 @@ HRESULT CVIBuffer_Terrain::Save_HeightMap(const _tchar* pHeightMapFilePath)
 	for (_uint z = 0; z < m_iNumVerticesZ; ++z) {
 		for (_uint x = 0; x < m_iNumVerticesX; ++x) {
 			int index = z * m_iNumVerticesX + x;
-			uint8_t height = static_cast<uint8_t>(m_pVertexPositions[index].y * 10.f); // Scale height to [0, 255]
-			uint8_t color[4] = { height, height, height, 255 }; // Blue, Green, Red, Alpha
+			uint8_t heightR{}, heightG{}, heightB{};
+			_uint height = static_cast<_uint>(m_pVertexPositions[index].y * 10.f); // Scale height to [0, 255]
+
+			if (255 < height) {
+				heightR = 255;
+				height -= 255;
+			}
+			else {
+				heightR = height;
+				height = 0;
+			}
+
+			if (255 < height) {
+				heightG = 255;
+				height -= 255;
+			}
+			else {
+				heightG = height;
+				height = 0;
+			}
+
+			if (255 < height) {
+				heightB = 255;
+				height -= 255;
+			}
+			else {
+				heightB = height;
+				height = 0;
+			}
+
+			uint8_t color[4] = { heightB, heightG, heightR, 255 }; // Blue, Green, Red, Alpha
 			ofs.write(reinterpret_cast<char*>(color), 4);
 		}
 	}
