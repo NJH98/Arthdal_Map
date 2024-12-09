@@ -26,6 +26,11 @@ public:
         Map_MODEL_CommonEnd = 336,
         Map_MODEL_LampEnd = 346,
         Map_MODEL_AnythingEnd = 350,
+        Map_MODEL_Asd_AllianceEnd = 400,
+        Map_MODEL_Asd_BuildingEnd = 650,
+        Map_MODEL_Asd_GuildEnd = 653,
+        Map_MODEL_Asd_HouseEnd = 661,
+        Map_MODEL_Asd_ObjectEnd = 726,
         MAP_MODEL_END,
     };
 private:

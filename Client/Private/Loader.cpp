@@ -297,6 +297,61 @@ HRESULT CLoader::Ready_Resources_For_GamePlayLevel()
 		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
 	}
 
+	for (_uint i = 0; i < 50; i++) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Asd_Alliance" + to_wstring(i);
+		_wstring FilePath = L"../Bin/Resources/Models/MapModel/Asd_Map/Asd_Alliance_" + to_wstring(i);
+		string ModelName = "Asd_Alliance_" + to_string(i + 185 + 22 + 25 + 43 + 17 + 44 + 10 + 4);
+
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, PrototypeTag.c_str(),
+			CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, FilePath.c_str(), PreTransformMatrix))))
+			return E_FAIL;
+		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
+	}
+
+	for (_uint i = 0; i < 250; i++) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Asd_Building" + to_wstring(i);
+		_wstring FilePath = L"../Bin/Resources/Models/MapModel/Asd_Map/Asd_Building_" + to_wstring(i);
+		string ModelName = "Asd_Building_" + to_string(i + 185 + 22 + 25 + 43 + 17 + 44 + 10 + 4 + 50);
+
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, PrototypeTag.c_str(),
+			CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, FilePath.c_str(), PreTransformMatrix))))
+			return E_FAIL;
+		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
+	}
+
+	for (_uint i = 0; i < 3; i++) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Asd_Guild" + to_wstring(i);
+		_wstring FilePath = L"../Bin/Resources/Models/MapModel/Asd_Map/Asd_Guild_" + to_wstring(i);
+		string ModelName = "Asd_Guild_" + to_string(i + 185 + 22 + 25 + 43 + 17 + 44 + 10 + 4 + 50 + 250);
+
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, PrototypeTag.c_str(),
+			CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, FilePath.c_str(), PreTransformMatrix))))
+			return E_FAIL;
+		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
+	}
+
+	for (_uint i = 0; i < 8; i++) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Asd_House" + to_wstring(i);
+		_wstring FilePath = L"../Bin/Resources/Models/MapModel/Asd_Map/Asd_House_" + to_wstring(i);
+		string ModelName = "Asd_House_" + to_string(i + 185 + 22 + 25 + 43 + 17 + 44 + 10 + 4 + 50 + 250 + 3);
+
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, PrototypeTag.c_str(),
+			CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, FilePath.c_str(), PreTransformMatrix))))
+			return E_FAIL;
+		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
+	}
+
+	for (_uint i = 0; i < 65; i++) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Asd_Object" + to_wstring(i);
+		_wstring FilePath = L"../Bin/Resources/Models/MapModel/Asd_Map/Asd_Object_" + to_wstring(i);
+		string ModelName = "Asd_Object_" + to_string(i + 185 + 22 + 25 + 43 + 17 + 44 + 10 + 4 + 50 + 250 + 3 + 8);
+
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, PrototypeTag.c_str(),
+			CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, FilePath.c_str(), PreTransformMatrix))))
+			return E_FAIL;
+		m_pGameInstance->Get_GlobalData()->ModelName.push_back(ModelName);
+	}
+
 #pragma endregion
 
 	lstrcpy(m_szLoadingText, TEXT("네비게이션을(를) 로딩중입니다."));

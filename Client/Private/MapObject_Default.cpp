@@ -239,6 +239,46 @@ HRESULT CMapObject_Default::Ready_Components()
 			return E_FAIL;
 		m_InstnaceLayer = PrototypeTag;
 	}
+	else if (m_iUseModel < Map_MODEL_Asd_AllianceEnd) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Asd_Alliance" + to_wstring(m_iUseModel - Map_MODEL_AnythingEnd);
+
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
+			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
+			return E_FAIL;
+		m_InstnaceLayer = PrototypeTag;
+	}
+	else if (m_iUseModel < Map_MODEL_Asd_BuildingEnd) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Asd_Building" + to_wstring(m_iUseModel - Map_MODEL_Asd_AllianceEnd);
+
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
+			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
+			return E_FAIL;
+		m_InstnaceLayer = PrototypeTag;
+	}
+	else if (m_iUseModel < Map_MODEL_Asd_GuildEnd) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Asd_Guild" + to_wstring(m_iUseModel - Map_MODEL_Asd_BuildingEnd);
+
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
+			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
+			return E_FAIL;
+		m_InstnaceLayer = PrototypeTag;
+	}
+	else if (m_iUseModel < Map_MODEL_Asd_HouseEnd) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Asd_House" + to_wstring(m_iUseModel - Map_MODEL_Asd_GuildEnd);
+
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
+			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
+			return E_FAIL;
+		m_InstnaceLayer = PrototypeTag;
+	}
+	else if (m_iUseModel < Map_MODEL_Asd_ObjectEnd) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Asd_Object" + to_wstring(m_iUseModel - Map_MODEL_Asd_HouseEnd);
+
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
+			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
+			return E_FAIL;
+		m_InstnaceLayer = PrototypeTag;
+	}
 
 #pragma endregion
 
