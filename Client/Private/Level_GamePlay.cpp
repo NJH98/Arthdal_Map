@@ -52,6 +52,7 @@ HRESULT CLevel_GamePlay::Initialize()
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+	io.Fonts->AddFontFromFileTTF("../Bin/Font/MaruBuri-Bold.ttf", 16.0f, NULL, io.Fonts->GetGlyphRangesKorean());
 
 	// ImGui 스타일 고르기
 	ImGui::StyleColorsDark(); // 다크 모드
@@ -815,6 +816,10 @@ HRESULT CLevel_GamePlay::GameObject_Imgui(_float fTimeDelta)
 					// 게임오브젝트 정보 컨트롤
 					if (FAILED(GameObject_Pos_Scal_Turn()))
 						return E_FAIL;
+
+					// 정보에 따른 데이터 저장방식들
+					GameObject_Save_Load_wstring();
+					GameObject_Save_Load_Node();
 				}
 			}
 			ImGui::End();
@@ -1349,6 +1354,213 @@ HRESULT CLevel_GamePlay::GameObject_Pos_Scal_Turn()
 		m_pTransformCom->Set_Scaled(Scal.x, Scal.y, Scal.z);
 		m_pTransformCom->All_Rotation(Turn);
 		m_pGameObj->Set_GameObjDesc(Objdesc);
+	}
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::GameObject_Save_Load_wstring()
+{
+	static bool bSave_Load_wstring;
+	ImGui::Checkbox("Save_Load_wstring", &bSave_Load_wstring);
+
+	if (bSave_Load_wstring)
+	{
+		ImGui::Begin("Save_Load_wstring");
+
+		if (m_pGameObj != nullptr) {
+			static char Name[256] = {};
+			string stdName = wstring_to_string(static_cast<CMapObject_Default*>(m_pGameObj)->Get_SubDesc()->Name);
+			strncpy_s(Name, stdName.c_str(), sizeof(Name));
+			Name[sizeof(Name) - 1] = '\0';
+
+			ImGui::InputText(u8"SubData_Name", Name, sizeof(Name));
+
+			static_cast<CMapObject_Default*>(m_pGameObj)->Get_SubDesc()->Name = char_to_wstring(Name);
+		}
+
+		ImVec2 buttonSize(100, 30);
+		if (ImGui::Button("Save_wstring", buttonSize)) {
+
+			if (filePath.length() < 55) {
+				MSG_BOX(TEXT("Chocie FilePath"));
+				goto EndButton_Save_wstring;
+			}
+
+			ofstream outFile(filePath, ios::binary);
+
+			if (!outFile.is_open()) {
+				MSG_BOX(TEXT("파일 저장 실패"));
+				goto EndButton_Save_wstring;
+			}
+
+			for (const auto& LayerList : *(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, m_StringLayerName))) {
+
+				CMapObject_Default::MAPOBJECT_DESC Desc{};
+				CMapObject_Default::SUB_DESC SubDesc{};
+
+				Desc.WorldMatrix = LayerList->Get_TranformCom()->Get_WorldMatrix();
+				Desc.ModelNum = static_cast<CMapObject_Default*>(LayerList)->Get_UseModel();
+				Desc.CullRadiuse = static_cast<CMapObject_Default*>(LayerList)->Get_Radiuse();
+				SubDesc.Name = static_cast<CMapObject_Default*>(LayerList)->Get_SubDesc()->Name;
+
+				outFile.write(reinterpret_cast<const char*>(&Desc.WorldMatrix), sizeof(_matrix));
+				outFile.write(reinterpret_cast<const char*>(&Desc.ModelNum), sizeof(_uint));
+				outFile.write(reinterpret_cast<const char*>(&Desc.CullRadiuse), sizeof(_float));
+
+				size_t length = SubDesc.Name.size();
+				outFile.write(reinterpret_cast<const char*>(&length), sizeof(length));
+				outFile.write(reinterpret_cast<const char*>(SubDesc.Name.data()), length * sizeof(_tchar));
+			}
+
+			outFile.close();
+
+			filePath = "";
+		}
+	EndButton_Save_wstring:
+
+		ImGui::SameLine();
+		if (ImGui::Button("Load_wstring", buttonSize)) {
+
+			if (filePath.length() < 55) {
+				MSG_BOX(TEXT("Chocie FilePath"));
+				goto EndButton_Load_wstring;
+			}
+
+			ifstream inFile(filePath, ios::binary);
+
+			if (!inFile.is_open()) {
+				MSG_BOX(TEXT("파일 불러오기 실패"));
+				goto EndButton_Load_wstring;
+			}
+
+			while (inFile.peek() != EOF) {
+				CMapObject_Default::MAPOBJECT_DESC Desc{};
+				CMapObject_Default::SUB_DESC SubDesc{};
+
+				inFile.read(reinterpret_cast<char*>(&Desc.WorldMatrix), sizeof(_matrix));
+				inFile.read(reinterpret_cast<char*>(&Desc.ModelNum), sizeof(_uint));
+				inFile.read(reinterpret_cast<char*>(&Desc.CullRadiuse), sizeof(_float));
+				Desc.LayerTag = m_StringLayerName;
+
+				size_t length{};
+				inFile.read(reinterpret_cast<char*>(&length), sizeof(length));
+				inFile.read(reinterpret_cast<char*>(&SubDesc.Name[0]), length * sizeof(_tchar));
+
+				CGameObject* GameObj{};
+				if (FAILED(m_pGameInstance->Add_GameObject_Out(TEXT("Prototype_GameObject_MapObject_Default"), LEVEL_GAMEPLAY, m_StringLayerName.c_str(), GameObj, &Desc)))
+					return E_FAIL;
+
+				static_cast<CMapObject_Default*>(GameObj)->Get_SubDesc()->Name = SubDesc.Name;
+			}
+
+			inFile.close();
+
+			filePath = "";
+		}
+	EndButton_Load_wstring:
+
+		ImGui::End();
+	}
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::GameObject_Save_Load_Node()
+{
+	static bool bSave_Load_Node;
+	ImGui::Checkbox("Save_Load_Node", &bSave_Load_Node);
+
+	if (bSave_Load_Node) 
+	{
+		ImGui::Begin("Save_Load_Node");
+
+		ImVec2 buttonSize(100, 30);
+		if (ImGui::Button("Save_Node", buttonSize)) {
+
+			if (filePath.length() < 55) {
+				MSG_BOX(TEXT("Chocie FilePath"));
+				return E_FAIL;
+			}
+
+			ofstream outFile(filePath, ios::binary);
+
+			if (!outFile.is_open()) {
+				MSG_BOX(TEXT("파일 저장 실패"));
+				return E_FAIL;
+			}
+
+			for (const auto& LayerList : *(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, m_StringLayerName))) {
+
+				CMapObject_Default::MAPOBJECT_DESC Desc{};
+				CMapObject_Default::SUB_DESC SubDesc{};
+
+				Desc.WorldMatrix = LayerList->Get_TranformCom()->Get_WorldMatrix();
+				Desc.ModelNum = static_cast<CMapObject_Default*>(LayerList)->Get_UseModel();
+				Desc.CullRadiuse = static_cast<CMapObject_Default*>(LayerList)->Get_Radiuse();
+				SubDesc.Name = static_cast<CMapObject_Default*>(LayerList)->Get_SubDesc()->Name;
+
+				outFile.write(reinterpret_cast<const char*>(&Desc.WorldMatrix), sizeof(_matrix));
+				outFile.write(reinterpret_cast<const char*>(&Desc.ModelNum), sizeof(_uint));
+				outFile.write(reinterpret_cast<const char*>(&Desc.CullRadiuse), sizeof(_float));
+
+				outFile.write(reinterpret_cast<const char*>(SubDesc.Node.size()), sizeof(_uint));
+				for (auto& iter : SubDesc.Node) 
+				{
+					outFile.write(reinterpret_cast<const char*>(&SubDesc.Node), sizeof(Vector3));
+				}
+			}
+
+			outFile.close();
+
+			filePath = "";
+		}
+
+		ImGui::SameLine();
+		if (ImGui::Button("Load_Node", buttonSize)) {
+
+			if (filePath.length() < 55) {
+				MSG_BOX(TEXT("Chocie FilePath"));
+				return E_FAIL;
+			}
+
+			ifstream inFile(filePath, ios::binary);
+
+			if (!inFile.is_open()) {
+				MSG_BOX(TEXT("파일 불러오기 실패"));
+				return E_FAIL;
+			}
+
+			while (inFile.peek() != EOF) {
+				CMapObject_Default::MAPOBJECT_DESC Desc{};
+				CMapObject_Default::SUB_DESC SubDesc{};
+
+				inFile.read(reinterpret_cast<char*>(&Desc.WorldMatrix), sizeof(_matrix));
+				inFile.read(reinterpret_cast<char*>(&Desc.ModelNum), sizeof(_uint));
+				inFile.read(reinterpret_cast<char*>(&Desc.CullRadiuse), sizeof(_float));
+				Desc.LayerTag = m_StringLayerName;
+
+				CGameObject* GameObj{};
+				if (FAILED(m_pGameInstance->Add_GameObject_Out(TEXT("Prototype_GameObject_MapObject_Default"), LEVEL_GAMEPLAY, m_StringLayerName.c_str(), GameObj, &Desc)))
+					return E_FAIL;
+
+				_uint VecSize{};
+				inFile.read(reinterpret_cast<char*>(&VecSize), sizeof(_uint));
+
+				Vector3 VecData{};
+				for (_uint i = 0; i < VecSize; i++) 
+				{
+					inFile.read(reinterpret_cast<char*>(&VecData), sizeof(Vector3));
+					static_cast<CMapObject_Default*>(GameObj)->Get_SubDesc()->Node.push_back(VecData);
+				}
+			}
+
+			inFile.close();
+
+			filePath = "";
+		}
+
+		ImGui::End();
 	}
 
 	return S_OK;

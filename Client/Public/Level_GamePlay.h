@@ -86,6 +86,9 @@ private:
 	HRESULT GameObject_vecStringSet();
 	HRESULT GameObject_Pos_Scal_Turn();
 
+	HRESULT GameObject_Save_Load_wstring();
+	HRESULT GameObject_Save_Load_Node();
+
 	// 생성할 객체 모델 관련
 	_uint m_iSelectModel = { 0 };				// 현제 선택중인 모델 번호
 

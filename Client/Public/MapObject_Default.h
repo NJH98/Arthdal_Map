@@ -16,6 +16,12 @@ public:
         _wstring	LayerTag = {};
     } MAPOBJECT_DESC;
 
+    typedef struct
+    {
+        _wstring	        Name = {L"temp"};
+        vector<Vector3>     Node = {};
+    } SUB_DESC;
+
 public:
     enum MAP_MODEL_LIST {
         Map_MODEL_ObjectEnd = 185,
@@ -54,6 +60,9 @@ public:
     _float Get_Radiuse() { return m_fRadiuse; }
     void Set_Radiuse(_float Radiuse) { m_fRadiuse = Radiuse; }
 
+    SUB_DESC* Get_SubDesc(){ return &m_SubDesc;}
+    void Set_SubDesc(SUB_DESC Subdesc) { m_SubDesc = Subdesc; }
+
 private:
     HRESULT Ready_Components();
     _uint           m_iUseModel = 0;
@@ -68,6 +77,8 @@ private:
     CModel*         m_pModelCom = { nullptr };
     CShader*        m_pShaderCom = { nullptr };
     CShader*        m_pSubShaderCom = { nullptr };
+
+    SUB_DESC        m_SubDesc{};
 
 public:
     static CMapObject_Default* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
