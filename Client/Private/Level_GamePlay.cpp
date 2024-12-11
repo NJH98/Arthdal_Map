@@ -1445,6 +1445,7 @@ HRESULT CLevel_GamePlay::GameObject_Save_Load_wstring()
 
 				size_t length{};
 				inFile.read(reinterpret_cast<char*>(&length), sizeof(length));
+				SubDesc.Name.resize(length, L'\0');
 				inFile.read(reinterpret_cast<char*>(&SubDesc.Name[0]), length * sizeof(_tchar));
 
 				CGameObject* GameObj{};
