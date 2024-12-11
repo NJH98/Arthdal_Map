@@ -1476,39 +1476,84 @@ HRESULT CLevel_GamePlay::GameObject_Save_Load_Node()
 	{
 		ImGui::Begin("Save_Load_Node");
 
+		if (m_pGameObj != nullptr) {
+			vector<Vector3> Node = static_cast<CMapObject_Default*>(m_pGameObj)->Get_SubDesc()->Node;
+
+			static bool bPicking_Node;
+			ImGui::Checkbox("Picking_Node", &bPicking_Node);
+
+			if (bPicking_Node && m_pGameInstance->Get_DIKeyState(DIK_Q))
+			{
+				if (m_pGameInstance->Get_DIMouseState_Once(DIMK_LBUTTON))
+				{
+					_float3 PickPos{};
+					m_pGameInstance->Picking(&PickPos);
+					static_cast<CMapObject_Default*>(m_pGameObj)->Get_SubDesc()->Node.push_back(PickPos);
+				}
+			}
+
+			static int DeleteNodeNum = 0;
+
+			ImGui::PushItemWidth(200); 
+			ImGui::InputInt("Delete_Node_Num", &DeleteNodeNum, 0, 0, 1); 
+			ImGui::PopItemWidth(); ImGui::SameLine();
+			if (ImGui::Button("Delete_Node")) {
+				if (DeleteNodeNum < Node.size()) {
+					auto iter = static_cast<CMapObject_Default*>(m_pGameObj)->Get_SubDesc()->Node.begin();
+
+					for (_uint i = 0; i < _uint(DeleteNodeNum); i++) {
+						iter++;
+					}
+
+					static_cast<CMapObject_Default*>(m_pGameObj)->Get_SubDesc()->Node.erase(iter);
+				}
+			}
+
+			_uint NodeNum = 0;
+			for (auto& pNode : Node) {
+				ImGui::Text(" %d : ", NodeNum); ImGui::SameLine();
+				ImGui::Text(" %.2f ", pNode.x); ImGui::SameLine();
+				ImGui::Text(" %.2f ", pNode.y); ImGui::SameLine();
+				ImGui::Text(" %.2f ", pNode.z);
+				NodeNum++;
+				ImGui::Spacing();
+			}
+		}
+
 		ImVec2 buttonSize(100, 30);
 		if (ImGui::Button("Save_Node", buttonSize)) {
 
 			if (filePath.length() < 55) {
 				MSG_BOX(TEXT("Chocie FilePath"));
-				return E_FAIL;
+				goto EndButton_Save_Node;
 			}
 
 			ofstream outFile(filePath, ios::binary);
 
 			if (!outFile.is_open()) {
 				MSG_BOX(TEXT("파일 저장 실패"));
-				return E_FAIL;
+				goto EndButton_Save_Node;
 			}
 
 			for (const auto& LayerList : *(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, m_StringLayerName))) {
 
 				CMapObject_Default::MAPOBJECT_DESC Desc{};
-				CMapObject_Default::SUB_DESC SubDesc{};
+				CMapObject_Default::SUB_DESC* SubDesc{};
 
 				Desc.WorldMatrix = LayerList->Get_TranformCom()->Get_WorldMatrix();
 				Desc.ModelNum = static_cast<CMapObject_Default*>(LayerList)->Get_UseModel();
 				Desc.CullRadiuse = static_cast<CMapObject_Default*>(LayerList)->Get_Radiuse();
-				SubDesc.Name = static_cast<CMapObject_Default*>(LayerList)->Get_SubDesc()->Name;
+				SubDesc = static_cast<CMapObject_Default*>(LayerList)->Get_SubDesc();
+				_uint NodeSize = _uint(SubDesc->Node.size());
 
 				outFile.write(reinterpret_cast<const char*>(&Desc.WorldMatrix), sizeof(_matrix));
 				outFile.write(reinterpret_cast<const char*>(&Desc.ModelNum), sizeof(_uint));
 				outFile.write(reinterpret_cast<const char*>(&Desc.CullRadiuse), sizeof(_float));
 
-				outFile.write(reinterpret_cast<const char*>(SubDesc.Node.size()), sizeof(_uint));
-				for (auto& iter : SubDesc.Node) 
+				outFile.write(reinterpret_cast<const char*>(&NodeSize), sizeof(_uint));
+				for (_uint i=0; i< NodeSize; i++)
 				{
-					outFile.write(reinterpret_cast<const char*>(&SubDesc.Node), sizeof(Vector3));
+					outFile.write(reinterpret_cast<const char*>(&SubDesc->Node[i]), sizeof(Vector3));
 				}
 			}
 
@@ -1516,20 +1561,21 @@ HRESULT CLevel_GamePlay::GameObject_Save_Load_Node()
 
 			filePath = "";
 		}
+	EndButton_Save_Node:
 
 		ImGui::SameLine();
 		if (ImGui::Button("Load_Node", buttonSize)) {
 
 			if (filePath.length() < 55) {
 				MSG_BOX(TEXT("Chocie FilePath"));
-				return E_FAIL;
+				goto EndButton_Load_Node;
 			}
 
 			ifstream inFile(filePath, ios::binary);
 
 			if (!inFile.is_open()) {
 				MSG_BOX(TEXT("파일 불러오기 실패"));
-				return E_FAIL;
+				goto EndButton_Load_Node;
 			}
 
 			while (inFile.peek() != EOF) {
@@ -1560,6 +1606,7 @@ HRESULT CLevel_GamePlay::GameObject_Save_Load_Node()
 
 			filePath = "";
 		}
+	EndButton_Load_Node:
 
 		ImGui::End();
 	}
