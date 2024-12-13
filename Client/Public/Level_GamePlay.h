@@ -72,7 +72,7 @@ private:
 	vector<_wstring>	m_vecString_Mask;			// 마스크 리스트 박스 벡터
 	_uint				m_iSelectTile = 0;			// 현제 선택중인 마스크 번호
 
-	_uint				m_iMaskingNum[7] = {0, 1, 2, 3, 4, 5, 6};
+	_uint				m_iMaskingNum[13] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
 #pragma endregion
 
 #pragma region 게임오브젝트

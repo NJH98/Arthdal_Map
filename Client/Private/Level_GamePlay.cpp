@@ -584,7 +584,7 @@ HRESULT CLevel_GamePlay::Change_Mask(_float fTimeDelta)
 		ImGui::Begin("Mask_Change");
 		{
 			static int SelectUseImage = 1;
-			static int SelectStageingImgage = 7;
+			static int SelectStageingImgage = 13;
 
 #pragma region BaseTexture
 			ImGui::SeparatorText("Using Base Texture");
@@ -620,7 +620,7 @@ HRESULT CLevel_GamePlay::Change_Mask(_float fTimeDelta)
 					return E_FAIL;
 				}
 
-				for (_uint i = 0; i < 7; i++) {
+				for (_uint i = 0; i < 14; i++) {
 					outFile.write(reinterpret_cast<const char*>(&m_iMaskingNum[i]), sizeof(_uint));
 				}
 
@@ -653,7 +653,7 @@ HRESULT CLevel_GamePlay::Change_Mask(_float fTimeDelta)
 
 				inFile.close();
 
-				for (_uint i = 0; i < 7; i++) {
+				for (_uint i = 0; i < 13; i++) {
 					m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Swap_SRVs(i, m_iMaskingNum[i]);
 					m_pTerrain->Get_Texture(CTerrain::TEXTURE_NORMAL)->Swap_SRVs(i, m_iMaskingNum[i]);
 				}
@@ -716,7 +716,7 @@ HRESULT CLevel_GamePlay::Change_Mask(_float fTimeDelta)
 			if (ImGui::RadioButton("Tile 3", SelectUseImage == 3)) {
 				SelectUseImage = 3;
 			}
-			ImGui::SameLine(0.0f, 60.0f);
+			ImGui::SameLine(0.0f, 80.0f);
 			if (ImGui::RadioButton("Tile 4", SelectUseImage == 4)) {
 				SelectUseImage = 4;
 			}
@@ -727,6 +727,69 @@ HRESULT CLevel_GamePlay::Change_Mask(_float fTimeDelta)
 			ImGui::SameLine(0.0f, 45.0f);
 			if (ImGui::RadioButton("Tile 6", SelectUseImage == 6)) {
 				SelectUseImage = 6;
+			}
+
+			string substring3, substring4;
+			substring3 = "Mask_3_RGB";
+			substring4 = "Mask_4_RGB";
+			ImGui::Text("%s", substring3.c_str());
+			ImGui::SameLine(0.0f, 280.0f);
+			ImGui::Text("%s", substring4.c_str());
+
+			// 이미지
+			ID3D11ShaderResourceView* UseTexture7 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(7);
+			if (UseTexture7) {
+				ImGui::Image((void*)UseTexture7, ImVec2(100, 100)); // 원하는 크기로 설정
+			}
+			ImGui::SameLine();
+			ID3D11ShaderResourceView* UseTexture8 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(8);
+			if (UseTexture8) {
+				ImGui::Image((void*)UseTexture8, ImVec2(100, 100)); // 원하는 크기로 설정
+			}
+			ImGui::SameLine();
+			ID3D11ShaderResourceView* UseTexture9 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(9);
+			if (UseTexture9) {
+				ImGui::Image((void*)UseTexture9, ImVec2(100, 100)); // 원하는 크기로 설정
+			}
+			ImGui::SameLine(0.0f, 30.0f);
+			ID3D11ShaderResourceView* UseTexture10 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(10);
+			if (UseTexture10) {
+				ImGui::Image((void*)UseTexture10, ImVec2(100, 100)); // 원하는 크기로 설정
+			}
+			ImGui::SameLine();
+			ID3D11ShaderResourceView* UseTexture11 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(11);
+			if (UseTexture11) {
+				ImGui::Image((void*)UseTexture11, ImVec2(100, 100)); // 원하는 크기로 설정
+			}
+			ImGui::SameLine();
+			ID3D11ShaderResourceView* UseTexture12 = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(12);
+			if (UseTexture12) {
+				ImGui::Image((void*)UseTexture12, ImVec2(100, 100)); // 원하는 크기로 설정
+			}
+
+			// 라디오 버튼
+			if (ImGui::RadioButton("Tile 7", SelectUseImage == 7)) {
+				SelectUseImage = 7;
+			}
+			ImGui::SameLine(0.0f, 45.0f);
+			if (ImGui::RadioButton("Tile 8", SelectUseImage == 8)) {
+				SelectUseImage = 8;
+			}
+			ImGui::SameLine(0.0f, 45.0f);
+			if (ImGui::RadioButton("Tile 9", SelectUseImage == 9)) {
+				SelectUseImage = 9;
+			}
+			ImGui::SameLine(0.0f, 80.0f);
+			if (ImGui::RadioButton("Tile 10", SelectUseImage == 10)) {
+				SelectUseImage = 10;
+			}
+			ImGui::SameLine(0.0f, 45.0f);
+			if (ImGui::RadioButton("Tile 11", SelectUseImage == 11)) {
+				SelectUseImage = 11;
+			}
+			ImGui::SameLine(0.0f, 45.0f);
+			if (ImGui::RadioButton("Tile 12", SelectUseImage == 12)) {
+				SelectUseImage = 12;
 			}
 
 			ImVec2 buttonSize2(200, 30);
@@ -747,7 +810,7 @@ HRESULT CLevel_GamePlay::Change_Mask(_float fTimeDelta)
 			ImGui::BeginChild("ScrollableRegion", ImVec2(0, 300), true, ImGuiWindowFlags_HorizontalScrollbar);
 			ID3D11ShaderResourceView* UseTextureStageing{};
 
-			for (_uint i = 7; i < 81; i++) {
+			for (_uint i = 13; i < 81; i++) {
 
 				UseTextureStageing = m_pTerrain->Get_Texture(CTerrain::TEXTURE_DIFFUSE)->Get_ShaderResourceView(i);
 				if (UseTextureStageing) {

@@ -29,7 +29,7 @@ HRESULT CTerrain::Initialize(void * pArg)
 	if (FAILED(Ready_Components(pArg)))
 		return E_FAIL;
 
-	for (_uint i = 0; i < 2; i++) {
+	for (_uint i = 0; i < 4; i++) {
 		m_pTextureCom[TEXTURE_MASK]->Add_MaskTexture();
 	}
 
@@ -78,11 +78,11 @@ HRESULT CTerrain::Render()
 	if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", &m_pGameInstance->Get_Transform_Float4x4(CPipeLine::D3DTS_PROJ))))
 		return E_FAIL;
 
-	if (FAILED(m_pTextureCom[TEXTURE_DIFFUSE]->Bind_ShadeResourcesMask(m_pShaderCom, "g_DiffuseTexture", 7)))
+	if (FAILED(m_pTextureCom[TEXTURE_DIFFUSE]->Bind_ShadeResourcesMask(m_pShaderCom, "g_DiffuseTexture", 13)))
 		return E_FAIL;
-	if (FAILED(m_pTextureCom[TEXTURE_NORMAL]->Bind_ShadeResourcesMask(m_pShaderCom, "g_NomalTexture", 7)))
+	if (FAILED(m_pTextureCom[TEXTURE_NORMAL]->Bind_ShadeResourcesMask(m_pShaderCom, "g_NomalTexture", 13)))
 		return E_FAIL;
-	if (FAILED(m_pTextureCom[TEXTURE_MASK]->Bind_ShadeResourcesMask(m_pShaderCom, "g_MaskTexture", 2)))
+	if (FAILED(m_pTextureCom[TEXTURE_MASK]->Bind_ShadeResourcesMask(m_pShaderCom, "g_MaskTexture", 4)))
 		return E_FAIL;
 
 	if (FAILED(m_pShaderCom->Begin(m_iUseShader)))
