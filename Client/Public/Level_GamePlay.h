@@ -91,6 +91,7 @@ private:
 
 	HRESULT GameObject_Swap_Layer_Object();
 	HRESULT GameObject_Swap_Layer_Model();
+	HRESULT GameObject_Clear();
 
 	// 생성할 객체 모델 관련
 	_uint m_iSelectModel = { 0 };				// 현제 선택중인 모델 번호

@@ -1267,6 +1267,8 @@ HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 		}
 	}
 
+	GameObject_Clear();
+
 	return S_OK;
 }
 
@@ -1767,6 +1769,32 @@ HRESULT CLevel_GamePlay::GameObject_Swap_Layer_Model()
 		ImGui::End();
 	}
 
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::GameObject_Clear()
+{
+	ImGui::SameLine();
+
+	ImVec2 buttonSize(100, 30);
+	if (ImGui::Button("Clear##5", buttonSize)) {
+		if (m_StringLayerName != L"\0") {
+			
+			_bool ClearObjectlist = CONFIRM_BOX(TEXT("Real Clear?"));
+
+			if (ClearObjectlist) 
+			{
+				for (auto& iter : *(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, m_StringLayerName)))
+				{
+					iter->Set_Dead(true);
+				}
+
+				m_pGameObj = nullptr;
+				m_pTransformCom = nullptr;
+			}
+		}
+	}
+	
 	return S_OK;
 }
 
