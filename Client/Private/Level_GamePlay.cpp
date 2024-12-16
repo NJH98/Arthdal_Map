@@ -1133,18 +1133,10 @@ HRESULT CLevel_GamePlay::GameObject_Save_Load(_float fTimeDelta)
 	return S_OK;
 }
 
+static int  FindModelNum = -1;
+
 HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 {
-	/*if (m_StringLayerName != L"\0") 
-	{
-		m_iGameObjListSize = _uint(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, m_StringLayerName)->size());
-		if (m_iGameObjListSize != m_iPreGameObjListSize) {
-			GameObject_vecStringSet();
-			m_iPreGameObjListSize = m_iGameObjListSize;
-		}
-	}*/
-	
-
 	ImGui::SeparatorText("GameObj List");
 	ImGui::PushItemWidth(200); // 크기조정
 
@@ -1184,6 +1176,8 @@ HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 					static_cast<CMapObject_Default*>(m_pGameObj)->Set_UseShader(3);
 					// 피킹된 객체 인스턴싱 랜더에서 기본 랜더로 교체
 					static_cast<CMapObject_Default*>(m_pGameObj)->Set_InstanceRender(false);
+
+					FindModelNum = _int(static_cast<CMapObject_Default*>(m_pGameObj)->Get_UseModel());
 				}
 			}
 		}
@@ -1253,11 +1247,26 @@ HRESULT CLevel_GamePlay::GameObject_Object_ListBox(_float fTimeDelta)
 		}
 	}
 
+	GameObject_Swap_Layer_Object();
+	GameObject_Swap_Layer_Model();
+
 	if (ImGui::Button("ListUpdate")) {
 		if (m_StringLayerName != L"\0") {
 			GameObject_vecStringSet();
 		}
 	}
+	ImGui::SameLine();
+	if (ImGui::Button("DepthNumUpdate")) {
+		if (m_StringLayerName != L"\0") {
+			_uint SetDepthNum = 0;
+			for (auto& iter : *(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, m_StringLayerName)))
+			{
+				iter->Set_DepthNum(SetDepthNum);
+				SetDepthNum++;
+			}
+		}
+	}
+
 	return S_OK;
 }
 
@@ -1670,6 +1679,90 @@ HRESULT CLevel_GamePlay::GameObject_Save_Load_Node()
 			filePath = "";
 		}
 	EndButton_Load_Node:
+
+		ImGui::End();
+	}
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::GameObject_Swap_Layer_Object()
+{
+	static bool bSwap_Layer_Object;
+	ImGui::Checkbox("Is_Swap_Layer_Object", &bSwap_Layer_Object);
+
+	if (bSwap_Layer_Object)
+	{
+		ImGui::Begin("Swap_Layer_Object");
+
+		if (m_pGameObj != nullptr) {
+
+			static char FindLayertag[256] = {};
+			ImGui::InputText("FindLayertag##find", FindLayertag, IM_ARRAYSIZE(FindLayertag));
+
+			ImVec2 buttonSize(100, 30);
+			if (ImGui::Button("Swap##1", buttonSize)) {
+				m_pGameInstance->Swap_Layer(LEVEL_GAMEPLAY, m_StringLayerName, char_to_wstring(FindLayertag), m_iSelectGameObj);
+			}
+
+			if (m_StringLayerName != L"\0") {
+				_uint SetDepthNum = 0;
+				for (auto& iter : *(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, m_StringLayerName)))
+				{
+					iter->Set_DepthNum(SetDepthNum);
+					SetDepthNum++;
+				}
+			}
+
+		}
+	
+		ImGui::End();
+	}
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::GameObject_Swap_Layer_Model()
+{
+	static bool bSwap_Layer_Model;
+	ImGui::Checkbox("Is_Swap_Layer_Model", &bSwap_Layer_Model);
+
+	if (bSwap_Layer_Model)
+	{
+		ImGui::Begin("Swap_Layer_Model");
+
+		if (m_pLayer != nullptr) {
+
+			static char FindLayertag[256] = {};
+			ImGui::InputText("FindLayertag##find2", FindLayertag, IM_ARRAYSIZE(FindLayertag));
+			ImGui::InputInt("FindModelNum", &FindModelNum);
+
+			ImVec2 buttonSize(100, 30);
+			if (ImGui::Button("Swap##2", buttonSize)) {
+				list<CGameObject*>* SwapGameObjlist =  m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, m_StringLayerName);
+				list<CGameObject*> SelectGameObjlist{};
+
+				for (auto iter : *SwapGameObjlist) 
+				{
+					if (static_cast<CMapObject_Default*>(iter)->Get_UseModel() == FindModelNum) 
+					{
+						SelectGameObjlist.push_back(iter);
+					}
+				}
+
+				m_pGameInstance->Swap_Layer_list(LEVEL_GAMEPLAY, m_StringLayerName, char_to_wstring(FindLayertag), SelectGameObjlist);
+
+				if (m_StringLayerName != L"\0") {
+					_uint SetDepthNum = 0;
+					for (auto& iter : *(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, m_StringLayerName)))
+					{
+						iter->Set_DepthNum(SetDepthNum);
+						SetDepthNum++;
+					}
+				}
+			}
+
+		}
 
 		ImGui::End();
 	}

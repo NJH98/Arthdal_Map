@@ -37,6 +37,8 @@ public:
         Map_MODEL_Asd_GuildEnd = 653,
         Map_MODEL_Asd_HouseEnd = 661,
         Map_MODEL_Asd_ObjectEnd = 726,
+        Map_MODEL_Asd_LampEnd = 728,
+        Map_MODEL_Asd_AnythingEnd = 730,
         MAP_MODEL_END,
     };
 private:

@@ -31,6 +31,9 @@ public:
 	list<CGameObject*>* Get_ObjectList(_uint iSceneID, const _wstring& strLayerTag);
 	map<const _wstring, class CLayer*>* Get_Map_Layer() { return m_pLayers; }
 
+	void Swap_Layer(_uint iLevelIndex, const _wstring& NowLayerTag, const _wstring& NextLayerTag, _uint iIndex = 0);
+	void Swap_Layer_list(_uint iLevelIndex, const _wstring& NowLayerTag, const _wstring& NextLayerTag, list<CGameObject*> GameObjectlist);
+
 private:
 
 	/* 원형객체들을 보관한다. */

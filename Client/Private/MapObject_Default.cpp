@@ -279,6 +279,22 @@ HRESULT CMapObject_Default::Ready_Components()
 			return E_FAIL;
 		m_InstnaceLayer = PrototypeTag;
 	}
+	else if (m_iUseModel < Map_MODEL_Asd_LampEnd) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Asd_Lamp" + to_wstring(m_iUseModel - Map_MODEL_Asd_ObjectEnd);
+
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
+			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
+			return E_FAIL;
+		m_InstnaceLayer = PrototypeTag;
+	}
+	else if (m_iUseModel < Map_MODEL_Asd_AnythingEnd) {
+		_wstring PrototypeTag = L"Prototype_Component_Model_Map_Asd_Anything" + to_wstring(m_iUseModel - Map_MODEL_Asd_LampEnd);
+
+		if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, PrototypeTag,
+			TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
+			return E_FAIL;
+		m_InstnaceLayer = PrototypeTag;
+	}
 
 #pragma endregion
 

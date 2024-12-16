@@ -271,6 +271,16 @@ map<const _wstring, class CLayer*>* CGameInstance::Get_Map_Layer()
 	return m_pObject_Manager->Get_Map_Layer();
 }
 
+void CGameInstance::Swap_Layer(_uint iLevelIndex, const _wstring& NowLayerTag, const _wstring& NextLayerTag, _uint iIndex)
+{
+	return m_pObject_Manager->Swap_Layer(iLevelIndex, NowLayerTag, NextLayerTag, iIndex);
+}
+
+void CGameInstance::Swap_Layer_list(_uint iLevelIndex, const _wstring& NowLayerTag, const _wstring& NextLayerTag, list<CGameObject*> GameObjectlist)
+{
+	return m_pObject_Manager->Swap_Layer_list(iLevelIndex, NowLayerTag, NextLayerTag, GameObjectlist);
+}
+
 
 #pragma endregion
 

@@ -176,6 +176,52 @@ list<CGameObject*>* CObject_Manager::Get_ObjectList(_uint iSceneID, const _wstri
 	return pLayer->Get_ObjectList();
 }
 
+void CObject_Manager::Swap_Layer(_uint iLevelIndex, const _wstring& NowLayerTag, const _wstring& NextLayerTag, _uint iIndex)
+{
+	CLayer* pNowLayer = Find_Layer(iLevelIndex, NowLayerTag);
+	CLayer* pNextLayer = Find_Layer(iLevelIndex, NextLayerTag);
+
+	if (pNowLayer != nullptr &&
+		pNextLayer != nullptr) {
+		
+		// 기존
+		list<class CGameObject*>* GameObjListNow = pNowLayer->Get_ObjectList();	// 레이어의 오브젝트 리스트
+		CGameObject* GameObj = pNowLayer->Get_Object(iIndex);					// 객체 찾음
+		
+		if (GameObj == nullptr)
+			return;
+
+		// 기존 레이어에서 제거
+		auto eraseiter = find(GameObjListNow->begin(), GameObjListNow->end(), GameObj);
+		GameObjListNow->erase(eraseiter);
+
+		// 신규
+		list<class CGameObject*>* GameObjListNext = pNextLayer->Get_ObjectList();	// 레이어의 오브젝트 리스트
+		GameObjListNext->push_back(GameObj);										// 객체 추가
+	}
+}
+
+void CObject_Manager::Swap_Layer_list(_uint iLevelIndex, const _wstring& NowLayerTag, const _wstring& NextLayerTag, list<CGameObject*> GameObjectlist)
+{
+	CLayer* pNowLayer = Find_Layer(iLevelIndex, NowLayerTag);
+	CLayer* pNextLayer = Find_Layer(iLevelIndex, NextLayerTag);
+
+	if (pNowLayer != nullptr &&
+		pNextLayer != nullptr) {
+
+		list<class CGameObject*>* GameObjListNow = pNowLayer->Get_ObjectList();
+		list<class CGameObject*>* GameObjListNext = pNextLayer->Get_ObjectList();
+
+		for (auto iter : GameObjectlist) 
+		{
+			auto eraseiter = find(GameObjListNow->begin(), GameObjListNow->end(), iter);
+			GameObjListNow->erase(eraseiter);
+			GameObjListNext->push_back(iter);
+		}
+
+	}
+}
+
 CGameObject * CObject_Manager::Find_Prototype(const _wstring & strPrototypeTag)
 {
 	auto	iter = m_Prototypes.find(strPrototypeTag);

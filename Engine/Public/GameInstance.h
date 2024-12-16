@@ -66,6 +66,8 @@ public:
 	list<CGameObject*>* Get_ObjectList(_uint iLevelIndex, const _wstring& strLayerTag);
 
 	map<const _wstring, class CLayer*>* Get_Map_Layer();
+	void Swap_Layer(_uint iLevelIndex, const _wstring& NowLayerTag, const _wstring& NextLayerTag, _uint iIndex = 0);
+	void Swap_Layer_list(_uint iLevelIndex, const _wstring& NowLayerTag, const _wstring& NextLayerTag, list<CGameObject*> GameObjectlist);
 #pragma endregion
 
 
