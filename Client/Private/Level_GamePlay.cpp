@@ -1076,22 +1076,22 @@ HRESULT CLevel_GamePlay::GameObject_Save_Load(_float fTimeDelta)
 
 			CMapObject_Default::MAPOBJECT_DESC Desc{};
 
-			/*if (static_cast<CMapObject_Default*>(LayerList)->Get_UseModel() < 185 ||
-				static_cast<CMapObject_Default*>(LayerList)->Get_UseModel() > 231) 
-			{*/
-				Desc.WorldMatrix = LayerList->Get_TranformCom()->Get_WorldMatrix();
-				Desc.ModelNum = static_cast<CMapObject_Default*>(LayerList)->Get_UseModel();
-				Desc.CullRadiuse = static_cast<CMapObject_Default*>(LayerList)->Get_Radiuse();
+			Vector3 scale = static_cast<CMapObject_Default*>(LayerList)->Get_TranformCom()->Get_Scaled();
+			_float Maxscale = max(max(scale.x, scale.y), scale.z);
 
-				outFile.write(reinterpret_cast<const char*>(&Desc.WorldMatrix), sizeof(_matrix));
-				outFile.write(reinterpret_cast<const char*>(&Desc.ModelNum), sizeof(_uint));
-				outFile.write(reinterpret_cast<const char*>(&Desc.CullRadiuse), sizeof(_float));
-			//}
+			Desc.WorldMatrix = LayerList->Get_TranformCom()->Get_WorldMatrix();
+			Desc.ModelNum = static_cast<CMapObject_Default*>(LayerList)->Get_UseModel();
+			Desc.CullRadiuse = static_cast<CMapObject_Default*>(LayerList)->Get_Radiuse() * Maxscale;
+
+			outFile.write(reinterpret_cast<const char*>(&Desc.WorldMatrix), sizeof(_matrix));
+			outFile.write(reinterpret_cast<const char*>(&Desc.ModelNum), sizeof(_uint));
+			outFile.write(reinterpret_cast<const char*>(&Desc.CullRadiuse), sizeof(_float));
 		}
 
 		outFile.close();
 
 		filePath = "";
+		MSG_BOX(TEXT("파일 저장 완료"));
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Load_Obj", buttonSize)) {
