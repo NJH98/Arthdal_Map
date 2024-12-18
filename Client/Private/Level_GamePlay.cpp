@@ -1436,7 +1436,7 @@ HRESULT CLevel_GamePlay::GameObject_Pos_Scal_Turn()
 HRESULT CLevel_GamePlay::GameObject_Save_Load_wstring()
 {
 	static bool bSave_Load_wstring;
-	ImGui::Checkbox("Save_Load_wstring", &bSave_Load_wstring);
+	ImGui::Checkbox("Save_Load_wstring(Potal)", &bSave_Load_wstring);
 
 	if (bSave_Load_wstring)
 	{
@@ -1544,7 +1544,7 @@ HRESULT CLevel_GamePlay::GameObject_Save_Load_wstring()
 HRESULT CLevel_GamePlay::GameObject_Save_Load_Node()
 {
 	static bool bSave_Load_Node;
-	ImGui::Checkbox("Save_Load_Node", &bSave_Load_Node);
+	ImGui::Checkbox("Save_Load_Node(NPC)", &bSave_Load_Node);
 
 	if (bSave_Load_Node) 
 	{
