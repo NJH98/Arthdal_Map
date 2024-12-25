@@ -154,12 +154,12 @@ static int iSahderNum = 0;
 
 HRESULT CModel::RenderInstancing(class CShader* pShader, CInstancing_Buffer* buffer)
 {
-	/*if (m_pGameInstance->Get_DIKeyState_Once(DIK_C)) {
+	if (m_pGameInstance->Get_DIKeyState_Once(DIK_C)) {
 		if (iSahderNum == 0)
 			iSahderNum = 1;
 		else
 			iSahderNum = 0;
-	}*/
+	}
 
 	if (FAILED(pShader->Bind_Matrix("g_ViewMatrix", &m_pGameInstance->Get_Transform_Float4x4(CPipeLine::D3DTS_VIEW))))
 		return E_FAIL;

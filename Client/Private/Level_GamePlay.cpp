@@ -2268,7 +2268,7 @@ HRESULT CLevel_GamePlay::Cell_Save_Load(_float fTimeDelta)
 
 		vector<class CCell*> vecCells = m_pNavigationCom_Terrain->Get_vecCell();
 
-		m_pNavigationCom_Terrain->SetUp_Neighbors();
+		//m_pNavigationCom_Terrain->SetUp_Neighbors();
 
 		for (const auto& Cells : vecCells) {
 
