@@ -2222,6 +2222,10 @@ HRESULT CLevel_GamePlay::Cell_Data(_float fTimeDelta)
 	ImGui::Checkbox("Is Ride", &IsRide);
 	m_pCell->Set_Ride(IsRide);
 
+	_int iCellName = m_pCell->Get_Name();
+	ImGui::InputInt("Cell Name", &iCellName);
+	m_pCell->Set_Name(iCellName);
+
 	return S_OK;
 }
 
@@ -2283,6 +2287,7 @@ HRESULT CLevel_GamePlay::Cell_Save_Load(_float fTimeDelta)
 			Desc.NeighborIndex_CA = Cells->Get_Neighbor(CCell::LINE_CA);
 
 			Desc.IsRide = Cells->Get_Ride();
+			Desc.CellName = Cells->Get_Name();
 
 			outFile.write(reinterpret_cast<const char*>(&Desc.PointA), sizeof(_float3));
 			outFile.write(reinterpret_cast<const char*>(&Desc.PointB), sizeof(_float3));
@@ -2293,6 +2298,7 @@ HRESULT CLevel_GamePlay::Cell_Save_Load(_float fTimeDelta)
 			outFile.write(reinterpret_cast<const char*>(&Desc.NeighborIndex_CA), sizeof(_int));
 
 			outFile.write(reinterpret_cast<const char*>(&Desc.IsRide), sizeof(_bool));
+			outFile.write(reinterpret_cast<const char*>(&Desc.CellName), sizeof(_int));
 		}
 
 		outFile.close();
@@ -2333,6 +2339,7 @@ HRESULT CLevel_GamePlay::Cell_Save_Load(_float fTimeDelta)
 			inFile.read(reinterpret_cast<char*>(&Desc.NeighborIndex_CA), sizeof(_int));
 
 			inFile.read(reinterpret_cast<char*>(&Desc.IsRide), sizeof(_bool));
+			inFile.read(reinterpret_cast<char*>(&Desc.CellName), sizeof(_int));
 
 			m_pNavigationCom_Terrain->Add_Bin_Cell(Desc);
 		}

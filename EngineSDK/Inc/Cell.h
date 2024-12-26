@@ -51,6 +51,9 @@ public:
 	_bool Get_Ride() { return m_bIsRide; }
 	void Set_Ride(_bool IsRide) { m_bIsRide = IsRide; }
 
+	_int Get_Name() { return m_iName; }
+	void Set_Name(_int Name) { m_iName = Name; }
+
 	_int Get_AreaIndex() { return m_iAreaIndex; }
 	_bool Get_Render() { return m_bIsRender; }
 	void Set_Render(_bool Temp) { m_bIsRender = Temp; }
@@ -72,6 +75,7 @@ private:
 
 	_bool							m_bIsPick = false;
 	_bool							m_bIsRide = false;
+	_int							m_iName = -1;
 
 	_int							m_iAreaIndex = -1;
 	_bool							m_bIsRender = false;

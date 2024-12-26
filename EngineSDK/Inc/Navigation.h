@@ -23,6 +23,7 @@ public:
 		_int NeighborIndex_CA = {};
 
 		_bool IsRide = false;
+		_int CellName = -1;
 	}CELL_DESC;
 
 private:

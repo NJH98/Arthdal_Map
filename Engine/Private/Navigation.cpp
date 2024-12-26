@@ -241,6 +241,7 @@ void CNavigation::Add_Bin_Cell(CELL_DESC CellDesc)
 	pCell->Set_Bin_Neighbor(CCell::LINE_CA, CellDesc.NeighborIndex_CA);
 
 	pCell->Set_Ride(CellDesc.IsRide);
+	pCell->Set_Name(CellDesc.CellName);
 
 	m_Cells.emplace_back(pCell);
 }
